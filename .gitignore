@@ -4,24 +4,18 @@
 # Don't ignore .gitignore itself
 !.gitignore
 
-# Keep source, headers, text
+# Unignore directories explicitly
+!Forge/
+!Forge/*.sln
+!Forge/*.vcxproj
+!Forge/*.vcxproj.filters
+
+# Allow source, headers, text files
 !*.c
 !*.h
 !*.txt
 
-# Keep Visual Studio solution and project files
-!*.sln
-!*.vcxproj
-!*.vcxproj.filters
-
-# -----------------------------------------
-# Typically you IGNORE user-specific settings:
-# (Uncomment the next line if you don't want to share .vcxproj.user)
-# !*.vcxproj.user
-
-# -----------------------------------------
-# Ignore common build artifacts:
-# (These lines come AFTER the global "ignore *" and are re-ignored.)
+# Ignore build artifacts
 *.exe
 *.dll
 *.lib
@@ -30,10 +24,8 @@
 *.cache
 *.pch
 *.ipch
-
-# Ignore typical bin & obj folders (case-insensitive)
 [Bb]in/
 [Oo]bj/
 
-# (Optional) ignore .vs/ folder if using newer VS versions
+# Ignore Visual Studio user settings and temp files
 .vs/
