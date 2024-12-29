@@ -4,10 +4,7 @@
 #include "HashMap.h"
 #include "Token.h"
 
-#define STATE_COUNT 9
-#define MAX_CHAR_COUNT 256
 #define VALID_STATE 2
-
 
 // states in FSM
 typedef enum states {
@@ -15,7 +12,7 @@ typedef enum states {
     START_STATE,
     ERROR_TOKEN_STATE,
     // accepting
-    IDENTIFIER_STATE, //3
+    IDENTIFIER_STATE, 
     INT_LITERAL_STATE,
     PLUS_STATE,
     MINUS_STATE,
@@ -52,7 +49,6 @@ typedef struct {
 } KeywordMap;
 
 
-
 // func that inits the state machine
 void init_state_machine(HashMap** map);
 // func that preforms the lexing
@@ -60,6 +56,6 @@ void lex(HashMap* map, char* input, pTokenArray ptoken_array);
 // func that will identifiy the keywords
 TokenType identifyKeyowrd(char* lexeme);
 // func that will identify the token type
-TokenType state_to_token_type(State state);
+TokenType state_to_token_type(State state, char* value);
 
 #endif

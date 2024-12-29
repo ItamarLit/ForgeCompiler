@@ -20,7 +20,6 @@ void init_state_machine(HashMap** map) {
     putState(START_STATE, '\r', START_STATE, *map);
 
 
-
     for (char c = 'a'; c <= 'z'; c++) {
         // for start state
         putState(START_STATE, c, IDENTIFIER_STATE, *map);
@@ -44,9 +43,6 @@ void init_state_machine(HashMap** map) {
         // Transaction for the float state
         putState(INT_POINT_STATE, c, FLOAT_STATE, *map);
         putState(FLOAT_STATE, c, FLOAT_STATE, *map);
-
-
-
         // for identifier state
         putState(IDENTIFIER_STATE, c, IDENTIFIER_STATE, *map);
         // for int state
@@ -100,9 +96,6 @@ void init_state_machine(HashMap** map) {
 
     // Transaction for the func ret type arrow =>
     putState(EQUAL_STATE, '>', FUNC_RET_TYPE_STATE, *map);
-
-
-
 }
 
 TokenType state_to_token_type(State state, char* value) {
@@ -213,7 +206,6 @@ void lex(HashMap* map, char* input, pTokenArray ptoken_array) {
             }
             else {
                 // after we encounter an error token we check to see if we have many in a row
-                // WHILE NO TRANSITION FROM START STATE ADD TO TOKEN AND ADD ERROR TOKEN  
                 while ((getNextState(START_STATE, *input, map) == -1) && *input != '\0')
                 {
                     current_lexeme[lexeme_index++] = *input;

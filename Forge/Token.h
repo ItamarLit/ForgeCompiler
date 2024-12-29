@@ -3,52 +3,52 @@
 
 #include <stdio.h>
 
-#define INIT_TOKEN_COUNT 3
+#define INIT_TOKEN_COUNT 12
 #define MAX_LEXEME_LEN 64
 
 typedef enum {
     ERROR = -1,
     IDENTIFIER = 0,
-    INT_LITERAL,
-    FLOAT_LITERAL,
-    OPERATOR,
-    STRING_LITERAL,
-    THEN,
-    FORGE,
-    MOLD,
-    MEET,
-    FOR,
-    WHILE,
-    IN,
-    INT,
-    FLOAT,
-    STRING,
-    BOOL,
-    RETURN,
-    VOID,
-    DOUBLE_OPERATOR,
-    OPEN_PAREN,
-    CLOSED_PAREN,
-    OPEN_BRACE,
-    CLOSE_BRACE,
-    SEMI_COLON,
-    COMMA,
-    SMALLER_THAN,
-    SMALLER_EQUAL,
-    LARGER_THAN,
-    LARGER_EQUAL,
-    PLUS,
-    MINUS,
-    DIV,
-    MUL,
-    EQUAL,
-    PLUS_EQUAL,
-    MINUS_EQUAL,
-    DIV_EQUAL,
-    MUL_EQUAL,
-    EQUAL_EQUAL,
-    FUNC_RET_TYPE,
-    COLON,
+    INT_LITERAL = 1,
+    FLOAT_LITERAL = 2,
+    OPERATOR = 3,
+    STRING_LITERAL = 4,
+    THEN = 5,
+    FORGE = 6,
+    MOLD = 7,
+    MEET = 8,
+    FOR = 9,
+    WHILE = 10,
+    IN = 11,
+    INT = 12,
+    FLOAT = 13,
+    STRING = 14,
+    BOOL = 15,
+    RETURN = 16,
+    VOID = 17,
+    DOUBLE_OPERATOR = 18,
+    OPEN_PAREN = 19,
+    CLOSED_PAREN = 20,
+    OPEN_BRACE = 21,
+    CLOSE_BRACE = 22,
+    SEMI_COLON = 23,
+    COMMA = 24,
+    SMALLER_THAN = 25,
+    SMALLER_EQUAL = 26,
+    LARGER_THAN = 27,
+    LARGER_EQUAL = 28,
+    PLUS = 29,
+    MINUS = 30,
+    DIV = 31,
+    MUL = 32,
+    EQUAL = 33,
+    PLUS_EQUAL = 34,
+    MINUS_EQUAL = 35,
+    DIV_EQUAL = 36,
+    MUL_EQUAL = 37,
+    EQUAL_EQUAL = 38,
+    FUNC_RET_TYPE = 39,
+    COLON = 40,
 
 
 }TokenType;
@@ -59,17 +59,17 @@ typedef struct {
 }Token;
 
 typedef struct {
-    Token* tokens;
+    Token** tokens;
     int size;
     int count;
-}TokenArray, * pTokenArray;
+}TokenArray, *pTokenArray;
 
 // function to add a token to an arr of tokens 
 void addToken(pTokenArray* ptoken_array, TokenType token_type, const char* lexeme);
 // func that prints the tokens
 void printTokens(pTokenArray ptoken_array);
 // func that creates a token arr in the heap
-Token* createTokens(int size);
+Token** createTokens(int size);
 // func that will enlarge the token arr
 void resizeTokenArr(pTokenArray* ptoken_array);
 // func to set a new TokenArray
