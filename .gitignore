@@ -1,10 +1,39 @@
-# Ignore everything
+# Ignore everything by default
 *
 
-# Don't ignore .gitignore
+# Don't ignore .gitignore itself
 !.gitignore
 
-# Don't ignore .c, .h, .txt files
+# Keep source, headers, text
 !*.c
 !*.h
 !*.txt
+
+# Keep Visual Studio solution and project files
+!*.sln
+!*.vcxproj
+!*.vcxproj.filters
+
+# -----------------------------------------
+# Typically you IGNORE user-specific settings:
+# (Uncomment the next line if you don't want to share .vcxproj.user)
+# !*.vcxproj.user
+
+# -----------------------------------------
+# Ignore common build artifacts:
+# (These lines come AFTER the global "ignore *" and are re-ignored.)
+*.exe
+*.dll
+*.lib
+*.obj
+*.pdb
+*.cache
+*.pch
+*.ipch
+
+# Ignore typical bin & obj folders (case-insensitive)
+[Bb]in/
+[Oo]bj/
+
+# (Optional) ignore .vs/ folder if using newer VS versions
+.vs/
