@@ -168,6 +168,32 @@ TokenType identifyKeyowrd(char* lexeme) {
 }
 
 
+void addAndResetLexer(pTokenArray ptoken_array, State* current_state, State* last_accepting_state, char* current_lexeme, int* lexeme_index, State token_state)
+{
+    if (*lexeme_index != 0) {
+        current_lexeme[*lexeme_index] = '\0';
+        // add the token
+        addToken(&ptoken_array, state_to_token_type(token_state, current_lexeme), current_lexeme);
+        // reset
+        *current_state = START_STATE;
+        *last_accepting_state = START_STATE;
+        *lexeme_index = 0;
+    }
+}
+
+void handleErrorToken(HashMap* map, char** input, char* current_lexeme, int* lexeme_index, pTokenArray ptoken_array, State* current_state, State* last_accepting_state)
+{
+    // read all the invalid tokens
+    while ((getNextState(START_STATE, **input, map) == -1) && **input != '\0')
+    {
+        current_lexeme[(*lexeme_index)++] = **input;
+        (*input)++;
+    }
+    // finalize as ERROR token and reset
+    addAndResetLexer(ptoken_array, current_state, last_accepting_state, current_lexeme, lexeme_index, ERROR_TOKEN_STATE);
+}
+
+
 void lex(HashMap* map, char* input, pTokenArray ptoken_array) {
     State current_state = START_STATE;
     State last_accepting_state = -1;
@@ -183,10 +209,8 @@ void lex(HashMap* map, char* input, pTokenArray ptoken_array) {
             // add the current char
             current_lexeme[lexeme_index++] = *input;
             input++;
-            // check if the current state is accepting
-            if (current_state >= VALID_STATE) {
-                last_accepting_state = current_state;
-            }
+            // save current state
+            last_accepting_state = current_state;
         }
         else
         {
@@ -194,36 +218,18 @@ void lex(HashMap* map, char* input, pTokenArray ptoken_array) {
             if (current_state == START_STATE) {
                 input++;
             }
-            else if (last_accepting_state >= VALID_STATE)
+            // check that the token is acceptable
+            else if (last_accepting_state > START_STATE)
             {
-                // check if the token is valid and needs to be added
-                current_lexeme[lexeme_index] = '\0';
-                addToken(&ptoken_array, state_to_token_type(last_accepting_state, current_lexeme), current_lexeme);
-                // reset
-                current_state = START_STATE;
-                last_accepting_state = START_STATE;
-                lexeme_index = 0;
+                addAndResetLexer(ptoken_array, &current_state, &last_accepting_state, current_lexeme, &lexeme_index, last_accepting_state);
+                
             }
+            // this else will happen if there are any unrecognized chars
             else {
-                // after we encounter an error token we check to see if we have many in a row
-                while ((getNextState(START_STATE, *input, map) == -1) && *input != '\0')
-                {
-                    current_lexeme[lexeme_index++] = *input;
-                    input++;
-                }
-                // check if the token is valid and needs to be added
-                current_lexeme[lexeme_index] = '\0';
-                addToken(&ptoken_array, state_to_token_type(ERROR_TOKEN_STATE, ""), current_lexeme);
-                // reset
-                current_state = START_STATE;
-                last_accepting_state = START_STATE;
-                lexeme_index = 0;
+                handleErrorToken(map, &input, current_lexeme, &lexeme_index, ptoken_array, &current_state, &last_accepting_state);
             }
         }
     }
-    // After end of input, check if we have an accepting state
-    if (last_accepting_state >= VALID_STATE) {
-        current_lexeme[lexeme_index] = '\0';
-        addToken(&ptoken_array, state_to_token_type(last_accepting_state, current_lexeme), current_lexeme);
-    }
+    // if we finish the input we add the last token
+    addAndResetLexer(ptoken_array, &current_state, &last_accepting_state, current_lexeme, &lexeme_index, last_accepting_state);
 }

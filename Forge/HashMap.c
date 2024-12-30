@@ -64,7 +64,12 @@ void freeHashMap(HashMap** map) {
 	*map = NULL;
 }
 
-
+/// <summary>
+/// 
+/// </summary>
+/// <param name="currentState"></param>
+/// <param name="currentChar"></param>
+/// <param name="map"></param>
 getHashCode(int currentState, char currentChar, HashMap* map) {
 	int asciiValue = currentChar;
 	// get 2 prime numbers to distribute the hash values more
@@ -73,7 +78,13 @@ getHashCode(int currentState, char currentChar, HashMap* map) {
 	// return the hash for the state char pair
 	return ((asciiValue * prime1 + currentState * prime2) % map->map_size);
 }
-
+/// <summary>
+/// 
+/// </summary>
+/// <param name="currentState"></param>
+/// <param name="currentChar"></param>
+/// <param name="map"></param>
+/// <returns></returns>
 int getNextState(int currentState, char currentChar, HashMap* map)
 {
 	int hashCode = getHashCode(currentState, currentChar, map);
