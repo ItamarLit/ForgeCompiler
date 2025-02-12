@@ -127,7 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="FilerReader.h" />
+    <ClInclude Include="FileReader.h" />
     <ClInclude Include="HashMap.h" />
     <ClInclude Include="Lexer.h" />
     <ClInclude Include="Token.h" />
