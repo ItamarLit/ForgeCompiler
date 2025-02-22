@@ -1,4 +1,4 @@
-#include "GenericHashMap.h"
+#include "HashMap.h"
 #include "Lexer.h"
 #include "Token.h"
 #include "FileReader.h"

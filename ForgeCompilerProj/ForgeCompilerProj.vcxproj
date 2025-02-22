@@ -128,7 +128,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="FileReader.h" />
-    <ClInclude Include="GenericHashMap.h" />
     <ClInclude Include="HashMap.h" />
     <ClInclude Include="Lexer.h" />
     <ClInclude Include="Token.h" />
@@ -138,7 +137,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FileReader.c" />
-    <ClCompile Include="GenericHashMap.c" />
     <ClCompile Include="HashMap.c" />
     <ClCompile Include="Lexer.c" />
     <ClCompile Include="Source.c" />

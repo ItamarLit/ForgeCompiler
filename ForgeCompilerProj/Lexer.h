@@ -1,7 +1,7 @@
 #ifndef LEXER_H 
 #define LEXER_H
 
-#include "GenericHashMap.h"
+#include "HashMap.h"
 #include "Token.h"
 
 #define VALID_STATE 2
