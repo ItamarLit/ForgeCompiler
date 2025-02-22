@@ -1,7 +1,7 @@
 #ifndef LEXER_H 
 #define LEXER_H
 
-#include "HashMap.h"
+#include "GenericHashMap.h"
 #include "Token.h"
 
 #define VALID_STATE 2
@@ -48,6 +48,12 @@ typedef struct {
     TokenType type;
 } KeywordMap;
 
+// struct for the hashmap key
+typedef struct FsmKey {
+    int currentState;
+    char currentChar;
+} FsmKey;
+
 
 // func that inits the state machine
 void init_state_machine(HashMap** map);
@@ -57,5 +63,7 @@ void lex(HashMap* map, char* input, pTokenArray ptoken_array);
 TokenType identifyKeyowrd(char* lexeme);
 // func that will identify the token type
 TokenType state_to_token_type(State state, char* value);
+// hash func for the FSM hash map
+unsigned long hashFunc(FsmKey key, int mapSize);
 
 #endif

@@ -3,7 +3,7 @@
 
 void* getHashMapValue(void* key, HashMap* map)
 {
-	unsigned long hashCode = map->HashFunc(key);
+	unsigned long hashCode = map->HashFunc(key, map->map_size);
 	HashNode* current = map->arr[hashCode];
 
 	while (current != NULL) {
@@ -19,7 +19,7 @@ void* getHashMapValue(void* key, HashMap* map)
 void insertNewValue(void* key, void* value, HashMap* map)
 {
 	// get the hashcode
-	unsigned long hashCode = map->HashFunc(key);
+	unsigned long hashCode = map->HashFunc(key, map->map_size);
 	HashNode* current = map->arr[hashCode];
 	// check if the key exists
 	while (current) {
@@ -58,7 +58,8 @@ HashNode* getHashNode(void* key, void* value)
 
 
 
-HashMap* initHashMap(int size) {
+HashMap* initHashMap(int size, unsigned long (*HashFunc)(void*, int), int (*EqualFunc)(void*, void*))
+{
 	// create the map
 	HashMap* map = (HashMap*)malloc(sizeof(HashMap));
 	if (!map) {
@@ -76,6 +77,8 @@ HashMap* initHashMap(int size) {
 	map->map_size = size;
 	map->load_factor = 0.75f;
 	map->usedSpaces = 0;
+	map->HashFunc = HashFunc;
+	map->EqualFunc = EqualFunc;
 	return map;
 }
 

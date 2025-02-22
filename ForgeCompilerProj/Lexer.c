@@ -6,10 +6,41 @@
 #pragma warning (disable:4996)
 
 
+// hash func for the FSM hashMap
+unsigned long hashFunc(void* key, int mapSize) {
+    FsmKey* fsmKey = (FsmKey*)key;
+    int asciiValue = fsmKey->currentChar;
+    // get 2 prime numbers to distribute the hash values more
+    int prime1 = 31;
+    int prime2 = 37;
+    // return the hash for the state char pair
+    return ((asciiValue * prime1 + fsmKey->currentState * prime2) % mapSize);
+}
+
+int fsmEqualFunc(void* a, void* b) {
+    FsmKey* k1 = (FsmKey*)a;
+    FsmKey* k2 = (FsmKey*)b;
+    return (k1->currentState == k2->currentState) &&
+        (k1->currentChar == k2->currentChar);
+}
+
+// func that creates a new state in the hashmap
+void putState(int state, char ch, int nextState, HashMap* map) {
+    // allocate key
+    FsmKey* key = malloc(sizeof(FsmKey));
+    key->currentState = state;
+    key->currentChar = ch;
+    // allocate the value
+    int* valPtr = malloc(sizeof(int));
+    *valPtr = nextState;
+    // insert the key - val pair
+    insertNewValue(key, valPtr, map);
+}
+
 // Initialize the hash map for the FSM transitions
 void init_state_machine(HashMap** map) {
     // init the hash map with the starting size
-    *map = initHashMap(INITAL_HASHMAP_SIZE);
+    *map = initHashMap(INITAL_HASHMAP_SIZE, hashFunc, fsmEqualFunc);
 
     // Transitions for START_STATE
     putState(START_STATE, '"', STRING_LITERAL_STATE, *map);
@@ -98,6 +129,11 @@ void init_state_machine(HashMap** map) {
     putState(EQUAL_STATE, '>', FUNC_RET_TYPE_STATE, *map);
 }
 
+
+
+
+
+
 TokenType state_to_token_type(State state, char* value) {
     static const TokenType state_to_token_type_map[] = {
         [ERROR_TOKEN_STATE] = ERROR,
@@ -183,14 +219,34 @@ void addAndResetLexer(pTokenArray ptoken_array, State* current_state, State* las
 
 void handleErrorToken(HashMap* map, char** input, char* current_lexeme, int* lexeme_index, pTokenArray ptoken_array, State* current_state, State* last_accepting_state)
 {
+    FsmKey* temp = (FsmKey*)malloc(sizeof(FsmKey));
+    temp->currentChar = *input;
+    temp->currentState = START_STATE;
+    int* statePtr = (int*)getHashMapValue(temp, map);
+    if (statePtr) {
+        *current_state = *statePtr;
+    }
+    else {
+        *current_state = -1;
+    }
     // read all the invalid tokens
-    while ((getNextState(START_STATE, **input, map) == -1) && **input != '\0')
+    while (*current_state == -1 && **input != '\0')
     {
         current_lexeme[(*lexeme_index)++] = **input;
         (*input)++;
+        temp->currentChar = **input;
+        temp->currentState = START_STATE;
+        int* statePtr = (int*)getHashMapValue(temp, map);
+        if (statePtr) {
+            *current_state = *statePtr;
+        }
+        else {
+            *current_state = -1;
+        }
     }
     // finalize as ERROR token and reset
     addAndResetLexer(ptoken_array, current_state, last_accepting_state, current_lexeme, lexeme_index, ERROR_TOKEN_STATE);
+    free(temp);
 }
 
 
@@ -199,10 +255,19 @@ void lex(HashMap* map, char* input, pTokenArray ptoken_array) {
     State last_accepting_state = -1;
     char current_lexeme[MAX_LEXEME_LEN];
     int lexeme_index = 0;
+    FsmKey* temp = (FsmKey*)malloc(sizeof(FsmKey));
     // go over the whole input
     while (*input != '\0') {
         // get the next state from the hash map o(1)
-        current_state = getNextState(current_state, *input, map);
+        temp->currentChar = *input;
+        temp->currentState = current_state;
+        int* statePtr = (int*)getHashMapValue(temp, map);
+        if (statePtr) {
+            current_state = *statePtr;
+        }
+        else {
+            current_state = -1; 
+        }
         // check if there is a valid transition and if so check that it isnt a whitespace skip (Start_State)
         if (current_state != -1 && current_state != START_STATE)
         {
@@ -232,4 +297,5 @@ void lex(HashMap* map, char* input, pTokenArray ptoken_array) {
     }
     // if we finish the input we add the last token
     addAndResetLexer(ptoken_array, &current_state, &last_accepting_state, current_lexeme, &lexeme_index, last_accepting_state);
+    free(temp);
 }

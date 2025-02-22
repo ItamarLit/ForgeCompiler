@@ -16,12 +16,12 @@ typedef struct HashMap {
     int map_size;                // size of arr
     int usedSpaces;              // counter for used spaces
     float load_factor;           // load factor used for resizing 
-    unsigned long (*HashFunc)(void*); // generic hashfunc
+    unsigned long (*HashFunc)(void*, int mapSize); // generic hashfunc
     int (*EqualFunc)(void*, void*); // generic equals function
 } HashMap;  
 
 // this func will create an empty hashMap
-HashMap* initHashMap(int size);
+HashMap* initHashMap(int size, unsigned long (*HashFunc)(void*, int), int (*EqualFunc)(void*, void*));
 // this func will free a given hash map
 void freeHashMap(HashMap** map);
 // this func will get the hashmap value based on a key
