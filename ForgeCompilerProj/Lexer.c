@@ -6,7 +6,27 @@
 #pragma warning (disable:4996)
 
 
-// hash func for the FSM hashMap
+
+void printKey(void* key) 
+{
+    FsmKey* fkey = (FsmKey*)key;
+    printf("[Key: current_state: %d, char: '%c' ", fkey->currentState, fkey->currentChar);
+}
+
+
+void printValue(void* value) {
+    int* fvalue = (int*)value;
+    printf("Value: next_state: %d] ", *fvalue);
+}
+
+
+
+/// <summary>
+/// This func is the hash func for the FSM hashmap
+/// </summary>
+/// <param name="key"></param>
+/// <param name="mapSize"></param>
+/// <returns>Returns a hashcode based on a given key</returns>
 unsigned long hashFunc(void* key, int mapSize) {
     FsmKey* fsmKey = (FsmKey*)key;
     int asciiValue = fsmKey->currentChar;
@@ -17,7 +37,12 @@ unsigned long hashFunc(void* key, int mapSize) {
     return ((asciiValue * prime1 + fsmKey->currentState * prime2) % mapSize);
 }
 
-// equal func for two keys in the FSM hashmap
+/// <summary>
+/// This func is the equals func for the FSM hashmap
+/// </summary>
+/// <param name="a"></param>
+/// <param name="b"></param>
+/// <returns></returns>
 int equalFunc(void* a, void* b) {
     FsmKey* k1 = (FsmKey*)a;
     FsmKey* k2 = (FsmKey*)b;
@@ -25,7 +50,13 @@ int equalFunc(void* a, void* b) {
         (k1->currentChar == k2->currentChar);
 }
 
-// func that creates a new state in the hashmap
+/// <summary>
+/// This func is used to create a new state in the hashmap, it handles all the mallocing
+/// </summary>
+/// <param name="state"></param>
+/// <param name="ch"></param>
+/// <param name="nextState"></param>
+/// <param name="map"></param>
 void putState(int state, char ch, int nextState, HashMap* map) {
     // allocate key
     FsmKey* key = malloc(sizeof(FsmKey));
@@ -38,10 +69,13 @@ void putState(int state, char ch, int nextState, HashMap* map) {
     insertNewValue(key, valPtr, map);
 }
 
-// Initialize the hash map for the FSM transitions
+/// <summary>
+/// This func inits the state machine, it creates the hashmap and fills it with data
+/// </summary>
+/// <param name="map"></param>
 void init_state_machine(HashMap** map) {
     // init the hash map with the starting size and two funcs
-    *map = initHashMap(INITAL_HASHMAP_SIZE, hashFunc, equalFunc);
+    *map = initHashMap(INITAL_HASHMAP_SIZE, hashFunc, equalFunc, printKey, printValue);
 
     // Transitions for START_STATE
     putState(START_STATE, '"', STRING_LITERAL_STATE, *map);
@@ -130,7 +164,12 @@ void init_state_machine(HashMap** map) {
     putState(EQUAL_STATE, '>', FUNC_RET_TYPE_STATE, *map);
 }
 
-
+/// <summary>
+/// This func is used to get a token type based on a state
+/// </summary>
+/// <param name="state"></param>
+/// <param name="value"></param>
+/// <returns>Returns the token type based on the state</returns>
 TokenType state_to_token_type(State state, char* value) {
     static const TokenType state_to_token_type_map[] = {
         [ERROR_TOKEN_STATE] = ERROR,
@@ -163,7 +202,7 @@ TokenType state_to_token_type(State state, char* value) {
         [FUNC_RET_TYPE_STATE] = FUNC_RET_TYPE,
         [COLON_STATE] = COLON,
     };
-
+    // check if the token is an error token
     if (state >= VALID_STATE && state < sizeof(state_to_token_type_map) / sizeof(state_to_token_type_map[0])) {
         TokenType type = state_to_token_type_map[state];
         if (type == IDENTIFIER) {
@@ -171,7 +210,7 @@ TokenType state_to_token_type(State state, char* value) {
         }
         return type;
     }
-
+    // invalid state = error
     return -1;
 }
 
@@ -200,7 +239,15 @@ TokenType identifyKeyowrd(char* lexeme) {
     return IDENTIFIER;
 }
 
-
+/// <summary>
+/// This func adds a token to the token arraya nd resets the lexer
+/// </summary>
+/// <param name="ptoken_array"></param>
+/// <param name="current_state"></param>
+/// <param name="last_accepting_state"></param>
+/// <param name="current_lexeme"></param>
+/// <param name="lexeme_index"></param>
+/// <param name="token_state"></param>
 void addAndResetLexer(pTokenArray ptoken_array, State* current_state, State* last_accepting_state, char* current_lexeme, int* lexeme_index, State token_state)
 {
     if (*lexeme_index != 0) {
@@ -214,6 +261,13 @@ void addAndResetLexer(pTokenArray ptoken_array, State* current_state, State* las
     }
 }
 
+/// <summary>
+/// This func gets the next state based on the current state and input char
+/// </summary>
+/// <param name="map"></param>
+/// <param name="currentState"></param>
+/// <param name="inputChar"></param>
+/// <returns>Returns the next state or -1 if no next state avalible</returns>
 int getNextState(HashMap* map, int currentState, char inputChar)
 {
     FsmKey temp;
@@ -223,6 +277,16 @@ int getNextState(HashMap* map, int currentState, char inputChar)
     return (nextPtr) ? *nextPtr : -1;
 }
 
+/// <summary>
+/// This func handles error tokens, it collects all the char of an error token, adds it to the array and resets the lexer
+/// </summary>
+/// <param name="map"></param>
+/// <param name="input"></param>
+/// <param name="current_lexeme"></param>
+/// <param name="lexeme_index"></param>
+/// <param name="ptoken_array"></param>
+/// <param name="current_state"></param>
+/// <param name="last_accepting_state"></param>
 void handleErrorToken(HashMap* map, char** input, char* current_lexeme, int* lexeme_index, pTokenArray ptoken_array, State* current_state, State* last_accepting_state)
 {
     // read all the invalid tokens
@@ -235,7 +299,12 @@ void handleErrorToken(HashMap* map, char** input, char* current_lexeme, int* lex
     addAndResetLexer(ptoken_array, current_state, last_accepting_state, current_lexeme, lexeme_index, ERROR_TOKEN_STATE);
 }
 
-
+/// <summary>
+/// This is the main lex func
+/// </summary>
+/// <param name="map"></param>
+/// <param name="input"></param>
+/// <param name="ptoken_array"></param>
 void lex(HashMap* map, char* input, pTokenArray ptoken_array) {
     State current_state = START_STATE;
     State last_accepting_state = -1;

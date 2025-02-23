@@ -5,8 +5,10 @@
 
 int main() {
     HashMap* state_machine = NULL;
+    // init the state machine for the lexer hashmap
     init_state_machine(&state_machine);
     pTokenArray ptoken_array;
+    // init the token array
     initTokenArray(&ptoken_array);
     if (ptoken_array->tokens == NULL) {
         return -1;
@@ -16,7 +18,7 @@ int main() {
     inputStr = readFile("Code.txt");
     lex(state_machine, inputStr, ptoken_array);
 
-    //printHashMap(state_machine);
+    printHashMap(state_machine);
     // free the input string
     free(inputStr);
     inputStr = NULL;

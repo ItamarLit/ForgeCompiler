@@ -1,5 +1,11 @@
 #include "Token.h"
 
+/// <summary>
+/// This func is used to add a token to the token array
+/// </summary>
+/// <param name="ptoken_array"></param>
+/// <param name="token_type"></param>
+/// <param name="lexeme"></param>
 void addToken(pTokenArray* ptoken_array, TokenType token_type, const char* lexeme)
 {
     if ((*ptoken_array)->size == (*ptoken_array)->count) {
@@ -24,7 +30,10 @@ void addToken(pTokenArray* ptoken_array, TokenType token_type, const char* lexem
     (*ptoken_array)->count++;
 }
 
-
+/// <summary>
+/// This func is used to print the token array
+/// </summary>
+/// <param name="ptoken_array"></param>
 void printTokens(pTokenArray ptoken_array) {
     // Print tokens
     printf("Tokens:\n");
@@ -33,7 +42,11 @@ void printTokens(pTokenArray ptoken_array) {
     }
 }
 
-
+/// <summary>
+/// This func creates an empty token array based on a given size
+/// </summary>
+/// <param name="size"></param>
+/// <returns>Pointer to the allocated array</returns>
 Token** createTokens(int size) {
     Token** tokens = (Token**)malloc(size * sizeof(Token*));
     if (tokens == NULL) {
@@ -43,6 +56,10 @@ Token** createTokens(int size) {
     return tokens;
 }
 
+/// <summary>
+/// This func resizes the token array and doubles its size
+/// </summary>
+/// <param name="ptoken_array"></param>
 void resizeTokenArr(pTokenArray* ptoken_array) {
     (*ptoken_array)->size = (*ptoken_array)->size * 2;
     Token** temp = (Token**)realloc((*ptoken_array)->tokens, (*ptoken_array)->size * sizeof(Token*));
@@ -54,6 +71,10 @@ void resizeTokenArr(pTokenArray* ptoken_array) {
     (*ptoken_array)->tokens = temp;
 }
 
+/// <summary>
+/// This func inits the token array struct
+/// </summary>
+/// <param name="ptoken_array"></param>
 void initTokenArray(pTokenArray* ptoken_array) {
     *ptoken_array = (pTokenArray)malloc(sizeof(TokenArray));
     if (*ptoken_array == NULL) {
@@ -66,6 +87,10 @@ void initTokenArray(pTokenArray* ptoken_array) {
     (*ptoken_array)->tokens = createTokens((*ptoken_array)->size);
 }
 
+/// <summary>
+/// This func is used to free the token array
+/// </summary>
+/// <param name="ptoken_array"></param>
 void freeTokenArray(pTokenArray* ptoken_array) {
     for (int i = 0; i < (*ptoken_array)->count; i++) {
         // Free each Token

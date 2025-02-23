@@ -1,11 +1,17 @@
 #include "HashMap.h"
 
-
+/// <summary>
+/// This func will get a value from the hashmap based on the key, if there is no value it returns NULL
+/// </summary>
+/// <param name="key"></param>
+/// <param name="map"></param>
+/// <returns>The func will return a value or Null </returns>
 void* getHashMapValue(void* key, HashMap* map)
 {
+	// Get the hashcode for the key
 	unsigned long hashCode = map->HashFunc(key, map->map_size);
 	HashNode* current = map->arr[hashCode];
-
+	// Go over the linked list until we find the same key
 	while (current != NULL) {
 		if (map->EqualFunc(key, current->key)) {
 			return current->value;  
@@ -15,7 +21,12 @@ void* getHashMapValue(void* key, HashMap* map)
 	return NULL;  
 }
 
-
+/// <summary>
+/// This func is used to insert a new value into the hashmap
+/// </summary>
+/// <param name="key"></param>
+/// <param name="value"></param>
+/// <param name="map"></param>
 void insertNewValue(void* key, void* value, HashMap* map)
 {
 	// get the hashcode
@@ -30,9 +41,10 @@ void insertNewValue(void* key, void* value, HashMap* map)
 		}
 		current = current->next;
 	}
-	// no key found, need new node
+	// if we fill a new bucket update the used spaces
 	if (!map->arr[hashCode])
 		map->usedSpaces++;
+	// no key found, need new node
 	HashNode* node = getHashNode(key, value);
 	node->next = map->arr[hashCode];
 	map->arr[hashCode] = node;
@@ -42,7 +54,12 @@ void insertNewValue(void* key, void* value, HashMap* map)
 	}
 }
 
-
+/// <summary>
+/// This func creates a new hash node and sets its key and value
+/// </summary>
+/// <param name="key"></param>
+/// <param name="value"></param>
+/// <returns>Returns a HashNode* or Null if it wasnt able to allocate memory</returns>
 HashNode* getHashNode(void* key, void* value) 
 {
 	HashNode* node = (HashNode*)malloc(sizeof(HashNode));
@@ -57,8 +74,15 @@ HashNode* getHashNode(void* key, void* value)
 }
 
 
-
-HashMap* initHashMap(int size, unsigned long (*HashFunc)(void*, int), int (*EqualFunc)(void*, void*))
+/// <summary>
+/// This func inits the starting hashmap, it creates a hashmap based on a specific size and also sets the hash and equals func
+/// </summary>
+/// <param name="size"></param>
+/// <param name="HashFunc"></param>
+/// <param name="EqualFunc"></param>
+/// <returns>Returns a pointer to a new hashmap or NULL if it wasnt able to allocate memory</returns>
+HashMap* initHashMap(int size, unsigned long (*HashFunc)(void*, int), int (*EqualFunc)(void*, void*),
+	void (*PrintKey)(void*), void (*PrintValue)(void*))
 {
 	// create the map
 	HashMap* map = (HashMap*)malloc(sizeof(HashMap));
@@ -79,10 +103,15 @@ HashMap* initHashMap(int size, unsigned long (*HashFunc)(void*, int), int (*Equa
 	map->usedSpaces = 0;
 	map->HashFunc = HashFunc;
 	map->EqualFunc = EqualFunc;
+	map->PrintKey = PrintKey;
+	map->PrintValue = PrintValue;
 	return map;
 }
 
-
+/// <summary>
+/// This func will free the hashmap and all of the pointers in it
+/// </summary>
+/// <param name="map"></param>
 void freeHashMap(HashMap** map) {
 	// check if we need to free anything
 	if (map == NULL || *map == NULL) {
@@ -113,22 +142,28 @@ void freeHashMap(HashMap** map) {
 	*map = NULL;
 }
 
-
+/// <summary>
+/// This func is used to resize the hashmap
+/// </summary>
+/// <param name="map"></param>
 void resizeMap(HashMap* map) {
 	// save old data
 	int oldSize = map->map_size;
 	HashNode** oldArr = map->arr;
+	// double the size
 	map->map_size *= 2;
 	map->arr = (HashNode**)calloc(map->map_size, sizeof(HashNode*));
 	if (map->arr == NULL) {
 		printf("Memory allocation failed during resize\n");
 		return;
 	}
+	// refill the old data
 	map->usedSpaces = 0;
 	for (int i = 0; i < oldSize; i++) {
 		HashNode* current = oldArr[i];
 		while (current != NULL) {
 			HashNode* nextNode = current->next;
+			// reinsert the hash nodes
 			insertNewValue(current->key, current->value, map);
 			// free the current node
 			free(current);
@@ -154,7 +189,8 @@ void printHashMap(HashMap* map) {
 		}
 		else {
 			while (current != NULL) {
-				//printf("-> [Key: %d, Char: '%c', NextState: %d] ", current->current_state, current->current_char, current->next_state);
+				map->PrintKey(current->key);
+				map->PrintValue(current->value);
 				current = current->next;
 			}
 			printf("-> NULL");

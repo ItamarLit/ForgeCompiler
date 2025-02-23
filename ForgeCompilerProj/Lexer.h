@@ -24,7 +24,7 @@ typedef enum states {
     DIV_EQUAL_STATE,
     MUL_EQUAL_STATE,
     EQUAL_EQUAL_STATE,
-    TERMINATED_STRING_LITERAL_STATE, //7 
+    TERMINATED_STRING_LITERAL_STATE,
     OPEN_PAREN_STATE,
     CLOSED_PAREN_STATE,
     OPEN_BRACE_STATE,
@@ -63,7 +63,5 @@ void lex(HashMap* map, char* input, pTokenArray ptoken_array);
 TokenType identifyKeyowrd(char* lexeme);
 // func that will identify the token type
 TokenType state_to_token_type(State state, char* value);
-// hash func for the FSM hash map
-unsigned long hashFunc(FsmKey key, int mapSize);
 
 #endif
