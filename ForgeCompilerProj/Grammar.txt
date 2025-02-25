@@ -1,0 +1,79 @@
+﻿Program' -> Program
+Program -> DeclarationList StatementList
+DeclarationList -> Declaration
+DeclarationList -> DeclarationList Declaration
+StatementList -> EMPTY
+StatementList -> StatementList Statement
+Declaration -> VarDeclaration
+Declaration -> FuncDeclaration
+VarDeclaration -> mold Type IDENTIFIER = Expr ;
+Type -> int
+Type -> bool
+Type -> string
+Type -> float
+Statement -> IfStatement
+Statement -> WhileStatement
+Statement -> ForStatement
+Statement -> Expr ;
+Statement -> AssignmentStatement
+Statement -> IOStatement
+Statement -> ReturnStatement
+AssignmentStatement -> IDENTIFIER AssignOp Expr ;
+AssignOp -> =
+AssignOp -> +=
+AssignOp -> -=
+AssignOp -> *=
+AssignOp -> /=
+ReturnStatement -> return OptionalExpr ;
+OptionalExpr -> EMPTY
+OptionalExpr -> Expr
+IfStatement -> if meet ( Expr ) then { Block } OptionalElse
+OptionalElse -> EMPTY
+OptionalElse -> else { Block }
+WhileStatement -> while meet ( Expr ) then { Block }
+ForStatement -> for int IDENTIFIER in Expr : Expr then { Block }
+IOStatement -> InputStatement
+IOStatement -> OutputStatement
+InputStatement -> input ( IDENTIFIER ) ;
+OutputStatement -> output ( Expr ) ;
+Block -> { StatementList }
+FuncDeclaration -> forge IDENTIFIER ( ParamList ) => ReturnType { Block }
+ReturnType -> Type
+ReturnType -> void
+ParamList -> EMPTY
+ParamList -> ParamDecl
+ParamList -> ParamList , ParamDecl
+ParamDecl -> Type IDENTIFIER
+Expr -> OrExpr
+OrExpr -> AndExpr
+OrExpr -> OrExpr || AndExpr
+AndExpr -> EqualityExpr
+AndExpr -> AndExpr && EqualityExpr
+EqualityExpr -> RelationalExpr
+EqualityExpr -> RelationalExpr == RelationalExpr
+EqualityExpr -> RelationalExpr != RelationalExpr
+RelationalExpr -> AddExpr
+RelationalExpr -> AddExpr > RelationalExpr
+RelationalExpr -> AddExpr >= RelationalExpr
+RelationalExpr -> AddExpr < RelationalExpr
+RelationalExpr -> AddExpr <= RelationalExpr
+AddExpr -> AddExpr + MulExpr
+AddExpr -> AddExpr - MulExpr
+AddExpr -> MulExpr
+MulExpr -> MulExpr * UnaryExpr
+MulExpr -> MulExpr / UnaryExpr
+MulExpr -> UnaryExpr
+UnaryExpr -> - PrimaryExpr
+UnaryExpr -> PrimaryExpr
+FuncCallExpr -> IDENTIFIER ( ArgumentList )
+ArgumentList -> EMPTY
+ArgumentList -> Expr
+ArgumentList -> ArgumentList , Expr
+PrimaryExpr -> ( Expr )
+PrimaryExpr -> INT_LITERAL
+PrimaryExpr -> FLOAT_LITERAL
+PrimaryExpr -> STRING_LITERAL
+PrimaryExpr -> true
+PrimaryExpr -> false
+PrimaryExpr -> IDENTIFIER
+PrimaryExpr -> FuncCallExpr

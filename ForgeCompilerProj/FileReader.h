@@ -7,6 +7,8 @@
 
 // func that will return a string of the file content
 char* readFile(const char* filename);
+// trim func that removes whitespaces before and after the data
+char* trim(char* str);
 
 #endif
 

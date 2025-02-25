@@ -1,54 +1,72 @@
-#pragma warning(disable:4996)
-#include "FileReader.h"
+#pragma warning (disable:4996)
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
+#define MAX_LINE_LENGTH 1024  
+
+/// <summary>
+/// This func reads the contents of a given text file
+/// </summary>
+/// <param name="filename"></param>
+/// <returns>Returns the contentes of the file</returns>
 char* readFile(const char* filename) {
-    // open the file
-    FILE* file = fopen(filename, "rb");
-    char* buffer;
-    long fileSize;
-    // check if the file was opened
-    if (file == NULL) {
+    FILE* file = fopen(filename, "rt");  
+    if (!file) {
         printf("Error: Could not open file %s\n", filename);
         return NULL;
     }
-    // file pointer to the end to determine the file size
-    if (fseek(file, 0, SEEK_END) != 0) {
-        printf("Error: fseek failed for file %s\n", filename);
-        fclose(file);
-        return NULL;
-    }
-    // get the file size
-    fileSize = ftell(file);
-    if (fileSize == -1L) {
-        printf("Error: ftell failed for file %s\n", filename);
-        fclose(file);
-        return NULL;
-    }
-    // reset the file pointer to the beginning of the file
-    if (fseek(file, 0, SEEK_SET) != 0) {
-        printf("Error: fseek failed to rewind file %s\n", filename);
-        fclose(file);
-        return NULL;
-    }
-    // memory for the file contents 
-    buffer = (char*)malloc((fileSize + 1) * sizeof(char));
-    if (buffer == NULL) {
+    int bufferSize = 4096;  
+    char* buffer = (char*)malloc(bufferSize);
+    if (!buffer) {
         printf("Error: Memory allocation failed\n");
         fclose(file);
         return NULL;
     }
-    // read file into the buffer
-    unsigned int bytesRead = fread(buffer, sizeof(char), fileSize, file);
-    if (bytesRead != fileSize) {
-        printf("Error: fread failed. Expected %ld bytes, got %zu bytes\n", fileSize, bytesRead);
-        free(buffer);
-        fclose(file);
-        return NULL;
+    buffer[0] = '\0';  
+    char line[MAX_LINE_LENGTH];  
+    int firstLine = 1;  
+
+    while (fgets(line, MAX_LINE_LENGTH, file)) {
+        if (firstLine) {
+            firstLine = 0;
+            // check for BOM (0xEF 0xBB 0xBF) and remove
+            if ((unsigned char)line[0] == 0xEF &&
+                (unsigned char)line[1] == 0xBB &&
+                (unsigned char)line[2] == 0xBF) {
+                memmove(line, line + 3, strlen(line) - 2);  
+            }
+        }
+        // resize buffer if needed
+        if (strlen(buffer) + strlen(line) + 1 > bufferSize) {
+            bufferSize *= 2;  
+            buffer = (char*)realloc(buffer, bufferSize);
+            if (!buffer) {
+                printf("Error: Memory reallocation failed\n");
+                fclose(file);
+                return NULL;
+            }
+        }
+        // concat the line to the buffer
+        strcat(buffer, line);  
     }
-    buffer[fileSize] = '\0';
-    // close the file
     fclose(file);
     return buffer;
 }
 
-
+/// <summary>
+/// This func is used to trim the starting and ending whitespaces in a line
+/// </summary>
+/// <param name="str"></param>
+/// <returns>Returns the data with no starting or ending spaces</returns>
+char* trim(char* str) {
+    while (isspace((unsigned char)*str)) {
+        str++;
+    }
+    char* end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char)*end)) {
+        *end = '\0';
+        end--;
+    }
+    return str;
+}

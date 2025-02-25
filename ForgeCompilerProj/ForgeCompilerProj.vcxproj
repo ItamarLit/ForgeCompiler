@@ -128,15 +128,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="FileReader.h" />
+    <ClInclude Include="GrammarArray.h" />
     <ClInclude Include="HashMap.h" />
     <ClInclude Include="Lexer.h" />
     <ClInclude Include="Token.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Code.txt" />
+    <Text Include="Grammar.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FileReader.c" />
+    <ClCompile Include="GrammarArray.c" />
     <ClCompile Include="HashMap.c" />
     <ClCompile Include="Lexer.c" />
     <ClCompile Include="Source.c" />
