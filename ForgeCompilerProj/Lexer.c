@@ -7,14 +7,14 @@
 
 
 
-void printKey(void* key) 
+static void printKey(void* key)
 {
     FsmKey* fkey = (FsmKey*)key;
     printf("[Key: current_state: %d, char: '%c' ", fkey->currentState, fkey->currentChar);
 }
 
 
-void printValue(void* value) {
+static void printValue(void* value) {
     int* fvalue = (int*)value;
     printf("Value: next_state: %d] ", *fvalue);
 }
@@ -27,7 +27,7 @@ void printValue(void* value) {
 /// <param name="key"></param>
 /// <param name="mapSize"></param>
 /// <returns>Returns a hashcode based on a given key</returns>
-unsigned long hashFunc(void* key, int mapSize) {
+static unsigned long hashFunc(void* key, int mapSize) {
     FsmKey* fsmKey = (FsmKey*)key;
     int asciiValue = fsmKey->currentChar;
     // get 2 prime numbers to distribute the hash values more
@@ -43,7 +43,7 @@ unsigned long hashFunc(void* key, int mapSize) {
 /// <param name="a"></param>
 /// <param name="b"></param>
 /// <returns></returns>
-int equalFunc(void* a, void* b) {
+static int equalFunc(void* a, void* b) {
     FsmKey* k1 = (FsmKey*)a;
     FsmKey* k2 = (FsmKey*)b;
     return (k1->currentState == k2->currentState) &&
@@ -57,7 +57,7 @@ int equalFunc(void* a, void* b) {
 /// <param name="ch"></param>
 /// <param name="nextState"></param>
 /// <param name="map"></param>
-void putState(int state, char ch, int nextState, HashMap* map) {
+static void putState(int state, char ch, int nextState, HashMap* map) {
     // allocate key
     FsmKey* key = malloc(sizeof(FsmKey));
     key->currentState = state;
@@ -75,7 +75,7 @@ void putState(int state, char ch, int nextState, HashMap* map) {
 /// <param name="map"></param>
 void init_state_machine(HashMap** map) {
     // init the hash map with the starting size and two funcs
-    *map = initHashMap(INITAL_HASHMAP_SIZE, hashFunc, equalFunc, printKey, printValue);
+    *map = initHashMap(INITAL_HASHMAP_SIZE, hashFunc, equalFunc, printKey, printValue, free, free);
 
     // Transitions for START_STATE
     putState(START_STATE, '"', STRING_LITERAL_STATE, *map);

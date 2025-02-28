@@ -18,13 +18,15 @@ typedef struct HashMap {
     float load_factor;           // load factor used for resizing 
     unsigned long (*HashFunc)(void*, int mapSize); // generic hashfunc
     int (*EqualFunc)(void*, void*); // generic equals function
+    void (*FreeKey)(void*);         // generic free func for the key
+    void (*FreeValue)(void*);       // generic free func for the value
     void (*PrintKey)(void*);        // generic print function for printing key
     void (*PrintValue)(void*);
 } HashMap;  
 
 // this func will create an empty hashMap and set the hash and equals func for its items
 HashMap* initHashMap(int size, unsigned long (*HashFunc)(void*, int), int (*EqualFunc)(void*, void*),
-    void (*PrintKey)(void*), void (*PrintValue)(void*));
+    void (*PrintKey)(void*), void (*PrintValue)(void*), void (*FreeKey)(void*), void (*FreeValue)(void*));
 // this func will free a given hash map
 void freeHashMap(HashMap** map);
 // this func will get the hashmap value based on a key

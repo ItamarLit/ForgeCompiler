@@ -131,10 +131,16 @@
     <ClInclude Include="GrammarArray.h" />
     <ClInclude Include="HashMap.h" />
     <ClInclude Include="Lexer.h" />
+    <ClInclude Include="NonTerminals.h" />
+    <ClInclude Include="Parser.h" />
+    <ClInclude Include="ParseStack.h" />
+    <ClInclude Include="Terminals.h" />
     <ClInclude Include="Token.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="ActionTable.txt" />
     <Text Include="Code.txt" />
+    <Text Include="GotoTable.txt" />
     <Text Include="Grammar.txt" />
   </ItemGroup>
   <ItemGroup>
@@ -142,7 +148,11 @@
     <ClCompile Include="GrammarArray.c" />
     <ClCompile Include="HashMap.c" />
     <ClCompile Include="Lexer.c" />
+    <ClCompile Include="NonTerminals.c" />
+    <ClCompile Include="Parser.c" />
+    <ClCompile Include="ParseStack.c" />
     <ClCompile Include="Source.c" />
+    <ClCompile Include="Terminals.c" />
     <ClCompile Include="Token.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -3,9 +3,10 @@
 #include "Token.h"
 #include "FileReader.h"
 #include "GrammarArray.h"
+#include "Parser.h"
 
 int main() {
-    //HashMap* state_machine = NULL;
+    HashMap* state_machine = NULL;
     //// init the state machine for the lexer hashmap
     //init_state_machine(&state_machine);
     //pTokenArray ptoken_array;
@@ -32,6 +33,10 @@ int main() {
     /*GrammarArray* array = InitGrammarArray("Grammar.txt");
     PrintGrammarRules(array);
     FreeGrammarArray(array);*/
+
+    InitActionTable(&state_machine, "ActionTable.txt");
+    printHashMap(state_machine);
+
     return 0;
 }
 

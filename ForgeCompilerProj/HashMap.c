@@ -82,7 +82,7 @@ HashNode* getHashNode(void* key, void* value)
 /// <param name="EqualFunc"></param>
 /// <returns>Returns a pointer to a new hashmap or NULL if it wasnt able to allocate memory</returns>
 HashMap* initHashMap(int size, unsigned long (*HashFunc)(void*, int), int (*EqualFunc)(void*, void*),
-	void (*PrintKey)(void*), void (*PrintValue)(void*))
+	void (*PrintKey)(void*), void (*PrintValue)(void*), void (*FreeKey)(void*), void (*FreeValue)(void*))
 {
 	// create the map
 	HashMap* map = (HashMap*)malloc(sizeof(HashMap));
@@ -103,6 +103,8 @@ HashMap* initHashMap(int size, unsigned long (*HashFunc)(void*, int), int (*Equa
 	map->usedSpaces = 0;
 	map->HashFunc = HashFunc;
 	map->EqualFunc = EqualFunc;
+	map->FreeKey = FreeKey;
+	map->FreeValue = FreeValue;
 	map->PrintKey = PrintKey;
 	map->PrintValue = PrintValue;
 	return map;
@@ -125,8 +127,8 @@ void freeHashMap(HashMap** map) {
 			HashNode* temp = currentHead;
 			currentHead = currentHead->next;
 			// free the pointers to the data
-			free(temp->key);
-			free(temp->value);
+			(*map)->FreeKey(temp->key);
+			(*map)->FreeValue(temp->value);
 			// free the node itself
 			free(temp);
 		}

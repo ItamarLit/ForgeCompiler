@@ -2,7 +2,7 @@
 Program -> DeclarationList StatementList
 DeclarationList -> Declaration
 DeclarationList -> DeclarationList Declaration
-StatementList -> EMPTY
+StatementList -> empty
 StatementList -> StatementList Statement
 Declaration -> VarDeclaration
 Declaration -> FuncDeclaration
@@ -25,10 +25,10 @@ AssignOp -> -=
 AssignOp -> *=
 AssignOp -> /=
 ReturnStatement -> return OptionalExpr ;
-OptionalExpr -> EMPTY
+OptionalExpr -> empty
 OptionalExpr -> Expr
 IfStatement -> if meet ( Expr ) then { Block } OptionalElse
-OptionalElse -> EMPTY
+OptionalElse -> empty
 OptionalElse -> else { Block }
 WhileStatement -> while meet ( Expr ) then { Block }
 ForStatement -> for int IDENTIFIER in Expr : Expr then { Block }
@@ -66,7 +66,7 @@ MulExpr -> UnaryExpr
 UnaryExpr -> - PrimaryExpr
 UnaryExpr -> PrimaryExpr
 FuncCallExpr -> IDENTIFIER ( ArgumentList )
-ArgumentList -> EMPTY
+ArgumentList -> empty
 ArgumentList -> Expr
 ArgumentList -> ArgumentList , Expr
 PrimaryExpr -> ( Expr )
