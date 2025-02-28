@@ -1,49 +1,115 @@
-#include <stdio.h>
 #include "ParseStack.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-
-/*********************** Function bodies **************/
-
-void stack_init(stack* sptr)
-{
-	sptr->top = -1;
+// assignemnt functions for the different data types
+void assignState(StackEntry* entry, StackData data)
+{ 
+	entry->data.state = data.state;
 }
-	
-void stack_push(stack* s, stack_item x)
+
+void assignSymbol(StackEntry* entry, StackData data)
+{ 
+	entry->data.symbol = strdup(data.symbol); 
+}
+
+void assignToken(StackEntry* entry, StackData data) 
 {
-	stack_item* temp = realloc(s->data, sizeof(stack_item) * (s->top + 2));
+	entry->data.token = data.token; 
+}
+
+/// <summary>
+/// Init func for the stack
+/// </summary>
+/// <returns></returns>
+Stack* InitStack()
+{
+	Stack* sptr = (Stack*)malloc(sizeof(Stack));
+	if (!sptr) {
+		printf("Failed to allocate memory for the stack");
+		return NULL;
+	}
+	sptr->top = -1;
+	sptr->items = NULL;
+}
+
+/// <summary>
+/// Push func for the stack
+/// </summary>
+/// <param name="s"></param>
+/// <param name="data"></param>
+/// <param name="type"></param>
+void PushStack(Stack* s, StackData data, StackDataType type)
+{
+	StackEntry** temp = realloc(s->items, sizeof(StackEntry*) * (s->top + 2));
 	if (temp == NULL)
 		return;
 	else {
-		s->data = temp;
-		s->data[++s->top] = x;
+		s->items = temp;
+		StackEntry* entry = (StackEntry*)malloc(sizeof(StackEntry));
+		if (!entry) {
+			printf("Failed to allocate memory for stack entry pointer");
+			return;
+		}
+		// assign the data
+		assignFuncs[type](entry, data);
+		entry->type = type;
+		s->items[++s->top] = entry;
 	}
 }
 
-int stack_empty(stack* sptr)    // if the stack empty return 1
+/// <summary>
+/// This func checks if the stack is empty
+/// </summary>
+/// <param name="s"></param>
+/// <returns></returns>
+int  IsStackEmpty(Stack* s)
 {
-	return sptr->top == -1;
-}
-int stack_full(stack* sptr)    // if the stack full return 1
-{
-	return 0;
+	return s->top == -1;
 }
 
-stack_item stack_pop(stack* s)
+/// <summary>
+/// Pop func for the stack
+/// </summary>
+/// <param name="s"></param>
+/// <returns>Returns a pointer to StackEntry from the top of the stack</returns>
+StackEntry* PopStack(Stack* s)
 {
 	if (!stack_empty(s)) {
-		stack_item x = s->data[s->top--];
-		s->data = realloc(s->data, sizeof(stack_item) * (s->top + 1));
+		StackEntry* x = s->items[s->top--];
+		s->items = realloc(s->items, sizeof(StackEntry*) * (s->top + 1));
 		return x;
 	}
+	return NULL;
 }
 
-stack_item stack_top(stack* sptr)
+/// <summary>
+/// Top func for the stack
+/// </summary>
+/// <param name="s"></param>
+/// <returns>Returns a pointer to StackEntry from the top of the stack</returns>
+StackEntry* TopStack(Stack* s)
 {
-	if (stack_empty(sptr))
+	if (stack_empty(s))
 	{
 		printf("Stack empty \n");
-		return (stack_item)NULL;
+		return NULL;
 	}
-	return (sptr->data[sptr->top]);
+	return (s->items[s->top]);
+}
+
+/// <summary>
+/// Free func for the stack
+/// </summary>
+/// <param name="s"></param>
+void FreeStack(Stack* s) {
+	for (int i = 0; i <= s->top; i++) {
+		if (s->items[i]->type == SYMBOL) {
+			free(s->items[i]->data.symbol);
+		}
+		free(s->items[i]);  
+	}
+	free(s->items);
+	free(s);
 }
