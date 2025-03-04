@@ -39,11 +39,7 @@ void assignSymbol(StackEntry* entry, StackData data);
 void assignToken(StackEntry* entry, StackData data);
 
 // func table
-AssignFunc assignFuncs[] = {
-	assignState,  // STATE = 0
-	assignSymbol, // SYMBOL = 1
-	assignToken   // TOKEN = 2
-};
+extern AssignFunc assignFuncs[];
 
 // func to init the stack 
 Stack* InitStack();

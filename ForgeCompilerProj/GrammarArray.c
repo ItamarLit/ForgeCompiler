@@ -6,6 +6,17 @@
 #include <string.h>
 
 
+int countTokens(const char* rhs) {
+    int token_count = 1; // At least one token exists
+    for (int i = 0; rhs[i] != '\0'; i++) {
+        if (isspace(rhs[i])) {
+            token_count++;
+        }
+    }
+    return token_count;
+}
+
+
 /// <summary>
 /// This func is used to insert a grammar rule into the array
 /// </summary>
@@ -21,6 +32,7 @@ void InsertRule(GrammarArray* grammar, int index, const char* leftRule, const ch
 	}
 	grammar->rules[index]->leftRule = strdup(leftRule);
 	grammar->rules[index]->rightRule = strdup(rightRule);
+    grammar->rules[index]->rightWordCount = countTokens(rightRule);
 }
 
 /// <summary>

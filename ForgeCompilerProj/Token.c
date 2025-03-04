@@ -94,6 +94,7 @@ void initTokenArray(pTokenArray* ptoken_array) {
 void freeTokenArray(pTokenArray* ptoken_array) {
     for (int i = 0; i < (*ptoken_array)->count; i++) {
         // Free each Token
+
         free((*ptoken_array)->tokens[i]);
     }
     // Free the array of pointers

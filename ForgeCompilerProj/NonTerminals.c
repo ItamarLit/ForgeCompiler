@@ -1,19 +1,22 @@
 #include "NonTerminals.h"
 
-const char* NonTerminals[] = 
+const char* NonTerminals[] =
 {
     "Program'",
     "Program",
-    "DeclarationList",
+    "GlobalItemList",
+    "GlobalItem",
+    "Statement",
     "StatementList",
-    "Declaration",
     "VarDeclaration",
     "Type",
-    "Statement",
+    "FuncDeclaration",
+    "ReturnType",
+    "ParamList",
+    "ParamDecl",
     "AssignmentStatement",
     "AssignOp",
     "ReturnStatement",
-    "OptionalExpr",
     "IfStatement",
     "OptionalElse",
     "WhileStatement",
@@ -21,23 +24,18 @@ const char* NonTerminals[] =
     "IOStatement",
     "InputStatement",
     "OutputStatement",
-    "Block", 
-    "FuncDeclaration",
-    "ReturnType",
-    "ParamList",
-    "ParamDecl", 
-    "Expr", 
-    "OrExpr", 
+    "Block",
+    "Expr",
+    "OrExpr",
     "AndExpr",
     "EqualityExpr",
     "RelationalExpr",
-    "AddExpr", 
-    "MulExpr", 
+    "AddExpr",
+    "MulExpr",
     "UnaryExpr",
-    "FuncCallExpr", 
-    "ArgumentList", 
+    "FuncCallExpr",
+    "ArgumentList",
     "PrimaryExpr"
 };
-
 // get the non terminal count
 const int NonTerminalCount = sizeof(NonTerminals) / sizeof(NonTerminals[0]);

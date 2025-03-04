@@ -1,49 +1,50 @@
-﻿Program' -> Program
-Program -> DeclarationList StatementList
-DeclarationList -> Declaration
-DeclarationList -> DeclarationList Declaration
-StatementList -> empty
+﻿Program' -> Program 
+Program -> GlobalItemList
+GlobalItemList -> GlobalItemList GlobalItem 
+GlobalItemList -> empty
+GlobalItemList -> GlobalItem
+GlobalItem -> FuncDeclaration
+GlobalItem -> Statement
+Statement -> VarDeclaration
+Statement -> IfStatement
+Statement -> WhileStatement
+Statement -> ForStatement
+Statement -> AssignmentStatement 
+Statement -> IOStatement 
+Statement -> ReturnStatement 
 StatementList -> StatementList Statement
-Declaration -> VarDeclaration
-Declaration -> FuncDeclaration
+StatementList -> Statement
+StatementList -> empty
 VarDeclaration -> mold Type IDENTIFIER = Expr ;
 Type -> int
 Type -> bool
 Type -> string
 Type -> float
-Statement -> IfStatement
-Statement -> WhileStatement
-Statement -> ForStatement
-Statement -> Expr ;
-Statement -> AssignmentStatement
-Statement -> IOStatement
-Statement -> ReturnStatement
-AssignmentStatement -> IDENTIFIER AssignOp Expr ;
+FuncDeclaration -> forge IDENTIFIER ( ParamList ) => ReturnType Block 
+ReturnType -> Type
+ReturnType -> void
+ParamList -> empty
+ParamList -> ParamDecl
+ParamList -> ParamList , ParamDecl
+ParamDecl -> Type IDENTIFIER
+AssignmentStatement -> remold IDENTIFIER AssignOp Expr ;
 AssignOp -> =
 AssignOp -> +=
 AssignOp -> -=
 AssignOp -> *=
 AssignOp -> /=
-ReturnStatement -> return OptionalExpr ;
-OptionalExpr -> empty
-OptionalExpr -> Expr
-IfStatement -> if meet ( Expr ) then { Block } OptionalElse
+ReturnStatement -> return ;
+ReturnStatement -> return Expr ;
+IfStatement -> if meet ( Expr ) then Block OptionalElse
 OptionalElse -> empty
-OptionalElse -> else { Block }
-WhileStatement -> while meet ( Expr ) then { Block }
-ForStatement -> for int IDENTIFIER in Expr : Expr then { Block }
+OptionalElse -> else Block
+WhileStatement -> while meet ( Expr ) then Block
+ForStatement -> for int IDENTIFIER in Expr : Expr then Block
 IOStatement -> InputStatement
 IOStatement -> OutputStatement
 InputStatement -> input ( IDENTIFIER ) ;
 OutputStatement -> output ( Expr ) ;
 Block -> { StatementList }
-FuncDeclaration -> forge IDENTIFIER ( ParamList ) => ReturnType { Block }
-ReturnType -> Type
-ReturnType -> void
-ParamList -> EMPTY
-ParamList -> ParamDecl
-ParamList -> ParamList , ParamDecl
-ParamDecl -> Type IDENTIFIER
 Expr -> OrExpr
 OrExpr -> AndExpr
 OrExpr -> OrExpr || AndExpr
@@ -53,10 +54,10 @@ EqualityExpr -> RelationalExpr
 EqualityExpr -> RelationalExpr == RelationalExpr
 EqualityExpr -> RelationalExpr != RelationalExpr
 RelationalExpr -> AddExpr
-RelationalExpr -> AddExpr > RelationalExpr
-RelationalExpr -> AddExpr >= RelationalExpr
-RelationalExpr -> AddExpr < RelationalExpr
-RelationalExpr -> AddExpr <= RelationalExpr
+RelationalExpr -> RelationalExpr > AddExpr 
+RelationalExpr -> RelationalExpr >= AddExpr
+RelationalExpr -> RelationalExpr < AddExpr
+RelationalExpr -> RelationalExpr <= AddExpr
 AddExpr -> AddExpr + MulExpr
 AddExpr -> AddExpr - MulExpr
 AddExpr -> MulExpr

@@ -7,6 +7,7 @@
 typedef struct GrammarRule {
 	char* leftRule;
 	char* rightRule;
+	int rightWordCount;
 } GrammarRule;
 
 typedef struct {

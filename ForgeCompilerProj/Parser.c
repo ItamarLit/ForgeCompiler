@@ -4,6 +4,8 @@
 #include "HashMap.h"
 #include "Terminals.h"
 #include "NonTerminals.h"
+#include "ParseStack.h"
+#include "GrammarArray.h"
 #include <string.h>
 #include <stdio.h>  
 #include <stdlib.h>
@@ -210,4 +212,106 @@ static void printKey(void* key)
 {
     MapKey* fkey = (MapKey*)key;
     printf("[Key: current_state: %d, symbol: '%s' ", fkey->currentState, fkey->symbol);
+}
+
+static int getMapValue(HashMap* map, int currentState, char* symbol, int isAction)
+{
+    MapKey temp;
+    temp.currentState = currentState;
+    temp.symbol = symbol;
+    if (isAction) {
+        char* actionPtr = (char*)getHashMapValue(&temp, map);
+        return (actionPtr) ? strdup(actionPtr) : NULL;  
+    }
+    // for goto table
+    int* nextPtr = (int*)getHashMapValue(&temp, map);
+    return (nextPtr) ? *nextPtr : -1;
+}
+
+const char* token_type_to_terminal(TokenType type) {
+    switch (type) {
+    case IDENTIFIER: return "IDENTIFIER";
+    case INT_LITERAL: return "INT_LITERAL";
+    case FLOAT_LITERAL: return "FLOAT_LITERAL";
+    case STRING_LITERAL: return "STRING_LITERAL";
+    default: return "";
+    }
+}
+
+/// <summary>
+/// This is the main parse function that checks if the given input is valid 
+/// </summary>
+/// <param name="tokenArray"></param>
+void ParseInput(pTokenArray tokenArray) 
+{
+    // add $ to the end of the tokenArray
+    addToken(&tokenArray, FINISH_INPUT, "$");
+    StackData tempData;
+    StackDataType tempType;
+    // setup stack
+    Stack* s = InitStack();
+    // setup action and goto tables
+    HashMap* actionTable = NULL;
+    HashMap* gotoTable = NULL;
+    InitActionTable(&actionTable, "ActionTable.txt");
+    InitGotoTable(&gotoTable, "GotoTable.txt");
+    // setup grammar array
+    GrammarArray* array = InitGrammarArray("Grammar.txt");
+    // push initial state onto the stack
+    tempData.state = 0;
+    PushStack(s, tempData, STATE);
+    // main parse loop
+    int i = 0;
+    while (i < tokenArray->count) {
+        // get the current state
+        StackData* top = TopStack(s);
+        int currentState = top->state;
+
+        // get the token
+        char* token = tokenArray->tokens[i]->lexeme;
+        if (token_type_to_terminal(tokenArray->tokens[i]->type) != "") {
+            token = token_type_to_terminal(tokenArray->tokens[i]->type);
+        }
+        char* action = getMapValue(actionTable, currentState, token, 1);
+        if (action == NULL) {
+            printf("Syntax Error at token: %s\n", token);
+            break;
+        }
+        // check for shift action
+        if (strncmp(action, "s", 1) == 0) {
+            tempData.symbol = token;
+            PushStack(s, tempData, SYMBOL);
+            int nextState = atoi(action + 1);
+            tempData.state = nextState;
+            PushStack(s, tempData, STATE);
+            // move to next token
+            i++;
+        }
+        else if (strncmp(action, "r", 1) == 0) {
+            int ruleIndex = atoi(action + 1);
+            GrammarRule* rule = array->rules[ruleIndex];
+            for (int j = 0; j < rule->rightWordCount  * 2; j++) {
+                PopStack(s);
+            }
+            int gotoState = getMapValue(gotoTable, (TopStack(s))->data.state, rule->leftRule, 0);
+            if (gotoState == -1) {
+                printf("Syntax Error at token: %s\n", token);
+                break;
+            }
+            tempData.symbol = rule->leftRule;
+            // push non terminal
+            PushStack(s, tempData, SYMBOL);
+            tempData.state = gotoState;
+            PushStack(s, tempData, STATE);
+        }
+        else if (strcmp(action, "acc") == 0) {
+            printf("Parsing successful!\n");
+            break;
+        }
+    }
+    // free all the used data structures
+    FreeGrammarArray(array);
+    freeHashMap(&actionTable);
+    freeHashMap(&gotoTable);
+    FreeStack(s);
 }

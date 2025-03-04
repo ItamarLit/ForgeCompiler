@@ -1,3 +1,4 @@
+#pragma warning (disable:4996)
 #include "ParseStack.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,6 +20,13 @@ void assignToken(StackEntry* entry, StackData data)
 	entry->data.token = data.token; 
 }
 
+AssignFunc assignFuncs[] = {
+	assignState,  // STATE = 0
+	assignToken,   // TOKEN = 1
+	assignSymbol, // SYMBOL = 2
+
+};
+
 /// <summary>
 /// Init func for the stack
 /// </summary>
@@ -32,6 +40,7 @@ Stack* InitStack()
 	}
 	sptr->top = -1;
 	sptr->items = NULL;
+	return sptr;
 }
 
 /// <summary>
@@ -76,8 +85,11 @@ int  IsStackEmpty(Stack* s)
 /// <returns>Returns a pointer to StackEntry from the top of the stack</returns>
 StackEntry* PopStack(Stack* s)
 {
-	if (!stack_empty(s)) {
+	if (!IsStackEmpty(s)) {
 		StackEntry* x = s->items[s->top--];
+		if (x->type == SYMBOL) {
+			free(x->data.symbol);
+		}
 		s->items = realloc(s->items, sizeof(StackEntry*) * (s->top + 1));
 		return x;
 	}
@@ -91,7 +103,7 @@ StackEntry* PopStack(Stack* s)
 /// <returns>Returns a pointer to StackEntry from the top of the stack</returns>
 StackEntry* TopStack(Stack* s)
 {
-	if (stack_empty(s))
+	if (IsStackEmpty(s))
 	{
 		printf("Stack empty \n");
 		return NULL;

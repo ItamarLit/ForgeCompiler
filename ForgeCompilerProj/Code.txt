@@ -1,1 +1,2 @@
-mold itamar .
+mold int itamar = 12;
+mold float itamar = 13;

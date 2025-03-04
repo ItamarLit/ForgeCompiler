@@ -2,6 +2,7 @@
 #define PARSER_H
 
 #include "HashMap.h"
+#include "Token.h"
 
 // struct for the hashmap key for, goto and action tables
 typedef struct MapKey {
@@ -14,6 +15,7 @@ typedef struct MapKey {
 void InitActionTable(HashMap** map, char* filename);
 // func for init of goto table from file
 void InitGotoTable(HashMap** map, char* filename);
-
+// main parse function
+void ParseInput(pTokenArray tokenArray);
 
 #endif

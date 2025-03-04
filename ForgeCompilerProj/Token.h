@@ -7,6 +7,7 @@
 #define MAX_LEXEME_LEN 64
 
 typedef enum {
+    FINISH_INPUT = -2,
     ERROR = -1,
     IDENTIFIER = 0,
     INT_LITERAL = 1,
@@ -49,8 +50,6 @@ typedef enum {
     EQUAL_EQUAL = 38,
     FUNC_RET_TYPE = 39,
     COLON = 40,
-
-
 }TokenType;
 
 typedef struct {

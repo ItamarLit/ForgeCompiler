@@ -27,9 +27,33 @@
     <ClInclude Include="HashMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GrammarArray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NonTerminals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ParseStack.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Terminals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Code.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="ActionTable.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="GotoTable.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="Grammar.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>
@@ -47,6 +71,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="HashMap.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GrammarArray.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NonTerminals.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Parser.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ParseStack.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Terminals.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
