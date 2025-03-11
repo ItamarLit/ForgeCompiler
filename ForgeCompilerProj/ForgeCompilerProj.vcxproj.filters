@@ -45,6 +45,9 @@
     <ClInclude Include="StatementRule.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AST.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Code.txt">
@@ -92,6 +95,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StatementRule.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AST.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

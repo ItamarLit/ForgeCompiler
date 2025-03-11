@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AST.h" />
     <ClInclude Include="FileReader.h" />
     <ClInclude Include="GrammarArray.h" />
     <ClInclude Include="HashMap.h" />
@@ -145,6 +146,7 @@
     <Text Include="Grammar.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AST.c" />
     <ClCompile Include="FileReader.c" />
     <ClCompile Include="GrammarArray.c" />
     <ClCompile Include="HashMap.c" />
