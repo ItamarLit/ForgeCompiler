@@ -16,6 +16,6 @@ void InitActionTable(HashMap** map, char* filename);
 // func for init of goto table from file
 void InitGotoTable(HashMap** map, char* filename);
 // main parse function
-int ParseInput(pTokenArray tokenArray);
+ASTNode* ParseInput(pTokenArray tokenArray, int* errorCount);
 
 #endif

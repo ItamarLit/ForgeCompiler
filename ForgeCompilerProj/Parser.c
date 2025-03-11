@@ -7,6 +7,7 @@
 #include "ParseStack.h"
 #include "GrammarArray.h"
 #include "StatementRule.h"
+#include "AST.h"
 #include <string.h>
 #include <stdio.h>  
 #include <stdlib.h>
@@ -226,12 +227,12 @@ const char* token_type_to_terminal(Token* token) {
     }
 }
 
-void Shift(char* token, Stack* s, int nextState)
+void Shift(Stack* s, int nextState, Token* token, const char* nodeLable)
 {
     StackData tempData;
-    tempData.symbol = token;
-    PushStack(s, tempData, SYMBOL);
-    tempData.symbol = NULL;
+    tempData.node = createASTNode(token, nodeLable);
+    PushStack(s, tempData, NODE);
+    tempData.node = NULL;
     tempData.state = nextState;
     PushStack(s, tempData, STATE);
 }
@@ -282,10 +283,27 @@ void HandleSyntaxError(int* errorCount,Stack** s,int* currentIndex,pTokenArray t
 void Reduce(int ruleIndex, Stack** s, GrammarArray* array, HashMap* gotoTable, pTokenArray tokenArray, int* i, int* errorCount, int* finishedParsing)
 {
     GrammarRule* rule = array->rules[ruleIndex];
+    // get the amount of children in the new node
+    int childrenCount = rule->rightWordCount;
+    // create the newNode
+    ASTNode* newNode = createASTNode(NULL, rule->leftRule);
+    // create the temp children array
+    ASTNode** nodeArr = (ASTNode**)malloc(sizeof(ASTNode*) * childrenCount);
     // pop from the stack
     for (int j = 0; j < rule->rightWordCount * 2; j++) {
-        PopStack(*s);
+        StackEntry* curData = PopStack(*s);
+        // if the data is a state we can free it
+        if (curData->type == NODE) {
+            // data is a node save it
+            nodeArr[j / 2] = (ASTNode*)curData->data.node;
+        }
+        free(curData);
     }
+    // now the nodeArr is in reverse order
+    for (int i = 0; i < childrenCount; i++) {
+        addChild(nodeArr[i], newNode);
+    }
+    free(nodeArr);
     // get the goto state
     char* gotoState = getMapValue(gotoTable, (TopStack(*s))->data.state, rule->leftRule, 0);
     if (gotoState == NULL) {
@@ -294,8 +312,8 @@ void Reduce(int ruleIndex, Stack** s, GrammarArray* array, HashMap* gotoTable, p
     }
     // preform the reduce
     StackData tempData;
-    tempData.symbol = rule->leftRule;
-    PushStack(*s, tempData, SYMBOL);
+    tempData.node = newNode;
+    PushStack(*s, tempData, NODE);
     tempData.state = atoi(gotoState);
     PushStack(*s, tempData, STATE);
 }
@@ -319,7 +337,7 @@ void ClearStack(Stack* s) {
 /// This is the main parse function that checks if the given input is valid 
 /// </summary>
 /// <param name="tokenArray"></param>
-int ParseInput(pTokenArray tokenArray) 
+ASTNode* ParseInput(pTokenArray tokenArray, int* errorCount) 
 {
     // add $ to the end of the tokenArray
     addToken(&tokenArray, FINISH_INPUT, "$", -1, -1);
@@ -338,31 +356,37 @@ int ParseInput(pTokenArray tokenArray)
     PushStack(s, tempData, STATE);
     // main parse loop
     int i = 0;
-    int errorCount = 0;
     int finishedParsing = 0;
+    ASTNode* root = NULL;
     while (i < tokenArray->count && !finishedParsing) {
         // get the current state
         StackData* top = TopStack(s);
         int currentState = top->state;
         // get the token
-        int currentTokenRow = tokenArray->tokens[i]->tokenRow;
         char* token = token_type_to_terminal(tokenArray->tokens[i]);
+        Token* currentToken = tokenArray->tokens[i];
         char* action = getMapValue(actionTable, currentState, token, 1);
         if (action == NULL) {
-            HandleSyntaxError(&errorCount,&s,&i,tokenArray,&finishedParsing);
+            HandleSyntaxError(errorCount,&s,&i,tokenArray,&finishedParsing);
         }
         else 
         {
             // check for shift action
             if (!finishedParsing && strncmp(action, "s", 1) == 0) {
-                Shift(token, s, atoi(action + 1));
+                Shift(s, atoi(action + 1), currentToken, token);
                 // move to next token
                 i++;
             }
             else if (!finishedParsing && strncmp(action, "r", 1) == 0) {
-                Reduce(atoi(action + 1), &s, array, gotoTable, tokenArray, &i, &errorCount, &finishedParsing);
+                Reduce(atoi(action + 1), &s, array, gotoTable, tokenArray, &i, errorCount, &finishedParsing);
             }
             else {
+                // free the top state
+                free(PopStack(s));
+                // get the final root node
+                StackEntry* topEntry = PopStack(s);
+                root = (ASTNode*)topEntry->data.node;
+                free(topEntry);
                 finishedParsing = 1;
             }
            
@@ -371,6 +395,6 @@ int ParseInput(pTokenArray tokenArray)
     }
     // free all the used data structures
     FreeParserResources(array, &actionTable, &gotoTable, s);
-    return errorCount;
+    return root;
 }
 

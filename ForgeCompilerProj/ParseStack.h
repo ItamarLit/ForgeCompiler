@@ -2,20 +2,19 @@
 #define PARSE_STACK_H
 
 #include "Token.h"
+#include "AST.h"
 
 // union for the data type of the stack
 typedef union 
 {
-	int state;
-	char* symbol;
-	Token* token;
+	int state; 
+	ASTNode* node;
 } StackData;
 
 // enum for the data type of the stack
 typedef enum {
 	STATE,
-	TOKEN,
-	SYMBOL,
+	NODE,
 } StackDataType;
 
 // stack entry struct that holds the data and its type
@@ -35,8 +34,7 @@ typedef void (*AssignFunc)(StackEntry* entry, StackData data);
 
 // different assignment funcs based on data type
 void assignState(StackEntry* entry, StackData data); 
-void assignSymbol(StackEntry* entry, StackData data); 
-void assignToken(StackEntry* entry, StackData data);
+void assignNode(StackEntry* entry, StackData data); 
 
 // func table
 extern AssignFunc assignFuncs[];

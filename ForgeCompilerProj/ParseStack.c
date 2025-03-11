@@ -10,21 +10,14 @@ void assignState(StackEntry* entry, StackData data)
 	entry->data.state = data.state;
 }
 
-void assignSymbol(StackEntry* entry, StackData data)
+void assignNode(StackEntry* entry, StackData data)
 { 
-	entry->data.symbol = strdup(data.symbol); 
-}
-
-void assignToken(StackEntry* entry, StackData data) 
-{
-	entry->data.token = data.token; 
+	entry->data.node = data.node; 
 }
 
 AssignFunc assignFuncs[] = {
 	assignState,  // STATE = 0
-	assignToken,   // TOKEN = 1
-	assignSymbol, // SYMBOL = 2
-
+	assignNode,   // NODE = 1
 };
 
 /// <summary>
@@ -54,18 +47,17 @@ void PushStack(Stack* s, StackData data, StackDataType type)
 	StackEntry** temp = realloc(s->items, sizeof(StackEntry*) * (s->top + 2));
 	if (temp == NULL)
 		return;
-	else {
-		s->items = temp;
-		StackEntry* entry = (StackEntry*)malloc(sizeof(StackEntry));
-		if (!entry) {
-			printf("Failed to allocate memory for stack entry pointer");
-			return;
-		}
-		// assign the data
-		assignFuncs[type](entry, data);
-		entry->type = type;
-		s->items[++s->top] = entry;
+	s->items = temp;
+	StackEntry* entry = (StackEntry*)malloc(sizeof(StackEntry));
+	if (!entry) {
+		printf("Failed to allocate memory for stack entry pointer");
+		return;
 	}
+	// assign the data
+	assignFuncs[type](entry, data);
+	entry->type = type;
+	s->items[++s->top] = entry;
+	
 }
 
 /// <summary>
@@ -87,9 +79,6 @@ StackEntry* PopStack(Stack* s)
 {
 	if (!IsStackEmpty(s)) {
 		StackEntry* x = s->items[s->top--];
-		if (x->type == SYMBOL) {
-			free(x->data.symbol);
-		}
 		s->items = realloc(s->items, sizeof(StackEntry*) * (s->top + 1));
 		return x;
 	}
@@ -117,8 +106,8 @@ StackEntry* TopStack(Stack* s)
 /// <param name="s"></param>
 void FreeStack(Stack* s) {
 	for (int i = 0; i <= s->top; i++) {
-		if (s->items[i]->type == SYMBOL) {
-			free(s->items[i]->data.symbol);
+		if (s->items[i]->type == NODE) {
+			freeASTNode(s->items[i]->data.node);
 		}
 		free(s->items[i]);  
 	}

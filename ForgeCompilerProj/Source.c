@@ -4,6 +4,7 @@
 #include "FileReader.h"
 #include "GrammarArray.h"
 #include "Parser.h"
+#include "AST.h"
 
 int main() {
     HashMap* state_machine = NULL;
@@ -27,7 +28,8 @@ int main() {
     // Free the hash map
     freeHashMap(&state_machine);
     //printTokens(ptoken_array);
-    int errors = ParseInput(ptoken_array);
+    int errors = 0;
+    ASTNode* root = ParseInput(ptoken_array, &errors);
     if (!errors) {
         printf("Input passed parsing");
     }
