@@ -73,7 +73,7 @@ void PushStack(Stack* s, StackData data, StackDataType type)
 /// </summary>
 /// <param name="s"></param>
 /// <returns></returns>
-int  IsStackEmpty(Stack* s)
+int IsStackEmpty(Stack* s)
 {
 	return s->top == -1;
 }

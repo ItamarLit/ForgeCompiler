@@ -21,7 +21,7 @@ typedef struct HashMap {
     void (*FreeKey)(void*);         // generic free func for the key
     void (*FreeValue)(void*);       // generic free func for the value
     void (*PrintKey)(void*);        // generic print function for printing key
-    void (*PrintValue)(void*);
+    void (*PrintValue)(void*);      // generic print function for printing a value
 } HashMap;  
 
 // this func will create an empty hashMap and set the hash and equals func for its items

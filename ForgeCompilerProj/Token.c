@@ -1,4 +1,6 @@
 #include "Token.h"
+#include <string.h>
+#pragma warning (disable:4996)
 
 /// <summary>
 /// This func is used to add a token to the token array
@@ -6,7 +8,7 @@
 /// <param name="ptoken_array"></param>
 /// <param name="token_type"></param>
 /// <param name="lexeme"></param>
-void addToken(pTokenArray* ptoken_array, TokenType token_type, const char* lexeme)
+void addToken(pTokenArray* ptoken_array, TokenType token_type, const char* lexeme, int row, int col)
 {
     if ((*ptoken_array)->size == (*ptoken_array)->count) {
         resizeTokenArr(ptoken_array);
@@ -23,6 +25,8 @@ void addToken(pTokenArray* ptoken_array, TokenType token_type, const char* lexem
         lexeme,
         sizeof((*ptoken_array)->tokens[(*ptoken_array)->count]->lexeme) - 1
     );
+    (*ptoken_array)->tokens[(*ptoken_array)->count]->tokenRow = row;
+    (*ptoken_array)->tokens[(*ptoken_array)->count]->tokenCol = col - strlen(lexeme);
     (*ptoken_array)->tokens[(*ptoken_array)->count]->lexeme[
         sizeof((*ptoken_array)->tokens[(*ptoken_array)->count]->lexeme) - 1
     ] = '\0';
@@ -38,7 +42,7 @@ void printTokens(pTokenArray ptoken_array) {
     // Print tokens
     printf("Tokens:\n");
     for (int i = 0; i < (ptoken_array)->count; i++) {
-        printf("Type: %d, Lexeme: %s\n", (ptoken_array)->tokens[i]->type, (ptoken_array)->tokens[i]->lexeme);
+        printf("Type: %d, Lexeme: %s, Row: %d, Col: %d\n", (ptoken_array)->tokens[i]->type, (ptoken_array)->tokens[i]->lexeme, (ptoken_array)->tokens[i]->tokenRow, (ptoken_array)->tokens[i]->tokenCol);
     }
 }
 

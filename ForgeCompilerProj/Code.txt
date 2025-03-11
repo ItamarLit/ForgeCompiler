@@ -1,2 +1,3 @@
-mold int itamar = 12;
-mold float itamar = 13;
+mold int x = 123;
+mold int y = 12;
+remold x = 3;

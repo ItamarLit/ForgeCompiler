@@ -26,9 +26,11 @@ int main() {
     inputStr = NULL;
     // Free the hash map
     freeHashMap(&state_machine);
-    printTokens(ptoken_array);
-    ParseInput(ptoken_array);
-
+    //printTokens(ptoken_array);
+    int errors = ParseInput(ptoken_array);
+    if (!errors) {
+        printf("Input passed parsing");
+    }
     freeTokenArray(&ptoken_array);
 
     //grammar array tests

@@ -229,6 +229,7 @@ TokenType identifyKeyowrd(char* lexeme) {
         {"bool", BOOL},
         {"return", RETURN},
         {"void", VOID},
+        {"remold", REMOLD},
         {NULL, ERROR}  // ending
     };
     for (int i = 0; keywordMap[i].keyword != NULL; i++) {
@@ -248,16 +249,17 @@ TokenType identifyKeyowrd(char* lexeme) {
 /// <param name="current_lexeme"></param>
 /// <param name="lexeme_index"></param>
 /// <param name="token_state"></param>
-void addAndResetLexer(pTokenArray ptoken_array, State* current_state, State* last_accepting_state, char* current_lexeme, int* lexeme_index, State token_state)
+void addAndResetLexer(pTokenArray ptoken_array, State* current_state, State* last_accepting_state, char* current_lexeme, int* lexeme_index, State token_state, int row, int* col)
 {
     if (*lexeme_index != 0) {
         current_lexeme[*lexeme_index] = '\0';
         // add the token
-        addToken(&ptoken_array, state_to_token_type(token_state, current_lexeme), current_lexeme);
+        addToken(&ptoken_array, state_to_token_type(token_state, current_lexeme), current_lexeme, row, *col);
         // reset
         *current_state = START_STATE;
         *last_accepting_state = START_STATE;
         *lexeme_index = 0;
+        *col++;
     }
 }
 
@@ -287,7 +289,7 @@ int getNextState(HashMap* map, int currentState, char inputChar)
 /// <param name="ptoken_array"></param>
 /// <param name="current_state"></param>
 /// <param name="last_accepting_state"></param>
-void handleErrorToken(HashMap* map, char** input, char* current_lexeme, int* lexeme_index, pTokenArray ptoken_array, State* current_state, State* last_accepting_state)
+void handleErrorToken(HashMap* map, char** input, char* current_lexeme, int* lexeme_index, pTokenArray ptoken_array, State* current_state, State* last_accepting_state, int row, int* col)
 {
     // read all the invalid tokens
     while (**input != '\0' && getNextState(map, START_STATE, **input) == -1)
@@ -296,7 +298,16 @@ void handleErrorToken(HashMap* map, char** input, char* current_lexeme, int* lex
         (*input)++;
     }
     // finalize as ERROR token and reset
-    addAndResetLexer(ptoken_array, current_state, last_accepting_state, current_lexeme, lexeme_index, ERROR_TOKEN_STATE);
+    addAndResetLexer(ptoken_array, current_state, last_accepting_state, current_lexeme, lexeme_index, ERROR_TOKEN_STATE, row, col);
+}
+
+void checkNewRow(char input, int* row, int* col) 
+{
+    if (input == '\n') {
+        // reset col counter on new row
+        (*row)++;
+        *col = 0;
+    }
 }
 
 /// <summary>
@@ -310,6 +321,8 @@ void lex(HashMap* map, char* input, pTokenArray ptoken_array) {
     State last_accepting_state = -1;
     char current_lexeme[MAX_LEXEME_LEN];
     int lexeme_index = 0;
+    int rowCounter = 0;
+    int colCounter = 0;
     // go over the whole input
     while (*input != '\0') {
         // get the next state from the hash map o(1)
@@ -320,6 +333,7 @@ void lex(HashMap* map, char* input, pTokenArray ptoken_array) {
             // add the current char
             current_lexeme[lexeme_index++] = *input;
             input++;
+            colCounter++;
             // save current state
             last_accepting_state = current_state;
         }
@@ -328,19 +342,21 @@ void lex(HashMap* map, char* input, pTokenArray ptoken_array) {
             // check if the token that is invalid is a whitespace and needs to be skipped
             if (current_state == START_STATE) {
                 input++;
+                colCounter++;
             }
             // check that the token is acceptable
             else if (last_accepting_state > START_STATE)
             {
-                addAndResetLexer(ptoken_array, &current_state, &last_accepting_state, current_lexeme, &lexeme_index, last_accepting_state);
-
+                addAndResetLexer(ptoken_array, &current_state, &last_accepting_state, current_lexeme, &lexeme_index, last_accepting_state, rowCounter, &colCounter);
             }
             // this else will happen if there are any unrecognized chars
             else {
-                handleErrorToken(map, &input, current_lexeme, &lexeme_index, ptoken_array, &current_state, &last_accepting_state);
+                handleErrorToken(map, &input, current_lexeme, &lexeme_index, ptoken_array, &current_state, &last_accepting_state, rowCounter, &colCounter);
             }
+            checkNewRow(*input, &rowCounter, &colCounter);
         }
+        
     }
     // if we finish the input we add the last token
-    addAndResetLexer(ptoken_array, &current_state, &last_accepting_state, current_lexeme, &lexeme_index, last_accepting_state);
+    addAndResetLexer(ptoken_array, &current_state, &last_accepting_state, current_lexeme, &lexeme_index, last_accepting_state, rowCounter, &colCounter);
 }

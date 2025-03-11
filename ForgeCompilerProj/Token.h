@@ -50,11 +50,14 @@ typedef enum {
     EQUAL_EQUAL = 38,
     FUNC_RET_TYPE = 39,
     COLON = 40,
+    REMOLD = 41,
 }TokenType;
 
 typedef struct {
     char lexeme[MAX_LEXEME_LEN];
     TokenType type;
+    int tokenRow;
+    int tokenCol;
 }Token;
 
 typedef struct {
@@ -64,7 +67,7 @@ typedef struct {
 }TokenArray, * pTokenArray;
 
 // function to add a token to an arr of tokens 
-void addToken(pTokenArray* ptoken_array, TokenType token_type, const char* lexeme);
+void addToken(pTokenArray* ptoken_array, TokenType token_type, const char* lexeme, int row, int col);
 // func that prints the tokens
 void printTokens(pTokenArray ptoken_array);
 // func that creates a token arr in the heap

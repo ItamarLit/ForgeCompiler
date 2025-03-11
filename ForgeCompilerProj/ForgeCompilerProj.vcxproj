@@ -134,6 +134,7 @@
     <ClInclude Include="NonTerminals.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="ParseStack.h" />
+    <ClInclude Include="StatementRule.h" />
     <ClInclude Include="Terminals.h" />
     <ClInclude Include="Token.h" />
   </ItemGroup>
@@ -152,6 +153,7 @@
     <ClCompile Include="Parser.c" />
     <ClCompile Include="ParseStack.c" />
     <ClCompile Include="Source.c" />
+    <ClCompile Include="StatementRule.c" />
     <ClCompile Include="Terminals.c" />
     <ClCompile Include="Token.c" />
   </ItemGroup>
