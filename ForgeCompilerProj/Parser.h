@@ -3,6 +3,7 @@
 
 #include "HashMap.h"
 #include "Token.h"
+#include "AST.h"
 
 // struct for the hashmap key for, goto and action tables
 typedef struct MapKey {

@@ -227,6 +227,7 @@ const char* token_type_to_terminal(Token* token) {
     }
 }
 
+
 void Shift(Stack* s, int nextState, Token* token, const char* nodeLable)
 {
     StackData tempData;
@@ -300,7 +301,7 @@ void Reduce(int ruleIndex, Stack** s, GrammarArray* array, HashMap* gotoTable, p
         free(curData);
     }
     // now the nodeArr is in reverse order
-    for (int i = 0; i < childrenCount; i++) {
+    for (int i = childrenCount - 1; i >= 0; i--) {
         addChild(nodeArr[i], newNode);
     }
     free(nodeArr);
@@ -327,11 +328,6 @@ void FreeParserResources(GrammarArray* array, HashMap** actionTable, HashMap** g
     FreeStack(s);
 }
 
-void ClearStack(Stack* s) {
-    while (!IsStackEmpty(s)) {
-        PopStack(s);
-    }
-}
 
 /// <summary>
 /// This is the main parse function that checks if the given input is valid 

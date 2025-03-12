@@ -30,8 +30,11 @@ int main() {
     //printTokens(ptoken_array);
     int errors = 0;
     ASTNode* root = ParseInput(ptoken_array, &errors);
+    root = compressAST(root);
     if (!errors) {
         printf("Input passed parsing");
+        puts("\n");
+        printAST(root, 0);
     }
     freeTokenArray(&ptoken_array);
 

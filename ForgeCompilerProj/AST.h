@@ -15,5 +15,9 @@ ASTNode* createASTNode(Token* token, const char* lable);
 void freeASTNode(ASTNode* node);
 // func that fills an ast nodes children 
 void addChild(ASTNode* child, ASTNode* parent);
+// func that prints the ast 
+void printAST(ASTNode* root, int tabCount);
+// func that compresses the AST
+ASTNode* compressAST(ASTNode* node);
 
 #endif
