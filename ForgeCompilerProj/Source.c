@@ -5,6 +5,7 @@
 #include "GrammarArray.h"
 #include "Parser.h"
 #include "AST.h"
+#include "SymbolTable.h"
 
 int main() {
     HashMap* state_machine = NULL;
@@ -30,14 +31,19 @@ int main() {
     //printTokens(ptoken_array);
     int errors = 0;
     ASTNode* root = ParseInput(ptoken_array, &errors);
+    // compress syntax tree into AST
     root = compressAST(root);
     if (!errors) {
         printf("Input passed parsing");
         puts("\n");
         printAST(root, 0);
+        int errorCount = 0;
+        SymbolTable* globalTable = createNewScope(NULL);
+        createASTSymbolTable(root, globalTable, &errorCount);
+        printSymbolTables(root);
     }
     freeTokenArray(&ptoken_array);
-
+    freeASTNode(root);
     //grammar array tests
     /*GrammarArray* array = InitGrammarArray("Grammar.txt");
     PrintGrammarRules(array);

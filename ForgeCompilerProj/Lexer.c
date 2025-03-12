@@ -230,6 +230,8 @@ TokenType identifyKeyowrd(char* lexeme) {
         {"return", RETURN},
         {"void", VOID},
         {"remold", REMOLD},
+        {"if", IF},
+        {"else", ELSE},
         {NULL, ERROR}  // ending
     };
     for (int i = 0; keywordMap[i].keyword != NULL; i++) {

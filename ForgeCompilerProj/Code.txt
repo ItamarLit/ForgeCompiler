@@ -1,4 +1,4 @@
-mold int x = a123;
-mold int y = a123;
-mold int z = a123;
-remold x += 4;
+forge funcTest ( int a, int b ) => int 
+{
+	mold int x = a123;
+}

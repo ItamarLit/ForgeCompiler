@@ -51,6 +51,8 @@ typedef enum {
     FUNC_RET_TYPE = 39,
     COLON = 40,
     REMOLD = 41,
+    IF = 42,
+    ELSE = 43,
 }TokenType;
 
 typedef struct {

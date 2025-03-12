@@ -21,6 +21,7 @@ ASTNode* createASTNode(Token* token, const char* lable) {
     node->childCount = 0;
     node->token = token;
     node->children = NULL;
+    node->scope = NULL;
     return node;
 }
 
@@ -29,7 +30,6 @@ void addChild(ASTNode* child, ASTNode* parent) {
     parent->children = (ASTNode**)realloc(parent->children, sizeof(ASTNode*) * (parent->childCount + 1));
     if (!parent->children) {
         printf("Failded to calloc memory for AST node children array");
-        return NULL;
     }
     parent->children[parent->childCount] = child;
     parent->childCount++;
@@ -47,6 +47,10 @@ void freeASTNode(ASTNode* node) {
     // free all the children using recursion
     for (int i = 0; i < node->childCount; i++) {
         freeASTNode(node->children[i]);
+    }
+    if (node->scope) {
+        freeHashMap(&(node->scope->table));
+        free(node->scope);
     }
     // free the array of pointers
     free(node->children);
