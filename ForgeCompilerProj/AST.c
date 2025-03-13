@@ -104,6 +104,9 @@ ASTNode* compressAST(ASTNode* node)
     node->childCount = newCount;
     // if a node has no token and no children remove it
     if (node->token == NULL && node->childCount == 0) {
+        if (strcmp(node->lable, "Block") == 0) {
+            return node;
+        }
         free(node->children);
         free(node->lable);
         free(node);
@@ -111,7 +114,7 @@ ASTNode* compressAST(ASTNode* node)
     }
     // if a node has no token but is a block lable keep it
     if (node->token == NULL && node->childCount == 1) {
-        if (strcmp(node->lable, "Block") == 0) {
+        if (strcmp(node->lable, "Block") == 0 || strcmp(node->lable, "ParamList") == 0 || strcmp(node->lable, "ArgumentList") == 0) {
             return node;
         }
         // replace the node with its child ( flatten it )

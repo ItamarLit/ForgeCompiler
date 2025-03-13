@@ -1,4 +1,7 @@
-forge funcTest ( int a, int b ) => int 
-{
-	mold int x = a123;
+mold int x = 5;
+if meet (x > y) then {
+	remold y += 5;
+}
+else {
+	remold y -= 5;
 }

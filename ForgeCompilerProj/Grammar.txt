@@ -12,6 +12,7 @@ Statement -> ForStatement
 Statement -> AssignmentStatement 
 Statement -> IOStatement 
 Statement -> ReturnStatement 
+Statement -> FuncCallExpr ;
 StatementList -> StatementList Statement
 StatementList -> Statement
 StatementList -> empty

@@ -5,6 +5,15 @@
 #include "Token.h"
 #include "AST.h"
 
+#define STATE_BEFORE_EMPTY_PARAMLIST  60   // Before shifting empty for ( )
+#define STATE_AFTER_EMPTY_PARAMLIST   92   // After shifting empty for ( ) in FuncDecl
+
+#define STATE_BEFORE_EMPTY_ARGLIST    58       // Before shifting empty for ( ) in FuncCall
+#define STATE_AFTER_EMPTY_ARGLIST     88  // After shifting empty for ( ) in FuncCall
+
+#define STATE_BEFORE_EMPTY_BLOCK      136  // Before shifting empty for { }
+#define STATE_AFTER_EMPTY_BLOCK       144  // After shifting empty for { } in a function or statement block
+
 // struct for the hashmap key for, goto and action tables
 typedef struct MapKey {
     int currentState;

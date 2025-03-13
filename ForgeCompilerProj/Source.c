@@ -29,6 +29,14 @@ int main() {
     // Free the hash map
     freeHashMap(&state_machine);
     //printTokens(ptoken_array);
+    /* HashMap* goto_table = NULL;
+
+    InitGotoTable(&goto_table, "GotoTable.txt");
+    freeHashMap(&goto_table);
+    HashMap* action_table = NULL;
+
+    InitActionTable(&action_table, "ActionTable.txt");
+    freeHashMap(&action_table);*/
     int errors = 0;
     ASTNode* root = ParseInput(ptoken_array, &errors);
     // compress syntax tree into AST

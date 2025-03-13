@@ -221,7 +221,6 @@ const char* token_type_to_terminal(Token* token) {
     switch (token->type) {
     case IDENTIFIER: return "IDENTIFIER";
     case INT_LITERAL: return "INT_LITERAL";
-    case FLOAT_LITERAL: return "FLOAT_LITERAL";
     case STRING_LITERAL: return "STRING_LITERAL";
     default: return token->lexeme;
     }
@@ -328,6 +327,42 @@ void FreeParserResources(GrammarArray* array, HashMap** actionTable, HashMap** g
     FreeStack(s);
 }
 
+int shiftEmpty(const char* token, pTokenArray tokenArray, int* currentIndex, Stack** s) {
+    if (*currentIndex > 0 && (strcmp(token, ")") == 0 || strcmp(token, "}") == 0)) {
+        const char* prevToken = tokenArray->tokens[*currentIndex - 1]->lexeme;
+
+        // Get the current parser state
+        StackEntry* topEntry = TopStack(*s);
+        int prevState = topEntry->data.state;
+        int emptyState = -1; // Default invalid state
+
+        if (strcmp(token, ")") == 0 && strcmp(prevToken, "(") == 0) {
+            // Empty parameter list or empty function call
+            if (prevState == STATE_BEFORE_EMPTY_PARAMLIST) {
+                emptyState = STATE_AFTER_EMPTY_PARAMLIST; // Function Declaration case
+            }
+            else if (prevState == STATE_BEFORE_EMPTY_ARGLIST) {
+                emptyState = STATE_AFTER_EMPTY_ARGLIST; // Function Call case
+            }
+        }
+        else if (strcmp(token, "}") == 0 && strcmp(prevToken, "{") == 0) {
+            // Empty block
+            if (prevState == STATE_BEFORE_EMPTY_BLOCK) {
+                emptyState = STATE_AFTER_EMPTY_BLOCK;
+            }
+        }
+
+        // Perform shift if we found a valid empty state
+        if (emptyState != -1) {
+            printf("Shifting empty for %s in state %d -> %d\n", token, prevState, emptyState);
+            Shift(*s, emptyState, NULL, "empty");
+            return 1; // Successfully shifted empty
+        }
+    }
+
+    return 0; // No empty shift occurred
+}
+
 
 /// <summary>
 /// This is the main parse function that checks if the given input is valid 
@@ -363,6 +398,9 @@ ASTNode* ParseInput(pTokenArray tokenArray, int* errorCount)
         Token* currentToken = tokenArray->tokens[i];
         char* action = getMapValue(actionTable, currentState, token, 1);
         if (action == NULL) {
+            if (shiftEmpty(token, tokenArray, &i, &s)) {
+                continue; // Successfully shifted empty, continue parsing
+            }
             HandleSyntaxError(errorCount,&s,&i,tokenArray,&finishedParsing);
         }
         else 

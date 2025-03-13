@@ -3,10 +3,10 @@
 // fill the terminals array
 const char* Terminals[] = {
     "empty",
+    ";",
     "mold",
     "IDENTIFIER",
     "=",
-    ";",
     "int",
     "bool",
     "string",
@@ -26,6 +26,7 @@ const char* Terminals[] = {
     "if",
     "meet",
     "then",
+    "empty",
     "else",
     "while",
     "for",
@@ -50,8 +51,8 @@ const char* Terminals[] = {
     "INT_LITERAL",
     "FLOAT_LITERAL",
     "STRING_LITERAL",
-    "TRUE",
-    "FALSE",
+    "True",
+    "False",
     "$"
 };
 // get the terminal count

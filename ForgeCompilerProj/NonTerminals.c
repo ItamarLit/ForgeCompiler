@@ -1,7 +1,6 @@
 #include "NonTerminals.h"
 
-const char* NonTerminals[] =
-{
+const char* NonTerminals[] = {
     "Program'",
     "Program",
     "GlobalItemList",

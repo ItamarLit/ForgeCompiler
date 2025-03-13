@@ -40,7 +40,7 @@ static void putState(HashMap* map, char* name, char* type, int scope, int isFunc
     insertNewValue(strdup(name), entry, map);
 }
 
-SymbolEntry* getMapValue(HashMap* map, char* name) {
+static SymbolEntry* getMapValue(HashMap* map, char* name) {
     return (SymbolEntry*)getHashMapValue(name, map);
 }
 
@@ -59,12 +59,12 @@ static int equalFunc(void* a, void* b) {
 }
 
 void printStringKey(void* key) {
-    printf("%s", (char*)key);
+    printf("[Key: symbol: %s ", (char*)key);
 }
 
 void printSymbolEntry(void* value) {
     SymbolEntry* entry = (SymbolEntry*)value;
-    printf("[Name: %s, Type: %s, Function: %d]\n",
+    printf(" Value: Name: %s, Type: %s, Function: %d]",
         entry->name, entry->type, entry->isFunction);
 }
 

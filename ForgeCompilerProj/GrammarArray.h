@@ -2,7 +2,7 @@
 #define GRAMMAR_ARRAY_H
 
 // const grammar size
-#define GRAMMAR_SIZE 80
+#define GRAMMAR_SIZE 81
 
 typedef struct GrammarRule {
 	char* leftRule;

@@ -184,20 +184,19 @@ void printHashMap(HashMap* map) {
 	printf("HashMap Contents:\n");
 	printf("Map Size: %d, Used Spaces: %d, Load Factor: %.2f\n", map->map_size, map->usedSpaces, map->load_factor);
 	for (int i = 0; i < map->map_size; i++) {
-		printf("Bucket %d: ", i);
-		HashNode* current = map->arr[i];
-		if (current == NULL) {
-			printf("NULL");
-		}
-		else {
+		if (map->arr[i] != NULL) {
+			printf("Bucket %d: ", i);
+			HashNode* current = map->arr[i];
+			
 			while (current != NULL) {
 				map->PrintKey(current->key);
 				map->PrintValue(current->value);
 				current = current->next;
 			}
 			printf("-> NULL");
+			
+			printf("\n");
 		}
-		printf("\n");
 	}
 }
 

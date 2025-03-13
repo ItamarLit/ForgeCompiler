@@ -106,9 +106,6 @@ void init_state_machine(HashMap** map) {
         // for start state
         putState(START_STATE, c, INT_LITERAL_STATE, *map);
         putState(STRING_LITERAL_STATE, c, STRING_LITERAL_STATE, *map);
-        // Transaction for the float state
-        putState(INT_POINT_STATE, c, FLOAT_STATE, *map);
-        putState(FLOAT_STATE, c, FLOAT_STATE, *map);
         // for identifier state
         putState(IDENTIFIER_STATE, c, IDENTIFIER_STATE, *map);
         // for int state
@@ -157,9 +154,6 @@ void init_state_machine(HashMap** map) {
     putState(SMALLER_THAN_STATE, '=', SMALLER_EQUAL_STATE, *map);
     putState(LARGER_THAN_STATE, '=', LARGER_EQUAL_STATE, *map);
 
-    // Transaction for the int to float state
-    putState(INT_LITERAL_STATE, '.', INT_POINT_STATE, *map);
-
     // Transaction for the func ret type arrow =>
     putState(EQUAL_STATE, '>', FUNC_RET_TYPE_STATE, *map);
 }
@@ -184,9 +178,7 @@ TokenType state_to_token_type(State state, char* value) {
         [COMMA_STATE] = COMMA,
         [SMALLER_THAN_STATE] = SMALLER_THAN,
         [LARGER_THAN_STATE] = LARGER_THAN,
-        [FLOAT_STATE] = FLOAT_LITERAL,
         [STRING_LITERAL_STATE] = ERROR,
-        [INT_POINT_STATE] = ERROR,
         [PLUS_STATE] = PLUS,
         [PLUS_EQUAL_STATE] = PLUS_EQUAL,
         [MINUS_STATE] = MINUS,
@@ -224,7 +216,6 @@ TokenType identifyKeyowrd(char* lexeme) {
         {"forge", FORGE},
         {"in", IN},
         {"int", INT},
-        {"float", FLOAT},
         {"string", STRING},
         {"bool", BOOL},
         {"return", RETURN},
@@ -358,7 +349,7 @@ void lex(HashMap* map, char* input, pTokenArray ptoken_array) {
             checkNewRow(*input, &rowCounter, &colCounter);
         }
         
-    }
+     }
     // if we finish the input we add the last token
     addAndResetLexer(ptoken_array, &current_state, &last_accepting_state, current_lexeme, &lexeme_index, last_accepting_state, rowCounter, &colCounter);
 }
