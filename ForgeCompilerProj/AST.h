@@ -10,6 +10,7 @@ typedef struct ASTNode {
     struct ASTNode** children; // dynamic array of ast nodes 
     int childCount; // size of the array
     SymbolTable* scope; // symbol table 
+    struct ASTNode* parent; // parent pointer
 } ASTNode;
 
 // func that creates the ast node 

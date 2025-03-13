@@ -33,6 +33,7 @@ void addChild(ASTNode* child, ASTNode* parent) {
     }
     parent->children[parent->childCount] = child;
     parent->childCount++;
+    child->parent = parent; // add the parent pointer
 }
 
 
@@ -81,6 +82,79 @@ void printAST(ASTNode* root, int tabcount)
 }
 
 /// <summary>
+/// This is a helper function that removes now NULL children from the array
+/// </summary>
+/// <param name="node"></param>
+void removeNullChildren(ASTNode* node) {
+    int newCount = 0;
+    for (int i = 0; i < node->childCount; i++) {
+        if (node->children[i] != NULL) {
+            node->children[newCount++] = node->children[i];
+        }
+    }
+    node->childCount = newCount;
+}
+
+/// <summary>
+/// This is a helper function that compresses children of a given node
+/// </summary>
+/// <param name="node"></param>
+void recursivelyCompressChildren(ASTNode* node) {
+    for (int i = 0; i < node->childCount; i++) {
+        node->children[i] = compressAST(node->children[i]);
+        if (node->children[i]) {
+            node->children[i]->parent = node; 
+        }
+    }
+    removeNullChildren(node);
+}
+
+
+
+/// <summary>
+/// This is a helper function that merges lists of the same lable for example StatementList
+/// </summary>
+/// <param name="node"></param>
+/// <param name="targetLabel"></param>
+void mergeNestedLists(ASTNode* node, const char* targetLabel) {
+    if (node->lable && strcmp(node->lable, targetLabel) == 0) {
+        int capacity = node->childCount;
+        ASTNode** merged = (ASTNode**)malloc(sizeof(ASTNode*) * capacity);
+        int mergedCount = 0;
+
+        for (int i = 0; i < node->childCount; i++) {
+            ASTNode* child = node->children[i];
+            if (child && child->lable && strcmp(child->lable, targetLabel) == 0) {
+                if (mergedCount + child->childCount > capacity) {
+                    capacity = (mergedCount + child->childCount) * 2;
+                    merged = (ASTNode**)realloc(merged, sizeof(ASTNode*) * capacity);
+                }
+                for (int c = 0; c < child->childCount; c++) {
+                    merged[mergedCount] = child->children[c];
+                    if (child->children[c]) {
+                        child->children[c]->parent = node;  
+                    }
+                    mergedCount++;
+                }
+                free(child->children);
+                free(child->lable);
+                free(child);
+            }
+            else {
+                if (mergedCount >= capacity) {
+                    capacity *= 2;
+                    merged = (ASTNode**)realloc(merged, sizeof(ASTNode*) * capacity);
+                }
+                merged[mergedCount++] = child;
+            }
+        }
+        free(node->children);
+        node->children = merged;
+        node->childCount = mergedCount;
+    }
+}
+
+/// <summary>
 /// This function optimizes the syntax tree by removing uneeded nodes
 /// </summary>
 /// <param name="node"></param>
@@ -89,86 +163,42 @@ ASTNode* compressAST(ASTNode* node)
 {
     // check if node is null
     if (!node) return NULL;
-    // recursively compress the children
-    for (int i = 0; i < node->childCount; i++) {
-        node->children[i] = compressAST(node->children[i]);
-    }
-    // some children reduce to null so we count the non null 
-    int newCount = 0;
-    for (int i = 0; i < node->childCount; i++) {
-        if (node->children[i] != NULL) {
-            node->children[newCount++] = node->children[i];
-        }
-    }
-    // set the new count
-    node->childCount = newCount;
-    // if a node has no token and no children remove it
+
+    recursivelyCompressChildren(node);
+
+
+    // remove nodes with no children
     if (node->token == NULL && node->childCount == 0) {
-        if (strcmp(node->lable, "Block") == 0) {
-            return node;
+        // keep these
+        if (strcmp(node->lable, "Block") == 0 || strcmp(node->lable, "ParamList") == 0 || strcmp(node->lable, "ArgumentList") == 0) {
+            return node; 
         }
         free(node->children);
         free(node->lable);
         free(node);
         return NULL;
     }
-    // if a node has no token but is a block lable keep it
+    // flatten the nodes with no token but with 1 child
     if (node->token == NULL && node->childCount == 1) {
-        if (strcmp(node->lable, "Block") == 0 || strcmp(node->lable, "ParamList") == 0 || strcmp(node->lable, "ArgumentList") == 0) {
-            return node;
+        // keep these
+        if (strcmp(node->lable, "Block") == 0 || strcmp(node->lable, "ParamList") == 0 ||strcmp(node->lable, "ArgumentList") == 0 || strcmp(node->lable, "GlobalItemList") == 0 || strcmp(node->lable, "StatementList") == 0) {
+            return node; 
         }
-        // replace the node with its child ( flatten it )
         else {
             ASTNode* child = node->children[0];
+            // update parent pointer
+            child->parent = node->parent;
             free(node->children);
             free(node->lable);
             free(node);
             return child;
         }
     }
-    // keep the global item list, merge all global item list and global items
-    // this is done because of how the grammar is set "GlobalItemList -> GlobalItemList GlobalItem" there will always be a 
-    // global item after the list and I want them to be together
-    if (node->lable && strcmp(node->lable, "GlobalItemList") == 0) {
-        // alocate a starting array for children
-        int capacity = node->childCount;
-        ASTNode** merged = (ASTNode**)malloc(sizeof(ASTNode*) * capacity);
-        int mergedCount = 0;
-        // go over all children
-        for (int i = 0; i < node->childCount; i++) {
-            ASTNode* child = node->children[i];
-            // get all children that are global item list and add there children to the current node
-            if (child && child->lable && strcmp(child->lable, "GlobalItemList") == 0)
-            {
-                // add to children capacity
-                if (mergedCount + child->childCount > capacity) {
-                    capacity = (mergedCount + child->childCount) * 2;
-                    merged = (ASTNode**)realloc(merged, sizeof(ASTNode*) * capacity);
-                }
-                // move children to current node
-                for (int c = 0; c < child->childCount; c++) {
-                    merged[mergedCount++] = child->children[c];
-                }
-                // free the child node
-                free(child->children);
-                free(child->lable);
-                free(child);
-            }
-            else {
-                // if needed realloc the array
-                if (mergedCount >= capacity) {
-                    capacity *= 2;
-                    merged = (ASTNode**)realloc(merged, sizeof(ASTNode*) * capacity);
-                }
-                merged[mergedCount++] = child;
-            }
-        }
-        // replace the old array and count
-        free(node->children);
-        node->children = merged;
-        node->childCount = mergedCount;
-    }
-    // return the final root
+    // merge all the nested lists
+    mergeNestedLists(node, "GlobalItemList");
+    mergeNestedLists(node, "StatementList");
+    mergeNestedLists(node, "ParamList");
+    mergeNestedLists(node, "ArgumentList");
+
     return node;
 }
-
