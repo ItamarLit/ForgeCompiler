@@ -12,6 +12,8 @@ typedef struct SymbolEntry {
     char* type;           // Data type 
     int isFunction;      // 1 if it's a function, 0 otherwise
     char* returnType;    // Function return type
+    char** paramTypes;  // array of param types for functions
+    int paramCount;     // param count for functions
 } SymbolEntry;
 
 typedef struct SymbolTable {
@@ -25,5 +27,10 @@ void createASTSymbolTable(struct ASTNode* node, SymbolTable* currentTable, int* 
 SymbolTable* createNewScope(SymbolTable* parent);
 // func for printing the symbol tables
 void printSymbolTables(struct ASTNode* node);
+// this func is used to get the closest scope
+SymbolTable* getClosestScope(struct ASTNode* node);
+// this func is used to lookup a symbol from a current scope up the scopes
+SymbolEntry* lookUpSymbol(const char* symbol, SymbolTable* currentScope);
+
 
 #endif

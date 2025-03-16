@@ -54,6 +54,12 @@
     <ClInclude Include="SymbolTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TypeChecker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expressions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Code.txt">
@@ -110,6 +116,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SymbolTable.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TypeChecker.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Expressions.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

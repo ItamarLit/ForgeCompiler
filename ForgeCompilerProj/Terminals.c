@@ -26,7 +26,6 @@ const char* Terminals[] = {
     "if",
     "meet",
     "then",
-    "empty",
     "else",
     "while",
     "for",

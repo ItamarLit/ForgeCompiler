@@ -328,7 +328,7 @@ void FreeParserResources(GrammarArray* array, HashMap** actionTable, HashMap** g
 }
 
 int shiftEmpty(const char* token, pTokenArray tokenArray, int* currentIndex, Stack** s) {
-    if (*currentIndex > 0 && (strcmp(token, ")") == 0 || strcmp(token, "}") == 0)) {
+    if (*currentIndex > 0 && (strcmp(token, ")") == 0 || strcmp(token, "}") == 0) ||  (strcmp(token, "$") == 0)) {
         const char* prevToken = tokenArray->tokens[*currentIndex - 1]->lexeme;
 
         // Get the current parser state
@@ -349,6 +349,11 @@ int shiftEmpty(const char* token, pTokenArray tokenArray, int* currentIndex, Sta
             // Empty block
             if (prevState == STATE_BEFORE_EMPTY_BLOCK) {
                 emptyState = STATE_AFTER_EMPTY_BLOCK;
+            }
+        }
+        else if (strcmp(prevToken, "}") == 0) {
+            if (prevState == STATE_BEFORE_EMPTY_ELSE) {
+                emptyState = STATE_AFTER_EMPTY_ELSE;
             }
         }
 

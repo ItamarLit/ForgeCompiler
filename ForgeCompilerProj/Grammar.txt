@@ -5,18 +5,18 @@ GlobalItemList -> empty
 GlobalItemList -> GlobalItem
 GlobalItem -> FuncDeclaration
 GlobalItem -> Statement
-Statement -> VarDeclaration
+Statement -> VarDeclaration ;
 Statement -> IfStatement
 Statement -> WhileStatement
 Statement -> ForStatement
-Statement -> AssignmentStatement 
-Statement -> IOStatement 
-Statement -> ReturnStatement 
+Statement -> AssignmentStatement ;
+Statement -> IOStatement ;
+Statement -> ReturnStatement ;
 Statement -> FuncCallExpr ;
 StatementList -> StatementList Statement
 StatementList -> Statement
 StatementList -> empty
-VarDeclaration -> mold Type IDENTIFIER = Expr ;
+VarDeclaration -> mold Type IDENTIFIER = Expr 
 Type -> int
 Type -> bool
 Type -> string
@@ -28,14 +28,14 @@ ParamList -> empty
 ParamList -> ParamDecl
 ParamList -> ParamList , ParamDecl
 ParamDecl -> Type IDENTIFIER
-AssignmentStatement -> remold IDENTIFIER AssignOp Expr ;
+AssignmentStatement -> remold IDENTIFIER AssignOp Expr 
 AssignOp -> =
 AssignOp -> +=
 AssignOp -> -=
 AssignOp -> *=
 AssignOp -> /=
-ReturnStatement -> return ;
-ReturnStatement -> return Expr ;
+ReturnStatement -> return 
+ReturnStatement -> return Expr 
 IfStatement -> if meet ( Expr ) then Block OptionalElse
 OptionalElse -> empty
 OptionalElse -> else Block
@@ -43,8 +43,8 @@ WhileStatement -> while meet ( Expr ) then Block
 ForStatement -> for int IDENTIFIER in Expr : Expr then Block
 IOStatement -> InputStatement
 IOStatement -> OutputStatement
-InputStatement -> input ( IDENTIFIER ) ;
-OutputStatement -> output ( Expr ) ;
+InputStatement -> input ( IDENTIFIER ) 
+OutputStatement -> output ( Expr ) 
 Block -> { StatementList }
 Expr -> OrExpr
 OrExpr -> AndExpr
