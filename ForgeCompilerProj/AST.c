@@ -5,6 +5,22 @@
 #include <stdio.h>
 
 
+const char* REDUNDANT_NODES[] = {
+    "if", "meet", "then", "else", "while", "for", "in", "forge", "return",
+    "{", "}", ";", "(", ")", ",", ":", "=>", "remold", "mold"
+};
+
+const int REDUNDANT_NODE_COUNT = sizeof(REDUNDANT_NODES) / sizeof(REDUNDANT_NODES[0]);
+
+int isRedundantNode(const char* label) {
+    for (int i = 0; i < REDUNDANT_NODE_COUNT; i++) {
+        if (strcmp(label, REDUNDANT_NODES[i]) == 0) {
+            return 1; 
+        }
+    }
+    return 0; 
+}
+
 /// <summary>
 /// This function creates an AST node and fills it with children pointers
 /// </summary>
@@ -109,7 +125,21 @@ void recursivelyCompressChildren(ASTNode* node) {
     removeNullChildren(node);
 }
 
+ASTNode* removeRedundantLabeledNode(ASTNode* node) {
+    if (!node) return NULL;
 
+    if (node->token && isRedundantNode(node->token->lexeme)) {
+        // if node has no children just free it
+        if (node->childCount == 0) {
+            free(node->children);
+            free(node->lable);
+            free(node);
+            return NULL;
+        }
+    }
+
+    return node;
+}
 
 /// <summary>
 /// This is a helper function that merges lists of the same lable for example StatementList
@@ -194,6 +224,9 @@ ASTNode* compressAST(ASTNode* node)
             return child;
         }
     }
+    node = removeRedundantLabeledNode(node);
+    if (!node) return NULL;
+
     // merge all the nested lists
     mergeNestedLists(node, "GlobalItemList");
     mergeNestedLists(node, "StatementList");
