@@ -37,7 +37,11 @@ typedef enum states {
     SMALLER_EQUAL_STATE,
     LARGER_EQUAL_STATE,
     FUNC_RET_TYPE_STATE,
-    COLON_STATE
+    COLON_STATE,
+    START_AND_STATE,
+    AND_STATE,
+    START_OR_STATE,
+    OR_STATE
 
 } State;
 

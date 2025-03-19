@@ -156,6 +156,14 @@ void init_state_machine(HashMap** map) {
 
     // Transaction for the func ret type arrow =>
     putState(EQUAL_STATE, '>', FUNC_RET_TYPE_STATE, *map);
+    // Transactions for the start & state and start | state
+    putState(START_STATE, '&', START_AND_STATE, *map);
+    putState(START_STATE, '|', START_OR_STATE, *map);
+    // Transactions for the && and || state
+    // Transaction for the start & state and start | state
+    putState(START_AND_STATE, '&', AND_STATE, *map);
+    putState(START_OR_STATE, '|', OR_STATE, *map);
+
 }
 
 /// <summary>
@@ -193,6 +201,8 @@ TokenType state_to_token_type(State state, char* value) {
         [LARGER_EQUAL_STATE] = LARGER_EQUAL,
         [FUNC_RET_TYPE_STATE] = FUNC_RET_TYPE,
         [COLON_STATE] = COLON,
+        [AND_STATE] = AND,
+        [OR_STATE] = OR,
     };
     // check if the token is an error token
     if (state >= VALID_STATE && state < sizeof(state_to_token_type_map) / sizeof(state_to_token_type_map[0])) {

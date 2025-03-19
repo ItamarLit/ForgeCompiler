@@ -8,7 +8,6 @@ GlobalItem -> Statement
 Statement -> VarDeclaration ;
 Statement -> IfStatement
 Statement -> WhileStatement
-Statement -> ForStatement
 Statement -> AssignmentStatement ;
 Statement -> IOStatement ;
 Statement -> ReturnStatement ;
@@ -20,7 +19,6 @@ VarDeclaration -> mold Type IDENTIFIER = Expr
 Type -> int
 Type -> bool
 Type -> string
-Type -> float
 FuncDeclaration -> forge IDENTIFIER ( ParamList ) => ReturnType Block 
 ReturnType -> Type
 ReturnType -> void
@@ -40,7 +38,6 @@ IfStatement -> if meet ( Expr ) then Block OptionalElse
 OptionalElse -> empty
 OptionalElse -> else Block
 WhileStatement -> while meet ( Expr ) then Block
-ForStatement -> for int IDENTIFIER in Expr : Expr then Block
 IOStatement -> InputStatement
 IOStatement -> OutputStatement
 InputStatement -> input ( IDENTIFIER ) 
@@ -55,10 +52,10 @@ EqualityExpr -> RelationalExpr
 EqualityExpr -> RelationalExpr == RelationalExpr
 EqualityExpr -> RelationalExpr != RelationalExpr
 RelationalExpr -> AddExpr
-RelationalExpr -> RelationalExpr > AddExpr 
-RelationalExpr -> RelationalExpr >= AddExpr
-RelationalExpr -> RelationalExpr < AddExpr
-RelationalExpr -> RelationalExpr <= AddExpr
+RelationalExpr -> AddExpr > AddExpr 
+RelationalExpr -> AddExpr >= AddExpr
+RelationalExpr -> AddExpr < AddExpr
+RelationalExpr -> AddExpr <= AddExpr
 AddExpr -> AddExpr + MulExpr
 AddExpr -> AddExpr - MulExpr
 AddExpr -> MulExpr
@@ -73,7 +70,6 @@ ArgumentList -> Expr
 ArgumentList -> ArgumentList , Expr
 PrimaryExpr -> ( Expr )
 PrimaryExpr -> INT_LITERAL
-PrimaryExpr -> FLOAT_LITERAL
 PrimaryExpr -> STRING_LITERAL
 PrimaryExpr -> true
 PrimaryExpr -> false

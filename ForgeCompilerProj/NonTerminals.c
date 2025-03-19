@@ -19,7 +19,6 @@ const char* NonTerminals[] = {
     "IfStatement",
     "OptionalElse",
     "WhileStatement",
-    "ForStatement",
     "IOStatement",
     "InputStatement",
     "OutputStatement",

@@ -52,6 +52,8 @@ typedef enum {
     REMOLD,
     IF,
     ELSE,
+    AND,
+    OR,
 }TokenType;
 
 typedef struct {
