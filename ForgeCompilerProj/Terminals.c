@@ -15,7 +15,7 @@ const char* Terminals[] = {
     ")",
     "=>",
     "void",
-    "\",\"",
+    ",",
     "remold",
     "+=",
     "-=",
