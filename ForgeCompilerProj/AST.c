@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 
-const char* REDUNDANT_NODES[] = {
+static const char* REDUNDANT_NODES[] = {
     "if", "meet", "then", "else", "while", "for", "in", "forge", "return",
     "{", "}", ";", "(", ")", ",", ":", "=>", "remold", "mold"
 };
@@ -147,18 +147,23 @@ ASTNode* removeRedundantLabeledNode(ASTNode* node) {
 /// <param name="node"></param>
 /// <param name="targetLabel"></param>
 void mergeNestedLists(ASTNode* node, const char* targetLabel) {
+    // check if the node has the targetLable
     if (node->lable && strcmp(node->lable, targetLabel) == 0) {
+        // create a merged node arr
         int capacity = node->childCount;
         ASTNode** merged = (ASTNode**)malloc(sizeof(ASTNode*) * capacity);
         int mergedCount = 0;
-
+        // go over all children of current node
         for (int i = 0; i < node->childCount; i++) {
             ASTNode* child = node->children[i];
+            // if the child has the same lable as target lable merge its children into the node
             if (child && child->lable && strcmp(child->lable, targetLabel) == 0) {
+                // make space
                 if (mergedCount + child->childCount > capacity) {
                     capacity = (mergedCount + child->childCount) * 2;
                     merged = (ASTNode**)realloc(merged, sizeof(ASTNode*) * capacity);
                 }
+                // move the children into the merged array
                 for (int c = 0; c < child->childCount; c++) {
                     merged[mergedCount] = child->children[c];
                     if (child->children[c]) {
@@ -166,11 +171,13 @@ void mergeNestedLists(ASTNode* node, const char* targetLabel) {
                     }
                     mergedCount++;
                 }
+                // free the node and all its data since the children have been merged
                 free(child->children);
                 free(child->lable);
                 free(child);
             }
             else {
+                // if child doesnt have the correct label just merge it into the array
                 if (mergedCount >= capacity) {
                     capacity *= 2;
                     merged = (ASTNode**)realloc(merged, sizeof(ASTNode*) * capacity);
@@ -178,6 +185,7 @@ void mergeNestedLists(ASTNode* node, const char* targetLabel) {
                 merged[mergedCount++] = child;
             }
         }
+        // replace the original children array with the merged array
         free(node->children);
         node->children = merged;
         node->childCount = mergedCount;
@@ -200,7 +208,8 @@ ASTNode* compressAST(ASTNode* node)
     // remove nodes with no children
     if (node->token == NULL && node->childCount == 0) {
         // keep these
-        if (strcmp(node->lable, "Block") == 0 || strcmp(node->lable, "ParamList") == 0 || strcmp(node->lable, "ArgumentList") == 0) {
+        if (strcmp(node->lable, "Block") == 0 || strcmp(node->lable, "ParamList") == 0 || strcmp(node->lable, "ArgumentList") == 0 
+            || strcmp(node->lable, "ReturnStatement") == 0) {
             return node; 
         }
         free(node->children);
@@ -211,9 +220,15 @@ ASTNode* compressAST(ASTNode* node)
     // flatten the nodes with no token but with 1 child
     if (node->token == NULL && node->childCount == 1) {
         // keep these
-        if (strcmp(node->lable, "Block") == 0 || strcmp(node->lable, "ParamList") == 0 ||strcmp(node->lable, "ArgumentList") == 0 || strcmp(node->lable, "GlobalItemList") == 0 || strcmp(node->lable, "StatementList") == 0) {
+        if (strcmp(node->lable, "Block") == 0  || strcmp(node->lable, "ReturnStatement") == 0 || strcmp(node->lable, "Expr") == 0 || 
+            strcmp(node->lable, "ParamList") == 0 ||strcmp(node->lable, "ArgumentList") == 0 || strcmp(node->lable, "GlobalItemList") == 0 ||
+            strcmp(node->lable, "OptionalElse") == 0) {
             return node; 
         }
+        //// get rid of param Expr
+        //if (strcmp(node->lable, "Expr") == 0 && node->children[0] && !(strcmp(node->children[0]->lable, "Expr") == 0)) {
+        //    return node;
+        //}
         else {
             ASTNode* child = node->children[0];
             // update parent pointer
