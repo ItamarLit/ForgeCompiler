@@ -1,7 +1,8 @@
 #ifndef SYMBOL_TABLE_H
 #define SYMBOL_TABLE_H
-
 #include "HashMap.h"
+
+#define IGNORE_LINE -1
 
 struct ASTNode; //forward declare the ASTNode
 
@@ -10,6 +11,7 @@ struct ASTNode; //forward declare the ASTNode
 typedef struct SymbolEntry {
     char* name;           // Variable or function name
     char* type;           // Data type 
+    int line;              // line num, used for better errors
     int isFunction;      // 1 if it's a function, 0 otherwise
     char* returnType;    // Function return type
     char** paramTypes;  // array of param types for functions

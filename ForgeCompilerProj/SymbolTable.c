@@ -21,7 +21,7 @@ static unsigned long hashFunc(void* key, int map_size) {
     return hash % map_size;
 }
 
-static void putState(HashMap* map, char* name, char* type, int scope, int isFunction, char* returnType, char** paramTypes, int paramCount) {
+static void putState(HashMap* map, char* name, char* type, int scope, int isFunction, char* returnType, char** paramTypes, int paramCount, int line) {
     if (getHashMapValue(name, map) != NULL) {
         printf("Error: Identifier '%s' already declared in this scope!\n", name);
         return;
@@ -34,6 +34,7 @@ static void putState(HashMap* map, char* name, char* type, int scope, int isFunc
     }
     entry->name = strdup(name);
     entry->type = strdup(type);
+    entry->line = line;
     entry->isFunction = isFunction;
     entry->returnType = returnType ? strdup(returnType) : NULL;
     entry->paramTypes = (char**)malloc(sizeof(char*) * paramCount);
@@ -85,10 +86,9 @@ void printSymbolEntry(void* value) {
     printf("%s ]", entry->paramTypes[entry->paramCount - 1]);
 }
 
-int extractFunctionParameters(ASTNode* funcNode, char*** paramNames, char*** paramTypes) {
-    ASTNode* paramList = funcNode->children[3];
+int extractFunctionParameters(ASTNode* paramNode, char*** paramNames, char*** paramTypes) {
     // get children count
-    int childrenCount = paramList->childCount;
+    int childrenCount = paramNode->childCount;
     if (childrenCount == 0) {
         printf("Function has an empty parameter list.\n");
         return 0;
@@ -96,7 +96,7 @@ int extractFunctionParameters(ASTNode* funcNode, char*** paramNames, char*** par
     int decCount = 0;
     // go over all children of the param list
     for (int i = 0; i < childrenCount; i++) {
-        ASTNode* paramDecl = paramList->children[i];
+        ASTNode* paramDecl = paramNode->children[i];
         // get the type and identifier from the ParamDecl nodes
         if (strcmp(paramDecl->lable, "ParamDecl") == 0) {
             // realoc the arrays
@@ -138,7 +138,7 @@ void createASTSymbolTable(ASTNode* node, SymbolTable* currentTable, int* errorCo
         }
         else {
             // insert the symbol
-            putState(currentTable->table, varName, varType, 0, 0, NULL, NULL, 0);
+            putState(currentTable->table, varName, varType, 0, 0, NULL, NULL, 0, node->children[1]->token->tokenRow);
         }
     }
 
@@ -153,15 +153,15 @@ void createASTSymbolTable(ASTNode* node, SymbolTable* currentTable, int* errorCo
         // go over all param dec in func 
         char** paramNames = NULL;
         char** paramTypes = NULL;
-        int decCount = extractFunctionParameters(node, &paramNames, &paramTypes);
-        putState(currentTable->table, funcName, returnType, 0, 1, returnType, paramTypes, decCount);
+        int decCount = extractFunctionParameters(paramList, &paramNames, &paramTypes);
+        putState(currentTable->table, funcName, returnType, 0, 1, returnType, paramTypes, decCount, IGNORE_LINE);
         
         // create new symbol table for func scope
         SymbolTable* functionScope = createNewScope(currentTable);
         node->scope = functionScope;      
         // fill the function scope with the params
         for (int i = 0; i < decCount; i++) {
-            putState(functionScope->table, paramNames[i], paramTypes[i], 0, 0, NULL, NULL, 0);
+            putState(functionScope->table, paramNames[i], paramTypes[i], 0, 0, NULL, NULL, 0, IGNORE_LINE);
             free(paramNames[i]);
             free(paramTypes[i]);
         }
