@@ -3,11 +3,13 @@
 
 #include "AST.h"
 #include "SymbolTable.h"
+#include "Types.h"
+
 
 // operator handler
-typedef char* (*OperatorHandler)(const char*, const char*, const char*);
+typedef Type (*OperatorHandler)(Type, Type, const char*);
 // regular handler in the check expr func
-typedef char* (*HandlerFunc)(ASTNode*);
+typedef Type (*HandlerFunc)(ASTNode*);
 // check func that is used in the check expr func
 typedef int (*CheckFunc)(ASTNode*);
 
@@ -25,7 +27,7 @@ typedef struct {
 
 
 // this func is used to check the type of any given expression
-const char* checkExprType(ASTNode* exprRoot);
+Type checkExprType(ASTNode* exprRoot);
 
 
 #endif 

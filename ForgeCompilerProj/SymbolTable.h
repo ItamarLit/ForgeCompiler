@@ -1,7 +1,7 @@
 #ifndef SYMBOL_TABLE_H
 #define SYMBOL_TABLE_H
 #include "HashMap.h"
-
+#include "Types.h"
 #define IGNORE_LINE -1
 
 struct ASTNode; //forward declare the ASTNode
@@ -10,11 +10,11 @@ struct ASTNode; //forward declare the ASTNode
 // value for the hashmap that will represent the table
 typedef struct SymbolEntry {
     char* name;           // Variable or function name
-    char* type;           // Data type 
+    Type type;           // Data type 
     int line;              // line num, used for better errors
     int isFunction;      // 1 if it's a function, 0 otherwise
-    char* returnType;    // Function return type
-    char** paramTypes;  // array of param types for functions
+    Type returnType;    // Function return type
+    Type* paramTypes;  // array of param types for functions
     int paramCount;     // param count for functions
 } SymbolEntry;
 
@@ -33,6 +33,7 @@ void printSymbolTables(struct ASTNode* node);
 SymbolTable* getClosestScope(struct ASTNode* node);
 // this func is used to lookup a symbol from a current scope up the scopes
 SymbolEntry* lookUpSymbol(const char* symbol, SymbolTable* currentScope);
-
+// this func is used to insert a symbol into the symbol table
+void insertSymbol(HashMap* map, char* name, Type type, int isFunction, Type returnType, Type* paramTypes, int paramCount, int line);
 
 #endif

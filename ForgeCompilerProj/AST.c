@@ -222,7 +222,7 @@ ASTNode* compressAST(ASTNode* node)
         // keep these
         if (strcmp(node->lable, "Block") == 0  || strcmp(node->lable, "ReturnStatement") == 0 || strcmp(node->lable, "Expr") == 0 || 
             strcmp(node->lable, "ParamList") == 0 ||strcmp(node->lable, "ArgumentList") == 0 || strcmp(node->lable, "GlobalItemList") == 0 ||
-            strcmp(node->lable, "OptionalElse") == 0) {
+            strcmp(node->lable, "OptionalElse") == 0 || strcmp(node->lable, "StatementList") == 0) {
             return node; 
         }
         //// get rid of param Expr

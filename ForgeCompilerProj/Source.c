@@ -6,8 +6,10 @@
 #include "Parser.h"
 #include "AST.h"
 #include "SymbolTable.h"
+#include "SemanticAnalyzer.h"
 
 int main() {
+
     HashMap* state_machine = NULL;
     // init the state machine for the lexer hashmap
     init_state_machine(&state_machine);
@@ -28,7 +30,7 @@ int main() {
     inputStr = NULL;
     // Free the hash map
     freeHashMap(&state_machine);
-    //printTokens(ptoken_array);
+    printTokens(ptoken_array);
     /* HashMap* goto_table = NULL;
 
     InitGotoTable(&goto_table, "GotoTable.txt");
@@ -48,7 +50,12 @@ int main() {
         int errorCount = 0;
         SymbolTable* globalTable = createNewScope(NULL);
         createASTSymbolTable(root, globalTable, &errorCount);
+        // attach global symbol table to GlobalItemList Node
+        root->scope = globalTable;
         printSymbolTables(root);
+        puts("\n");
+        int errorCount2 = 0;
+        analyze(root, &errorCount2);
     }
     freeTokenArray(&ptoken_array);
     freeASTNode(root);

@@ -6,16 +6,16 @@
 
 
 // static helper functions in the checkExpr
-static const char* handleIdentifier(ASTNode* node);
-static const char* handleBinaryOperator(ASTNode* node);
-static const char* handleUnaryOperator(ASTNode* node);
-static const char* handleFunctionCall(ASTNode* node);
+static Type handleIdentifier(ASTNode* node);
+static Type handleBinaryOperator(ASTNode* node);
+static Type handleUnaryOperator(ASTNode* node);
+static Type handleFunctionCall(ASTNode* node);
 
 // functions for operator handling in binary operator
-static const char* handleArithmeticOp(const char* leftType, const char* rightType, const char* operator);
-static const char* handleLogicalOp(const char* leftType, const char* rightType, const char* operator);
-static const char* handleComparisonOp(const char* leftType, const char* rightType, const char* operator);
-static const char* handleLiteral(ASTNode* node);
+static Type handleArithmeticOp(Type leftType, Type rightType, const char* operator);
+static Type handleLogicalOp(Type leftType, Type rightType, const char* operator);
+static Type handleComparisonOp(Type leftType, Type rightType, const char* operator);
+static Type handleLiteral(ASTNode* node);
 
 // lookup table for all binary operators
 static OperatorEntry operatorTable[] = {
@@ -51,14 +51,14 @@ static ExprTypeHandler handlers[] = {
     { NULL, NULL }  
 };
 
-// lookup table for the types in handlerLiteral
-static const char* typeTable[] =
-{
-    "int", // 0
-    "string", // 1
-    "bool",   // 2
-};
 
+// lookup table for the types 
+static Type typeTable[] =
+{
+    TYPE_INT, // 0
+    TYPE_STRING, // 1
+    TYPE_BOOL,   // 2
+};
 
 /// <summary>
 /// This is a helper function that will return true if a node is of a literal type: 
@@ -130,9 +130,9 @@ static int isBinaryExpression(ASTNode* node)
 /// </summary>
 /// <param name="exprRoot"></param>
 /// <returns>The func will return a type in str form or NULL if an error was found</returns>
-const char* checkExprType(ASTNode* exprRoot)
+Type checkExprType(ASTNode* exprRoot)
 {
-    if (!exprRoot) return NULL;
+    if (!exprRoot) return TYPE_ERROR;
 
     // handle expr nodes separately
     if (exprRoot->lable && strcmp(exprRoot->lable, "Expr") == 0) {
@@ -145,7 +145,7 @@ const char* checkExprType(ASTNode* exprRoot)
         }
     }
     // default no match
-    return NULL; 
+    return TYPE_ERROR;
 }
 /// <summary>
 /// This is a func that is used to get an identifiers type
@@ -153,14 +153,14 @@ const char* checkExprType(ASTNode* exprRoot)
 /// <param name="node"></param>
 /// <param name="identifier"></param>
 /// <returns>Returns the type of the identifier in string form</returns>
-static const char* handleIdentifier(ASTNode* node)
+static Type handleIdentifier(ASTNode* node)
 {
     SymbolTable* currentScope = getClosestScope(node);
     SymbolEntry* entry = lookUpSymbol(node->token->lexeme, currentScope);
     if (entry) {
         return entry->type;
     }
-    return NULL;
+    return TYPE_ERROR;
 }
 
 /// <summary>
@@ -169,14 +169,14 @@ static const char* handleIdentifier(ASTNode* node)
 /// <param name="node"></param>
 /// <param name="funcName"></param>
 /// <returns>Returns the function return type in string form</returns>
-static const char* handleFunctionCall(ASTNode* node)
+static Type handleFunctionCall(ASTNode* node)
 {
     SymbolTable* currentScope = getClosestScope(node);
     SymbolEntry* entry = lookUpSymbol(node->token->lexeme, currentScope);
     if (entry) {
         return entry->returnType;
     }
-    return NULL;
+    return TYPE_ERROR;
 }
 
 
@@ -187,11 +187,11 @@ static const char* handleFunctionCall(ASTNode* node)
 /// <param name="rightType"></param>
 /// <param name=""></param>
 /// <returns>Returns int if the types are correct else returns NULL</returns>
- static const char* handleArithmeticOp(const char* leftType, const char* rightType, const char* operator) {
-    if (strcmp(leftType, "int") == 0 && strcmp(rightType, "int") == 0) {
-        return "int";
+ static Type handleArithmeticOp(Type leftType, Type rightType, const char* operator) {
+    if (leftType == TYPE_INT && rightType == TYPE_INT) {
+        return TYPE_INT;
     }
-    return NULL;
+    return TYPE_ERROR;
 }
 
 /// <summary>
@@ -201,11 +201,11 @@ static const char* handleFunctionCall(ASTNode* node)
 /// <param name="rightType"></param>
 /// <param name=""></param>
 /// <returns>Returns bool if the types are correct else returns NULL</returns>
-static const char* handleLogicalOp(const char* leftType, const char* rightType, const char* operator) {
-    if (strcmp(leftType, "bool") == 0 && strcmp(rightType, "bool") == 0) {
-        return "bool";
+static Type handleLogicalOp(Type leftType, Type rightType, const char* operator) {
+    if (leftType == TYPE_BOOL && rightType == TYPE_BOOL) {
+        return TYPE_BOOL;
     }
-    return NULL;
+    return TYPE_ERROR;
 }
 
 /// <summary>
@@ -215,28 +215,28 @@ static const char* handleLogicalOp(const char* leftType, const char* rightType, 
 /// <param name="rightType"></param>
 /// <param name=""></param>
 /// <returns>Returns bool or NULL if there is an error</returns>
-static const char* handleComparisonOp(const char* leftType, const char* rightType, const char* operator) {
+static Type handleComparisonOp(Type leftType, Type rightType, const char* operator) {
     // dont allow string comparisions
-    if (strcmp(leftType, "string") == 0 || strcmp(rightType, "string") == 0) {
-        return NULL;
+    if (leftType == TYPE_STRING || rightType == TYPE_STRING) {
+        return TYPE_ERROR;
     }
     // if both types are the same the result is a bool
-    if (strcmp(leftType, rightType) == 0) {
-        return "bool";
+    if (leftType == rightType) {
+        return TYPE_BOOL;
     }
-    return NULL;
+    return TYPE_ERROR;
 }
 
-static const char* handleBinaryOperator(ASTNode* node) {
+static Type handleBinaryOperator(ASTNode* node) {
     // get the left and right side types
-    const char* leftType = checkExprType(node->children[0]);
-    const char* rightType = checkExprType(node->children[2]);
+    Type leftType = checkExprType(node->children[0]);
+    Type rightType = checkExprType(node->children[2]);
     // get the operator type
     ASTNode* operatorNode = node->children[1];
     char* operator = operatorNode->token->lexeme;
 
-    if (leftType == NULL || rightType == NULL) {
-        return NULL;
+    if (leftType == TYPE_ERROR || rightType == TYPE_ERROR) {
+        return TYPE_ERROR;
     }
     // find the correct handler in the table
     for (size_t i = 0; i < (sizeof(operatorTable) / sizeof(operatorTable[0])); i++) {
@@ -244,8 +244,6 @@ static const char* handleBinaryOperator(ASTNode* node) {
             return operatorTable[i].handler(leftType, rightType, operator);
         }
     }
-    // if the operator wasnt found then it is an invalid operator
-    return NULL;
 }
 
 
@@ -254,23 +252,23 @@ static const char* handleBinaryOperator(ASTNode* node) {
 /// </summary>
 /// <param name="node"></param>
 /// <returns>Returns the type of the unary expr or null if there is an error</returns>
-static const char* handleUnaryOperator(ASTNode* node)
+static Type handleUnaryOperator(ASTNode* node)
 {
     // get the op node and the expr node
     ASTNode* opNode = node->children[0];
     ASTNode* exprNode = node->children[1];
     // get the type of the expr
-    char* exprType = checkExprType(exprNode);
+    Type exprType = checkExprType(exprNode);
     // check that the expr type is good for the op
     const char* opLexeme = opNode->token->lexeme;
-    if (strcmp(opLexeme, "!") == 0 && strcmp(exprType, "bool") == 0) 
+    if (strcmp(opLexeme, "!") == 0 && exprType == TYPE_BOOL) 
     {
-        return "bool";
+        return TYPE_BOOL;
     }
-    else if (strcmp(opLexeme, "-") == 0 && strcmp(exprType, "int") == 0) {
-        return "int";
+    else if (strcmp(opLexeme, "-") == 0 && exprType == TYPE_INT) {
+        return TYPE_INT;
     }
-    return NULL;
+    return TYPE_ERROR;
 }
 
 /// <summary>
@@ -278,8 +276,8 @@ static const char* handleUnaryOperator(ASTNode* node)
 /// </summary>
 /// <param name="node"></param>
 /// <returns>Returns the type of the literal</returns>
-static const char* handleLiteral(ASTNode* node)
+static Type handleLiteral(ASTNode* node)
 {
-    if (!node->token) return NULL;
+    if (!node->token) return TYPE_ERROR;
     return typeTable[node->token->type - 1];
 }

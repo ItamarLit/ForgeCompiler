@@ -21,7 +21,7 @@ static unsigned long hashFunc(void* key, int map_size) {
     return hash % map_size;
 }
 
-static void putState(HashMap* map, char* name, char* type, int scope, int isFunction, char* returnType, char** paramTypes, int paramCount, int line) {
+void insertSymbol(HashMap* map, char* name, Type type, int isFunction, Type returnType, Type* paramTypes, int paramCount, int line) {
     if (getHashMapValue(name, map) != NULL) {
         printf("Error: Identifier '%s' already declared in this scope!\n", name);
         return;
@@ -33,13 +33,18 @@ static void putState(HashMap* map, char* name, char* type, int scope, int isFunc
         return;
     }
     entry->name = strdup(name);
-    entry->type = strdup(type);
+    entry->type = type;
     entry->line = line;
     entry->isFunction = isFunction;
-    entry->returnType = returnType ? strdup(returnType) : NULL;
-    entry->paramTypes = (char**)malloc(sizeof(char*) * paramCount);
-    for (int i = 0; i < paramCount; i++) {
-        entry->paramTypes[i] = strdup(paramTypes[i]);
+    entry->returnType = returnType;
+    if (paramCount > 0 && paramTypes != NULL) {
+        entry->paramTypes = (Type*)malloc(sizeof(Type) * paramCount);
+        for (int i = 0; i < paramCount; i++) {
+            entry->paramTypes[i] = paramTypes[i];
+        }
+    }
+    else {
+        entry->paramTypes = NULL;
     }
     entry->paramCount = paramCount;
     // insert value in hashmap
@@ -53,11 +58,6 @@ static SymbolEntry* getMapValue(HashMap* map, char* name) {
 void freeSymbolEntry(void* value) {
     SymbolEntry* entry = (SymbolEntry*)value;
     free(entry->name);
-    free(entry->type);
-    if (entry->returnType) free(entry->returnType);
-    for (int i = 0; i < entry->paramCount; i++) {
-        free(entry->paramTypes[i]);
-    }
     free(entry->paramTypes);
     free(entry);
 }
@@ -75,18 +75,18 @@ void printStringKey(void* key) {
 void printSymbolEntry(void* value) {
     SymbolEntry* entry = (SymbolEntry*)value;
     printf(" Value: Name: %s, Type: %s, Function: %d, ParamCount: %d, ParamTypes: ",
-        entry->name, entry->type, entry->isFunction, entry->paramCount);
+        entry->name, convertTypeToString(entry->type), entry->isFunction, entry->paramCount);
     if (entry->paramCount == 0) {
         printf("No params ]");
         return;
     }
     for (int i = 0; i < entry->paramCount - 1; i++) {
-        printf("%s, ", entry->paramTypes[i]);
+        printf("%s, ", convertTypeToString(entry->paramTypes[i]));
     }
-    printf("%s ]", entry->paramTypes[entry->paramCount - 1]);
+    printf("%s ]", convertTypeToString(entry->paramTypes[entry->paramCount - 1]));
 }
 
-int extractFunctionParameters(ASTNode* paramNode, char*** paramNames, char*** paramTypes) {
+int extractFunctionParameters(ASTNode* paramNode, char*** paramNames, Type** paramTypes) {
     // get children count
     int childrenCount = paramNode->childCount;
     if (childrenCount == 0) {
@@ -101,9 +101,9 @@ int extractFunctionParameters(ASTNode* paramNode, char*** paramNames, char*** pa
         if (strcmp(paramDecl->lable, "ParamDecl") == 0) {
             // realoc the arrays
             *paramNames = (char**)realloc(*paramNames, sizeof(char*) * (decCount + 1));
-            *paramTypes = (char**)realloc(*paramTypes, sizeof(char*) * (decCount + 1));
+            *paramTypes = (Type*)realloc(*paramTypes, sizeof(Type) * (decCount + 1));
             ASTNode* typeNode = paramDecl->children[0];
-            (*paramTypes)[decCount] = strdup(typeNode->token->lexeme);
+            (*paramTypes)[decCount] = convertStringType(typeNode->token->lexeme);
             ASTNode* nameNode = paramDecl->children[1];
             (*paramNames)[decCount] = strdup(nameNode->token->lexeme);
             decCount++;
@@ -138,7 +138,7 @@ void createASTSymbolTable(ASTNode* node, SymbolTable* currentTable, int* errorCo
         }
         else {
             // insert the symbol
-            putState(currentTable->table, varName, varType, 0, 0, NULL, NULL, 0, node->children[1]->token->tokenRow);
+            insertSymbol(currentTable->table, varName, convertStringType(varType), 0, TYPE_UNDEFINED, NULL, 0, node->children[1]->token->tokenRow);
         }
     }
 
@@ -152,18 +152,17 @@ void createASTSymbolTable(ASTNode* node, SymbolTable* currentTable, int* errorCo
         }
         // go over all param dec in func 
         char** paramNames = NULL;
-        char** paramTypes = NULL;
+        Type* paramTypes = NULL;
         int decCount = extractFunctionParameters(paramList, &paramNames, &paramTypes);
-        putState(currentTable->table, funcName, returnType, 0, 1, returnType, paramTypes, decCount, IGNORE_LINE);
+        insertSymbol(currentTable->table, funcName, convertStringType(returnType), 1, convertStringType(returnType), paramTypes, decCount, IGNORE_LINE);
         
         // create new symbol table for func scope
         SymbolTable* functionScope = createNewScope(currentTable);
         node->scope = functionScope;      
         // fill the function scope with the params
         for (int i = 0; i < decCount; i++) {
-            putState(functionScope->table, paramNames[i], paramTypes[i], 0, 0, NULL, NULL, 0, IGNORE_LINE);
+            insertSymbol(functionScope->table, paramNames[i], paramTypes[i], 0, TYPE_UNDEFINED, NULL, 0, IGNORE_LINE);
             free(paramNames[i]);
-            free(paramTypes[i]);
         }
         if (paramNames) {
             free(paramNames);

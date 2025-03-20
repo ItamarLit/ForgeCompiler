@@ -307,7 +307,7 @@ void Reduce(int ruleIndex, Stack** s, GrammarArray* array, HashMap* gotoTable, p
     // get the goto state
     char* gotoState = getMapValue(gotoTable, (TopStack(*s))->data.state, rule->leftRule, 0);
     if (gotoState == NULL) {
-        HandleSyntaxError(&errorCount, &s, &i, tokenArray, &finishedParsing);
+        HandleSyntaxError(errorCount, s, i, tokenArray, finishedParsing);
         return;
     }
     // preform the reduce
@@ -328,7 +328,7 @@ void FreeParserResources(GrammarArray* array, HashMap** actionTable, HashMap** g
 }
 
 int shiftEmpty(const char* token, pTokenArray tokenArray, int* currentIndex, Stack** s) {
-    if (*currentIndex > 0 && (strcmp(token, ")") == 0 || strcmp(token, "}") == 0) ||  (strcmp(token, "$") == 0)) {
+    if (*currentIndex > 0 ) {
         const char* prevToken = tokenArray->tokens[*currentIndex - 1]->lexeme;
 
         // Get the current parser state

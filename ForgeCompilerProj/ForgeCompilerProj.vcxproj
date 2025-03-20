@@ -141,6 +141,7 @@
     <ClInclude Include="SymbolTable.h" />
     <ClInclude Include="Terminals.h" />
     <ClInclude Include="Token.h" />
+    <ClInclude Include="Types.h" />
     <ClInclude Include="TypeChecker.h" />
   </ItemGroup>
   <ItemGroup>
@@ -166,6 +167,7 @@
     <ClCompile Include="Terminals.c" />
     <ClCompile Include="Token.c" />
     <ClCompile Include="TypeChecker.c" />
+    <ClCompile Include="Types.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

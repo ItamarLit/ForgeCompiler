@@ -29,9 +29,9 @@ static int getExprLine(ASTNode* root) {
     return node->token->tokenRow;
 }
 
-static void handleInvalidExpr(char* exprType, int exprLine, int* errorCount) 
+static void handleInvalidExpr(Type exprType, int exprLine, int* errorCount) 
 {
-    if (!exprType)
+    if (exprType == TYPE_ERROR)
     {
         printf("Error: Invalid expression on line: %d\n", exprLine);
         (*errorCount)++;
@@ -52,12 +52,12 @@ void resolveIdentifiers(ASTNode* root, int* errorCount) {
     // check if the type is identifier
     if (root->token && root->token->type == IDENTIFIER) {
         SymbolEntry* entry = lookUpSymbol(root->token->lexeme, currentScope);
-        if (entry == NULL || strcmp(entry->type, "Error") == 0) {
+        if (!entry || entry->type == TYPE_UNDEFINED) {
             printf("Error: Undeclared identifier '%s' at line %d, column %d\n",
                 root->token->lexeme, root->token->tokenRow, root->token->tokenCol);
             // insert the symbol with ERROR_TYPE so i can continue looking for problems
             if (!entry) {
-                insertSymbol(currentScope->table, root->token->lexeme, "Error", 0, NULL, NULL, 0, root->token->tokenRow);
+                insertSymbol(currentScope->table, root->token->lexeme, TYPE_UNDEFINED, 0, TYPE_UNDEFINED, TYPE_UNDEFINED, 0, root->token->tokenRow);
             }
             (*errorCount)++;
         }
@@ -80,12 +80,12 @@ void checkTypes(ASTNode* root, int* errorCount)
         // get the var entry from the symbol table
         SymbolEntry* varEntry = lookUpSymbol(root->children[1]->token->lexeme, currentScope);
         // get the var expr type
-        char* exprType = checkExprType(root->children[3]);
+        Type exprType = checkExprType(root->children[3]);
         // check if the expr is invalid
         handleInvalidExpr(exprType, varEntry->line, errorCount);
         // check that the types match only in defined vars
-        if (exprType && varEntry != NULL && strcmp(exprType, varEntry->type) != 0) {
-            printf("Error: Expr of type: %s is not valid for var of type: %s, on line: %d\n", exprType, varEntry->type, varEntry->line);
+        if (exprType != TYPE_ERROR && varEntry && exprType != varEntry->type) {
+            printf("Error: Expr of type: %s is not valid for var of type: %s, on line: %d\n", convertTypeToString(exprType), convertTypeToString(varEntry->type), varEntry->line);
             (*errorCount)++;
         }
         // check that a var isnt init with itself ( illegal )
@@ -176,13 +176,13 @@ static int functionAlwaysReturns(ASTNode* block) {
 /// <param name="node"></param>
 /// <param name="retType"></param>
 /// <param name="errorCount"></param>
-void validateReturnExprType(ASTNode* node, const char* retType, int* errorCount, const char* funcName)
+void validateReturnExprType(ASTNode* node, Type retType, int* errorCount, const char* funcName)
 {
     if (!node) return;
     // if we found a return statement node check its return type
     if (node->lable && strcmp(node->lable, "ReturnStatement") == 0) {
         // if the func is void cant return anything
-        if (strcmp(retType, "void") == 0) {
+        if (retType == TYPE_VOID) {
             if (node->childCount > 0) {
                 printf("Error: Function: %s declared 'void' cannot return a value\n", funcName);
                 (*errorCount)++;
@@ -191,17 +191,17 @@ void validateReturnExprType(ASTNode* node, const char* retType, int* errorCount,
         else {
             // if the func isnt void and there is no value in return then error
             if (node->childCount == 0) {
-                printf("Error: Function: %s return type '%s' requires a return value\n", funcName, retType);
+                printf("Error: Function: %s return type '%s' requires a return value\n", funcName, convertTypeToString(retType));
                 (*errorCount)++;
             }
             else {
                 // check the type of the returned expr
-                char* returnExprType = checkExprType(node->children[0]);
+                Type returnExprType = checkExprType(node->children[0]);
                 int exprRow = getExprLine(node->children[0]);
                 // handle invalid expr
                 handleInvalidExpr(returnExprType, exprRow, errorCount);
-                if (returnExprType && strcmp(returnExprType, retType) != 0) {
-                    printf("Error: Return type mismatch in function: % s. Expected '%s', got '%s' on line: %d \n",funcName, retType, returnExprType, exprRow);
+                if (returnExprType != TYPE_ERROR && returnExprType != retType) {
+                    printf("Error: Return type mismatch in function: % s. Expected '%s', got '%s' on line: %d \n",funcName, convertTypeToString(retType), convertTypeToString(returnExprType), exprRow);
                     (*errorCount)++;
                 }
             }
@@ -227,11 +227,11 @@ void checkReturn(ASTNode* root, int* errorCount) {
         // find func dec
         if (node->lable && strcmp(node->lable, "FuncDeclaration") == 0) {
             // get the func return type and the func name
-            char* retType = node->children[2]->token->lexeme;
+            Type retType = convertStringType(node->children[2]->token->lexeme);
             char* funcName = node->children[0]->token->lexeme;
             ASTNode* body = node->children[3];
             // if type void no return needed
-            if (retType && strcmp(retType, "void") == 0) continue;
+            if (retType != TYPE_ERROR && retType == TYPE_VOID) continue;
             // check that func has return in all paths
             if (!functionAlwaysReturns(body)) {
                 printf("Error: Function '%s' is missing a return statement in all paths\n",
@@ -281,21 +281,21 @@ void checkBoolExprTypes(ASTNode* root, int* errorCount)
     if (!root) return;
     // check if the type is bool in while statement
     if (root->lable && strcmp(root->lable, "WhileStatement") == 0) {
-        char* exprType = checkExprType(root->children[0]);
+        Type exprType = checkExprType(root->children[0]);
         // handle invalid expr
         handleInvalidExpr(exprType, getExprLine(root->children[0]), errorCount);
         // check that the type is bool
-        if (exprType && strcmp(exprType, "bool") != 0 ) {
+        if (exprType != TYPE_ERROR && exprType != TYPE_BOOL) {
             printf("Error: Expr type inside while must be boolean at line: %d\n", getExprLine(root));
             (*errorCount)++;
         }
     }
     // check that the type is bool in the if statements
     if (root->lable && strcmp(root->lable, "IfStatement") == 0) {
-        char* exprType = checkExprType(root->children[0]);
+        Type exprType = checkExprType(root->children[0]);
         // handle the invalid expr
         handleInvalidExpr(exprType, getExprLine(root->children[0]), errorCount);
-        if (exprType && strcmp(exprType, "bool") != 0) {
+        if (exprType != TYPE_ERROR  && exprType != TYPE_BOOL) {
             printf("Error: Expr type inside if must be boolean at line: %d\n", getExprLine(root));
             (*errorCount)++;
         }
@@ -311,7 +311,7 @@ void checkBoolExprTypes(ASTNode* root, int* errorCount)
 /// <param name="errorCount"></param>
 void checkFunctionCalls(ASTNode* root, int* errorCount)
 {
-    if (root == NULL) return;
+    if (!root) return;
     // climb tree to get the closest scope
     SymbolTable* currentScope = getClosestScope(root);
     // check if the type is func call
@@ -336,10 +336,10 @@ void checkFunctionCalls(ASTNode* root, int* errorCount)
             else {
                 // check that the param types match
                 for (int i = 0; i < funcEntry->paramCount; i++) {
-                    char* argType = checkExprType(argumentList->children[i]);
+                    Type argType = checkExprType(argumentList->children[i]);
                     handleInvalidExpr(argType, funcCallNode->token->tokenRow, errorCount);
-                    if (argType && strcmp(argType, funcEntry->paramTypes[i]) != 0) {
-                        printf("Invalid arguments for function: %s, used at line: %d, expected: '%s' but got '%s'\n", funcCallNode->token->lexeme, funcCallNode->token->tokenRow, funcEntry->paramTypes[i], argType);
+                    if (argType != TYPE_ERROR && argType != funcEntry->paramTypes[i]) {
+                        printf("Invalid arguments for function: %s, used at line: %d, expected: '%s' but got '%s'\n", funcCallNode->token->lexeme, funcCallNode->token->tokenRow, convertTypeToString(funcEntry->paramTypes[i]), convertTypeToString(argType));
                         (*errorCount)++;
                     }
                 }

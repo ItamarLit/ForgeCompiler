@@ -60,6 +60,9 @@
     <ClInclude Include="Expressions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Types.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Code.txt">
@@ -122,6 +125,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Expressions.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Types.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -54,6 +54,8 @@ typedef enum {
     ELSE,
     AND,
     OR,
+    OUTPUT,
+    INPUT
 }TokenType;
 
 typedef struct {

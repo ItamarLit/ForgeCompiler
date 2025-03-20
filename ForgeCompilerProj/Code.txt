@@ -1,7 +1,14 @@
-mold int x = 5;
-if meet (x > y) then {
-	remold y += 5;
+forge Main ( int a) => string 
+{
+	while meet ( 4 > 5 ) then 
+	{
+		output(4);
+	}
+	return "true";
 }
-else {
-	remold y -= 5;
-}
+
+
+
+
+	
+	
