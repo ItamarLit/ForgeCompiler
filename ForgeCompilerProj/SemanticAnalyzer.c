@@ -51,10 +51,14 @@ void resolveIdentifiers(ASTNode* root, int* errorCount) {
     SymbolTable* currentScope = getClosestScope(root);
     // check if the type is identifier
     if (root->token && root->token->type == IDENTIFIER) {
-        if (lookUpSymbol(root->token->lexeme, currentScope) == NULL) {
+        SymbolEntry* entry = lookUpSymbol(root->token->lexeme, currentScope);
+        if (entry == NULL || strcmp(entry->type, "Error") == 0) {
             printf("Error: Undeclared identifier '%s' at line %d, column %d\n",
                 root->token->lexeme, root->token->tokenRow, root->token->tokenCol);
             // insert the symbol with ERROR_TYPE so i can continue looking for problems
+            if (!entry) {
+                insertSymbol(currentScope->table, root->token->lexeme, "Error", 0, NULL, NULL, 0, root->token->tokenRow);
+            }
             (*errorCount)++;
         }
     }
@@ -79,9 +83,14 @@ void checkTypes(ASTNode* root, int* errorCount)
         char* exprType = checkExprType(root->children[3]);
         // check if the expr is invalid
         handleInvalidExpr(exprType, varEntry->line, errorCount);
-        // check that the types match
+        // check that the types match only in defined vars
         if (exprType && varEntry != NULL && strcmp(exprType, varEntry->type) != 0) {
             printf("Error: Expr of type: %s is not valid for var of type: %s, on line: %d\n", exprType, varEntry->type, varEntry->line);
+            (*errorCount)++;
+        }
+        // check that a var isnt init with itself ( illegal )
+        if (root->children[3]->childCount == 1 && root->children[3]->children[0]->token && root->children[3]->children[0]->token->type == IDENTIFIER && varEntry && strcmp(root->children[3]->children[0]->token->lexeme, varEntry->name) == 0) {
+            printf("Error: Cannot init a var: %s with itself, on line: %d\n", varEntry->name, varEntry->line);
             (*errorCount)++;
         }
     }
@@ -95,7 +104,6 @@ void checkTypes(ASTNode* root, int* errorCount)
 /// <returns>True if a return statement was found, else false</returns>
 static int containsReturn(ASTNode* node) {
     if (node == NULL) return 0;
-
     // check all children
     for (int i = 0; i < node->childCount; i++) {
         ASTNode* child = node->children[i];
@@ -107,7 +115,6 @@ static int containsReturn(ASTNode* node) {
             return 1;
         }
     }
-
     return 0; 
 }
 
@@ -190,10 +197,11 @@ void validateReturnExprType(ASTNode* node, const char* retType, int* errorCount,
             else {
                 // check the type of the returned expr
                 char* returnExprType = checkExprType(node->children[0]);
+                int exprRow = getExprLine(node->children[0]);
                 // handle invalid expr
-                handleInvalidExpr(returnExprType, getExprLine(node->children[0]), errorCount);
+                handleInvalidExpr(returnExprType, exprRow, errorCount);
                 if (returnExprType && strcmp(returnExprType, retType) != 0) {
-                    printf("Error: Return type mismatch in function: % s. Expected '%s', got '%s'\n",funcName, retType, returnExprType);
+                    printf("Error: Return type mismatch in function: % s. Expected '%s', got '%s' on line: %d \n",funcName, retType, returnExprType, exprRow);
                     (*errorCount)++;
                 }
             }
@@ -218,6 +226,7 @@ void checkReturn(ASTNode* root, int* errorCount) {
         ASTNode* node = root->children[i];
         // find func dec
         if (node->lable && strcmp(node->lable, "FuncDeclaration") == 0) {
+            // get the func return type and the func name
             char* retType = node->children[2]->token->lexeme;
             char* funcName = node->children[0]->token->lexeme;
             ASTNode* body = node->children[3];
@@ -270,7 +279,7 @@ void checkMain(ASTNode* root, int* errorCount) {
 void checkBoolExprTypes(ASTNode* root, int* errorCount) 
 {
     if (!root) return;
-    // check if the type is while statement
+    // check if the type is bool in while statement
     if (root->lable && strcmp(root->lable, "WhileStatement") == 0) {
         char* exprType = checkExprType(root->children[0]);
         // handle invalid expr
@@ -281,6 +290,7 @@ void checkBoolExprTypes(ASTNode* root, int* errorCount)
             (*errorCount)++;
         }
     }
+    // check that the type is bool in the if statements
     if (root->lable && strcmp(root->lable, "IfStatement") == 0) {
         char* exprType = checkExprType(root->children[0]);
         // handle the invalid expr
@@ -308,6 +318,7 @@ void checkFunctionCalls(ASTNode* root, int* errorCount)
     if (root->lable && strcmp(root->lable, "FuncCallExpr") == 0) {
         ASTNode* funcCallNode = root->children[0];
         SymbolEntry* funcEntry = lookUpSymbol(funcCallNode->token->lexeme, currentScope);
+        // if no entry then the func is undifined
         if (funcEntry == NULL) {
             printf("Error: Undeclared function '%s' at line %d\n",
                 funcCallNode->token->lexeme, funcCallNode->token->tokenRow);
@@ -328,7 +339,7 @@ void checkFunctionCalls(ASTNode* root, int* errorCount)
                     char* argType = checkExprType(argumentList->children[i]);
                     handleInvalidExpr(argType, funcCallNode->token->tokenRow, errorCount);
                     if (argType && strcmp(argType, funcEntry->paramTypes[i]) != 0) {
-                        printf("Invalid arguments for function: %s, used at line: %d\n", funcCallNode->token->lexeme, funcCallNode->token->tokenRow);
+                        printf("Invalid arguments for function: %s, used at line: %d, expected: '%s' but got '%s'\n", funcCallNode->token->lexeme, funcCallNode->token->tokenRow, funcEntry->paramTypes[i], argType);
                         (*errorCount)++;
                     }
                 }
