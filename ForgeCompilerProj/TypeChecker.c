@@ -134,19 +134,18 @@ const char* checkExprType(ASTNode* exprRoot)
 {
     if (!exprRoot) return NULL;
 
-    // Handle "Expr" nodes separately
+    // handle expr nodes separately
     if (exprRoot->lable && strcmp(exprRoot->lable, "Expr") == 0) {
         return checkExprType(exprRoot->children[0]);
     }
-
-    // Iterate through the handlers and find a match
+    // go over all handlers and find a match
     for (int i = 0; handlers[i].check != NULL; i++) {
         if (handlers[i].check(exprRoot)) {
             return handlers[i].handle(exprRoot);
         }
     }
-
-    return NULL; // Default case if no handler matches
+    // default no match
+    return NULL; 
 }
 /// <summary>
 /// This is a func that is used to get an identifiers type
