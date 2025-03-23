@@ -9,63 +9,64 @@
 #include "SemanticAnalyzer.h"
 
 int main() {
-
+    // set up data structures for the lexer
     HashMap* state_machine = NULL;
-    // init the state machine for the lexer hashmap
     init_state_machine(&state_machine);
+    //printHashMap(state_machine);
     pTokenArray ptoken_array;
-    // init the token array
+    init_state_machine(&state_machine);
     initTokenArray(&ptoken_array);
-    if (ptoken_array->tokens == NULL) {
+    // read the input code
+    char* inputStr = readFile("Code.txt");
+    if (!inputStr) {
+        printf("Failed to read input file.\n");
+        freeHashMap(&state_machine);
+        freeTokenArray(&ptoken_array);
         return -1;
     }
-    char* inputStr = NULL;
-    // read the file
-    inputStr = readFile("Code.txt");
+    // Lexical analysis
     lex(state_machine, inputStr, ptoken_array);
-
-    //printHashMap(state_machine);
-    // free the input string
     free(inputStr);
-    inputStr = NULL;
-    // Free the hash map
     freeHashMap(&state_machine);
-    printTokens(ptoken_array);
-    /* HashMap* goto_table = NULL;
-
-    InitGotoTable(&goto_table, "GotoTable.txt");
-    freeHashMap(&goto_table);
-    HashMap* action_table = NULL;
-
-    InitActionTable(&action_table, "ActionTable.txt");
-    freeHashMap(&action_table);*/
-    int errors = 0;
-    ASTNode* root = ParseInput(ptoken_array, &errors);
-    // compress syntax tree into AST
-    root = compressAST(root);
-    if (!errors) {
-        printf("Input passed parsing");
-        puts("\n");
-        printAST(root, 0);
-        int errorCount = 0;
-        SymbolTable* globalTable = createNewScope(NULL);
-        createASTSymbolTable(root, globalTable, &errorCount);
-        // attach global symbol table to GlobalItemList Node
-        root->scope = globalTable;
-        printSymbolTables(root);
-        puts("\n");
-        int errorCount2 = 0;
-        analyze(root, &errorCount2);
+    //printTokens(ptoken_array);
+    // Syntax analysis
+    int parseErrors = 0;
+    ASTNode* root = ParseInput(ptoken_array, &parseErrors);
+    if (parseErrors || !root) {
+        printf("Parsing failed with %d errors.\n", parseErrors);
+        freeTokenArray(&ptoken_array);
+        return -1;
     }
+    // AST compression
+    root = compressAST(root);
+    printf("Input passed parsing.\n\n");
+    printAST(root, 0);
+    // Semantic analysis phase
+    int semErrors = 0;
+    SymbolTable* globalTable = createNewScope(NULL);
+    if (!globalTable) {
+        printf("Failed to create global symbol table.\n");
+        freeASTNode(root);
+        freeTokenArray(&ptoken_array);
+        return -1;
+    }
+    // create the symbol table
+    createASTSymbolTable(root, globalTable, &semErrors);
+    root->scope = globalTable;
+    //printSymbolTables(root);
+    int analyzeErrors = 0;
+    analyze(root, &analyzeErrors);
+    if (semErrors || analyzeErrors) {
+        printf("Semantic analysis failed with %d symbol errors and %d analysis errors.\n", semErrors, analyzeErrors);
+        freeTokenArray(&ptoken_array);
+        freeASTNode(root);
+        return -1;
+    }
+    printf("Input passed semantic analysis.\n\n");
+    // Cleanup
     freeTokenArray(&ptoken_array);
     freeASTNode(root);
-    //grammar array tests
-    /*GrammarArray* array = InitGrammarArray("Grammar.txt");
-    PrintGrammarRules(array);
-    FreeGrammarArray(array);*/
-
-    
-
     return 0;
 }
+
 
