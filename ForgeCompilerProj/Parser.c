@@ -269,6 +269,7 @@ void HandleSyntaxError(int* errorCount,Stack** s,int* currentIndex,pTokenArray t
     printf("Syntax Error at token '%s' on line %d, col %d.\n",errorToken->lexeme,errorToken->tokenRow,errorToken->tokenCol);
     // recover
     *currentIndex = RecoverFromError(tokenArray, *currentIndex);
+    Token* t = tokenArray->tokens[*currentIndex];
     if (*currentIndex == tokenArray->count - 1) {
         *finishedParsing = 1;
     }

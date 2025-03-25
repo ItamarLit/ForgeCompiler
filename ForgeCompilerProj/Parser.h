@@ -14,8 +14,8 @@
 #define STATE_BEFORE_EMPTY_BLOCK      128  // Before shifting empty for { }
 #define STATE_AFTER_EMPTY_BLOCK       136  // After shifting empty for { } in a function or statement block
 
-#define STATE_BEFORE_EMPTY_ELSE      127  // Before shifting empty for { }
-#define STATE_AFTER_EMPTY_ELSE      132 // After shifting empty for { } in a function or statement block
+#define STATE_BEFORE_EMPTY_ELSE      127  // Before shifting empty for else
+#define STATE_AFTER_EMPTY_ELSE      132 // After shifting empty for else
 
 // struct for the hashmap key for, goto and action tables
 typedef struct MapKey {

@@ -71,7 +71,6 @@ void resizeTokenArr(pTokenArray* ptoken_array) {
         printf("Memory allocation for tokens failed\n");
         return;
     }
-    printf("Token array resize to: %d\n", (*ptoken_array)->size);
     (*ptoken_array)->tokens = temp;
 }
 

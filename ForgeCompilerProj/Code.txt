@@ -7,8 +7,11 @@ forge Main ( int a) => string
 	return "true";
 }
 
-
+main();
 
 
 	
 	
+forge IDENTIFIER ( ) => string 
+{
+}
