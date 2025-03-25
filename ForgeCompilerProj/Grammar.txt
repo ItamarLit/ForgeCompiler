@@ -1,12 +1,12 @@
 ﻿Program' -> Program 
 Program -> GlobalItemList
 GlobalItemList -> GlobalItemList GlobalItem 
-GlobalItemList -> empty
 GlobalItemList -> GlobalItem
 GlobalItem -> FuncDeclaration
 GlobalItem -> Statement
 Statement -> VarDeclaration ;
 Statement -> IfStatement
+Statement -> IfElseStatement
 Statement -> WhileStatement
 Statement -> AssignmentStatement ;
 Statement -> IOStatement ;
@@ -14,15 +14,14 @@ Statement -> ReturnStatement ;
 Statement -> FuncCallExpr ;
 StatementList -> StatementList Statement
 StatementList -> Statement
-StatementList -> empty
 VarDeclaration -> mold Type IDENTIFIER = Expr 
 Type -> int
 Type -> bool
 Type -> string
+FuncDeclaration -> forge IDENTIFIER ( ) => ReturnType Block 
 FuncDeclaration -> forge IDENTIFIER ( ParamList ) => ReturnType Block 
 ReturnType -> Type
 ReturnType -> void
-ParamList -> empty
 ParamList -> ParamDecl
 ParamList -> ParamList , ParamDecl
 ParamDecl -> Type IDENTIFIER
@@ -34,15 +33,15 @@ AssignOp -> *=
 AssignOp -> /=
 ReturnStatement -> return 
 ReturnStatement -> return Expr 
-IfStatement -> if meet ( Expr ) then Block OptionalElse
-OptionalElse -> empty
-OptionalElse -> else Block
+IfElseStatement -> if meet ( Expr ) then Block else Block
+IfStatement -> if meet ( Expr ) then Block 
 WhileStatement -> while meet ( Expr ) then Block
 IOStatement -> InputStatement
 IOStatement -> OutputStatement
 InputStatement -> input ( IDENTIFIER ) 
 OutputStatement -> output ( Expr ) 
 Block -> { StatementList }
+Block -> { }
 Expr -> OrExpr
 OrExpr -> AndExpr
 OrExpr -> OrExpr || AndExpr
@@ -65,7 +64,7 @@ MulExpr -> UnaryExpr
 UnaryExpr -> - PrimaryExpr
 UnaryExpr -> PrimaryExpr
 FuncCallExpr -> IDENTIFIER ( ArgumentList )
-ArgumentList -> empty
+FuncCallExpr -> IDENTIFIER ( )
 ArgumentList -> Expr
 ArgumentList -> ArgumentList , Expr
 PrimaryExpr -> ( Expr )

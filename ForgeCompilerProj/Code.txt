@@ -1,17 +1,12 @@
-forge Main ( int a) => string 
+forge Main ( ) => string 
 {
+	mold int a = 4;
+	mold string a = "4";
 	while meet ( 4 > 5 ) then 
 	{
-		output(4);
+		return "4";
 	}
-	return "true";
 }
-
-main();
 
 
 	
-	
-forge IDENTIFIER ( ) => string 
-{
-}

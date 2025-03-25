@@ -16,8 +16,8 @@ const char* NonTerminals[] = {
     "AssignmentStatement",
     "AssignOp",
     "ReturnStatement",
+    "IfElseStatement",
     "IfStatement",
-    "OptionalElse",
     "WhileStatement",
     "IOStatement",
     "InputStatement",
@@ -34,6 +34,5 @@ const char* NonTerminals[] = {
     "FuncCallExpr",
     "ArgumentList",
     "PrimaryExpr"
-};
-// get the non terminal count
+};// get the non terminal count
 const int NonTerminalCount = sizeof(NonTerminals) / sizeof(NonTerminals[0]);

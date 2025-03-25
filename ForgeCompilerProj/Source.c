@@ -39,6 +39,8 @@ int main() {
     }
     // AST compression
     root = compressAST(root);
+    // AST normalization
+    normalizeAST(root);
     printf("Input passed parsing.\n\n");
     printAST(root, 0);
     // Semantic analysis phase

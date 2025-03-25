@@ -222,7 +222,7 @@ ASTNode* compressAST(ASTNode* node)
         // keep these
         if (strcmp(node->lable, "Block") == 0  || strcmp(node->lable, "ReturnStatement") == 0 || strcmp(node->lable, "Expr") == 0 || 
             strcmp(node->lable, "ParamList") == 0 ||strcmp(node->lable, "ArgumentList") == 0 || strcmp(node->lable, "GlobalItemList") == 0 ||
-            strcmp(node->lable, "OptionalElse") == 0 || strcmp(node->lable, "StatementList") == 0) {
+            strcmp(node->lable, "OptionalElse") == 0 || strcmp(node->lable, "StatementList") == 0 || strcmp(node->lable, "FuncCallExpr") == 0) {
             return node; 
         }
         //// get rid of param Expr
@@ -249,4 +249,62 @@ ASTNode* compressAST(ASTNode* node)
     mergeNestedLists(node, "ArgumentList");
 
     return node;
+}
+
+
+void normalizeAST(ASTNode* node) {
+    if (!node) return;
+    // make sure func dec has a paramList node at index 1 
+    if (strcmp(node->lable, "FuncDeclaration") == 0) {
+        if (strcmp(node->children[1]->lable, "ParamList") != 0) {
+            // create an empty paramlist node
+            ASTNode* emptyParamList = createASTNode(NULL, "ParamList");
+            // move the children forward
+            node->children = (ASTNode**)realloc(node->children, sizeof(ASTNode*) * (node->childCount + 1));
+            for (int i = node->childCount; i > 1; i--) {
+                node->children[i] = node->children[i - 1];
+            }
+            // insert the new param list node at index 1
+            node->children[1] = emptyParamList;
+            emptyParamList->parent = node;
+            node->childCount++;
+        }
+    }
+    // make sure func calls have an argument list at node 1
+    else if (strcmp(node->lable, "FuncCallExpr") == 0) {
+        if (node->childCount < 2 || strcmp(node->children[1]->lable, "ArgumentList") != 0) {
+            // create an empty argument list node
+            ASTNode* emptyArgList = createASTNode(NULL, "ArgumentList");
+            // move the children forward
+            node->children = (ASTNode**)realloc(node->children, sizeof(ASTNode*) * (node->childCount + 1));
+            for (int i = node->childCount; i > 1; i--) {
+                node->children[i] = node->children[i - 1];
+            }
+            // insert the node at the correct index
+            node->children[1] = emptyArgList;
+            emptyArgList->parent = node;
+            node->childCount++;
+        }
+    }
+    // make sure the block has a statement list node
+    else if (strcmp(node->lable, "Block") == 0) {
+        if (node->childCount == 0 || strcmp(node->children[0]->lable, "StatementList") != 0) {
+            // create an empty statement list node
+            ASTNode* emptyStmtList = createASTNode(NULL, "StatementList");
+            // move the children forward
+            node->children = (ASTNode**)realloc(node->children, sizeof(ASTNode*) * (node->childCount + 1));
+            for (int i = node->childCount; i > 0; i--) {
+                node->children[i] = node->children[i - 1];
+            }
+            // insert the node at the correct place
+            node->children[0] = emptyStmtList;
+            emptyStmtList->parent = node;
+            node->childCount++;
+        }
+    }
+
+    // go over all the AST
+    for (int i = 0; i < node->childCount; i++) {
+        normalizeAST(node->children[i]);
+    }
 }

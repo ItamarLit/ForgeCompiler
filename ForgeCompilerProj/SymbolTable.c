@@ -129,7 +129,7 @@ SymbolTable* createNewScope(SymbolTable* parent) {
 void createASTSymbolTable(ASTNode* node, SymbolTable* currentTable, int* errorCount) {
     if (!node) return;
 
-    if (strcmp(node->lable, "VarDeclaration") == 0) {
+    if (node->lable && strcmp(node->lable, "VarDeclaration") == 0) {
         char* varName = node->children[1]->token->lexeme;  // Get variable name
         char* varType = node->children[0]->token->lexeme;  // Get variable type
         if (getMapValue(currentTable->table, varName)) {
@@ -142,7 +142,7 @@ void createASTSymbolTable(ASTNode* node, SymbolTable* currentTable, int* errorCo
         }
     }
 
-    else if (strcmp(node->lable, "FuncDeclaration") == 0) {
+    else if ( node->lable && strcmp(node->lable, "FuncDeclaration") == 0) {
         char* funcName = node->children[0]->token->lexeme; // Function name
         ASTNode* paramList = node->children[1]; // paramListNode, exists even if no params
         char* returnType = node->children[2]->token->lexeme; // Return type
@@ -171,9 +171,9 @@ void createASTSymbolTable(ASTNode* node, SymbolTable* currentTable, int* errorCo
             free(paramTypes);
         }
         // go over function body
-        createASTSymbolTable(node->children[7], functionScope, errorCount);
+        createASTSymbolTable(node->children[3], functionScope, errorCount);
     }
-    else if (strcmp(node->lable, "Block") == 0) {
+    else if (node->lable && strcmp(node->lable, "Block") == 0) {
         // Create a new symbol table for this block
         SymbolTable* blockScope = createNewScope(currentTable);
         node->scope = blockScope;

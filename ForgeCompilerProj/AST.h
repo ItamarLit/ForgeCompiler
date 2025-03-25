@@ -23,5 +23,7 @@ void addChild(ASTNode* child, ASTNode* parent);
 void printAST(ASTNode* root, int tabCount);
 // func that compresses the AST
 ASTNode* compressAST(ASTNode* node);
+// func that normalizes AST
+void normalizeAST(ASTNode* node);
 
 #endif

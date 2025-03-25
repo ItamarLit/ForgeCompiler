@@ -2,7 +2,6 @@
 
 // fill the terminals array
 const char* Terminals[] = {
-    "empty",
     ";",
     "mold",
     "IDENTIFIER",

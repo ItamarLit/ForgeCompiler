@@ -404,9 +404,9 @@ ASTNode* ParseInput(pTokenArray tokenArray, int* errorCount)
         Token* currentToken = tokenArray->tokens[i];
         char* action = getMapValue(actionTable, currentState, token, 1);
         if (action == NULL) {
-            if (shiftEmpty(token, tokenArray, &i, &s)) {
-                continue; // Successfully shifted empty, continue parsing
-            }
+            //if (shiftEmpty(token, tokenArray, &i, &s)) {
+            //    continue; // Successfully shifted empty, continue parsing
+            //}
             HandleSyntaxError(errorCount,&s,&i,tokenArray,&finishedParsing);
         }
         else 
