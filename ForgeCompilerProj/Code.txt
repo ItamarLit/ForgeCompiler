@@ -1,11 +1,14 @@
 forge Main ( ) => string 
 {
+	
 	mold int a = 4;
-	mold string a = "4";
-	while meet ( 4 > 5 ) then 
+	mold int b = 4;
+	mold int b = 4;
+	if meet ( a == b) then 
 	{
-		return "4";
+		remold a += 4;
 	}
+	
 }
 
 

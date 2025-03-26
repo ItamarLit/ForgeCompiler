@@ -14,7 +14,8 @@ static Type handleFunctionCall(ASTNode* node);
 // functions for operator handling in binary operator
 static Type handleArithmeticOp(Type leftType, Type rightType, const char* operator);
 static Type handleLogicalOp(Type leftType, Type rightType, const char* operator);
-static Type handleComparisonOp(Type leftType, Type rightType, const char* operator);
+static Type handleRelationalOp(Type leftType, Type rightType, const char* operator);
+static Type handleEqualityOp(Type leftType, Type rightType, const char* operator);
 static Type handleLiteral(ASTNode* node);
 
 // lookup table for all binary operators
@@ -25,12 +26,12 @@ static OperatorEntry operatorTable[] = {
     {"/", handleArithmeticOp},
     {"&&", handleLogicalOp}, 
     {"||", handleLogicalOp},
-    {"==", handleComparisonOp}, 
-    {"!=", handleComparisonOp},
-    {"<", handleComparisonOp},
-    {">", handleComparisonOp},
-    {"<=", handleComparisonOp},
-    {">=", handleComparisonOp}
+    {"==", handleEqualityOp},
+    {"!=", handleEqualityOp}, 
+    {"<", handleRelationalOp}, 
+    {">", handleRelationalOp},
+    {"<=", handleRelationalOp},
+    {">=", handleRelationalOp}
 };
 
 // static check functions
@@ -186,7 +187,7 @@ static Type handleFunctionCall(ASTNode* node)
 /// <param name="leftType"></param>
 /// <param name="rightType"></param>
 /// <param name=""></param>
-/// <returns>Returns int if the types are correct else returns NULL</returns>
+/// <returns>Returns int if the types are correct else returns error</returns>
  static Type handleArithmeticOp(Type leftType, Type rightType, const char* operator) {
     if (leftType == TYPE_INT && rightType == TYPE_INT) {
         return TYPE_INT;
@@ -200,7 +201,7 @@ static Type handleFunctionCall(ASTNode* node)
 /// <param name="leftType"></param>
 /// <param name="rightType"></param>
 /// <param name=""></param>
-/// <returns>Returns bool if the types are correct else returns NULL</returns>
+/// <returns>Returns bool if the types are correct else returns error</returns>
 static Type handleLogicalOp(Type leftType, Type rightType, const char* operator) {
     if (leftType == TYPE_BOOL && rightType == TYPE_BOOL) {
         return TYPE_BOOL;
@@ -209,22 +210,34 @@ static Type handleLogicalOp(Type leftType, Type rightType, const char* operator)
 }
 
 /// <summary>
-/// This is a helper func for comparision operators
+/// This is a helper function for equality operators
 /// </summary>
 /// <param name="leftType"></param>
 /// <param name="rightType"></param>
 /// <param name=""></param>
-/// <returns>Returns bool or NULL if there is an error</returns>
-static Type handleComparisonOp(Type leftType, Type rightType, const char* operator) {
-    // dont allow string comparisions
-    if (leftType == TYPE_STRING || rightType == TYPE_STRING) {
-        return TYPE_ERROR;
-    }
-    // if both types are the same the result is a bool
-    if (leftType == rightType) {
-        return TYPE_BOOL;
+/// <returns>Returns bool if types are correct else returns error</returns>
+static Type handleEqualityOp(Type leftType, Type rightType, const char* operator) {
+    // comparasion valid for int and bool
+    if ((leftType == TYPE_INT && rightType == TYPE_INT) ||
+        (leftType == TYPE_BOOL && rightType == TYPE_BOOL)) {
+        return TYPE_BOOL; 
     }
     return TYPE_ERROR;
+}
+
+/// <summary>
+/// This is a helper function for relational operators
+/// </summary>
+/// <param name="leftType"></param>
+/// <param name="rightType"></param>
+/// <param name=""></param>
+/// <returns>Returns bool if types are int else error</returns>
+static Type handleRelationalOp(Type leftType, Type rightType, const char* operator) {
+    // both sides must be int type
+    if (leftType == TYPE_INT && rightType == TYPE_INT) {
+        return TYPE_BOOL; 
+    }
+    return TYPE_ERROR; 
 }
 
 static Type handleBinaryOperator(ASTNode* node) {
@@ -244,6 +257,7 @@ static Type handleBinaryOperator(ASTNode* node) {
             return operatorTable[i].handler(leftType, rightType, operator);
         }
     }
+    return TYPE_ERROR;
 }
 
 

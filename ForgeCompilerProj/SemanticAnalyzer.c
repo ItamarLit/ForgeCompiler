@@ -52,7 +52,7 @@ void resolveIdentifiers(ASTNode* root, int* errorCount) {
     // check if the type is identifier
     if (root->token && root->token->type == IDENTIFIER) {
         SymbolEntry* entry = lookUpSymbol(root->token->lexeme, currentScope);
-        if (!entry || entry->type == TYPE_UNDEFINED) {
+        if (!entry || entry->type == TYPE_UNDEFINED || root->token->tokenRow < entry->line) {
             printf("Error: Undeclared identifier '%s' at line %d, column %d\n",
                 root->token->lexeme, root->token->tokenRow, root->token->tokenCol);
             // insert the symbol with ERROR_TYPE so i can continue looking for problems
@@ -351,6 +351,53 @@ void checkFunctionCalls(ASTNode* root, int* errorCount)
 }
 
 
+void checkAssignment(ASTNode* root, int* errorCount)
+{
+    if (!root) return;
+    SymbolTable* currentScope = getClosestScope(root);
+
+    if (root->lable && strcmp(root->lable, "AssignmentStatement") == 0) {
+        ASTNode* varNode = root->children[0]; 
+        ASTNode* exprNode = root->children[2]; 
+        // look up var
+        SymbolEntry* varEntry = lookUpSymbol(varNode->token->lexeme, currentScope);
+        if (!varEntry) {
+            // undeclared var, already caught in identifier checks
+            return;
+        }
+        // get op 
+        const char* assignOp = root->children[1]->token->lexeme;
+        // check the expr type
+        Type exprType = checkExprType(exprNode);
+        handleInvalidExpr(exprType, varNode->token->tokenRow, errorCount);
+        // all types can use =
+        if (strcmp(assignOp, "=") == 0) {
+            // check that the expr type matches
+            if (exprType != TYPE_ERROR && exprType != varEntry->type) {
+                printf("Error: Cannot assign value of type '%s' to variable '%s' of type '%s' at line %d\n",
+                    convertTypeToString(exprType), varNode->token->lexeme, convertTypeToString(varEntry->type), varNode->token->tokenRow);
+                (*errorCount)++;
+            }
+        }
+        // only int can use += *= /= -=
+        else if (strcmp(assignOp, "+=") == 0 || strcmp(assignOp, "-=") == 0 ||
+            strcmp(assignOp, "*=") == 0 || strcmp(assignOp, "/=") == 0) {
+            if (varEntry->type != TYPE_INT) {
+                printf("Error: Operator '%s' cannot be used with non-integer variable '%s' at line %d\n",
+                    assignOp, varNode->token->lexeme, varNode->token->tokenRow);
+                (*errorCount)++;
+            }
+            if (exprType != TYPE_INT) {
+                printf("Error: Operator '%s' cannot be used with non-integer expression of type '%s' at line %d\n",
+                    assignOp, convertTypeToString(exprType), getExprLine(exprNode));
+                (*errorCount)++;
+            }
+        }
+    }
+    // go over children
+    traverseChildren(root, checkAssignment, errorCount);
+}
+
 
 void analyze(ASTNode* root, int* errorCount) 
 {
@@ -366,4 +413,6 @@ void analyze(ASTNode* root, int* errorCount)
     checkFunctionCalls(root, errorCount);
     // check the types of the vars
     checkTypes(root, errorCount);
+    // check types in remold 
+    checkAssignment(root, errorCount);
 }
