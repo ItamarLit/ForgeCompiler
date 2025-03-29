@@ -213,32 +213,32 @@ void printSymbolTables(ASTNode* node) {
 /// <param name="symbol"></param>
 /// <param name="currentScope"></param>
 /// <returns>Returns the SymbolTable entry or NULL if it wasnt found</returns>
-SymbolEntry* lookUpSymbol(const char* symbol, SymbolTable* currentScope)
-{
-    // go over all the scopes
-    while (currentScope) {
-        SymbolEntry* value = (SymbolEntry*)getHashMapValue(symbol, currentScope->table);
-        if (value != NULL && strcmp(symbol, value->name) == 0) {
-            return value;
+    SymbolEntry* lookUpSymbol(const char* symbol, SymbolTable* currentScope)
+    {
+        // go over all the scopes
+        while (currentScope && symbol) {
+            SymbolEntry* value = (SymbolEntry*)getHashMapValue(symbol, currentScope->table);
+            if (value != NULL && strcmp(symbol, value->name) == 0) {
+                return value;
+            }
+            currentScope = currentScope->parent;
         }
-        currentScope = currentScope->parent;
+        return NULL;
+
     }
-    return NULL;
 
-}
-
-SymbolTable* getClosestScope(ASTNode* root)
-{
-    // climb tree to get the closest scope
-    SymbolTable* currentScope = NULL;
-    ASTNode* node = root;
-    while (node) {
-        if (node->scope) {
-            currentScope = node->scope;
-            break;
+    SymbolTable* getClosestScope(ASTNode* root)
+    {
+        // climb tree to get the closest scope
+        SymbolTable* currentScope = NULL;
+        ASTNode* node = root;
+        while (node) {
+            if (node->scope) {
+                currentScope = node->scope;
+                break;
+            }
+            // move up the tree
+            node = node->parent;
         }
-        // move up the tree
-        node = node->parent;
+        return currentScope;
     }
-    return currentScope;
-}

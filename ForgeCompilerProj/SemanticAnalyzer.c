@@ -83,16 +83,19 @@ void checkTypes(ASTNode* root, int* errorCount)
         Type exprType = checkExprType(root->children[3]);
         // check if the expr is invalid
         handleInvalidExpr(exprType, varEntry->line, errorCount);
-        // check that the types match only in defined vars
-        if (exprType != TYPE_ERROR && varEntry && exprType != varEntry->type) {
-            printf("Error: Expr of type: %s is not valid for var of type: %s, on line: %d\n", convertTypeToString(exprType), convertTypeToString(varEntry->type), varEntry->line);
-            (*errorCount)++;
+        if (exprType != TYPE_UNDEFINED) {
+            // check that the types match only in defined vars
+            if (exprType != TYPE_ERROR && varEntry && exprType != varEntry->type) {
+                printf("Error: Expr of type: %s is not valid for var of type: %s, on line: %d\n", convertTypeToString(exprType), convertTypeToString(varEntry->type), varEntry->line);
+                (*errorCount)++;
+            }
+            // check that a var isnt init with itself ( illegal )
+            if (root->children[3]->childCount == 1 && root->children[3]->children[0]->token && root->children[3]->children[0]->token->type == IDENTIFIER && varEntry && strcmp(root->children[3]->children[0]->token->lexeme, varEntry->name) == 0) {
+                printf("Error: Cannot init a var: %s with itself, on line: %d\n", varEntry->name, varEntry->line);
+                (*errorCount)++;
+            }
         }
-        // check that a var isnt init with itself ( illegal )
-        if (root->children[3]->childCount == 1 && root->children[3]->children[0]->token && root->children[3]->children[0]->token->type == IDENTIFIER && varEntry && strcmp(root->children[3]->children[0]->token->lexeme, varEntry->name) == 0) {
-            printf("Error: Cannot init a var: %s with itself, on line: %d\n", varEntry->name, varEntry->line);
-            (*errorCount)++;
-        }
+       
     }
     traverseChildren(root, checkTypes, errorCount);
 }
@@ -398,6 +401,54 @@ void checkAssignment(ASTNode* root, int* errorCount)
     traverseChildren(root, checkAssignment, errorCount);
 }
 
+/// <summary>
+/// This is a helper func that returns 1 if a funcCall is found
+/// </summary>
+/// <param name="node"></param>
+/// <returns>Returns 1 if found call func 0 if not</returns>
+static int containsFuncCall(ASTNode* node) {
+    if (!node) return 0;
+
+    if (node->lable && strcmp(node->lable, "FuncCallExpr") == 0) {
+        return 1;
+    }
+
+    for (int i = 0; i < node->childCount; i++) {
+        if (containsFuncCall(node->children[i])) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+
+/// <summary>
+/// This function will check that all global vars expressions are constant and dont have func calls in them
+/// </summary>
+/// <param name="root"></param>
+/// <param name="errorCount"></param>
+void checkGlobalInitExprs(ASTNode* root, int* errorCount) {
+    if (!root) return;
+    // get global sym table
+    SymbolTable* scope = root->scope;
+    // go over global nodes
+    for (int i = 0; i < root->childCount; i++) {
+        ASTNode* node = root->children[i];
+        // look for global var dec
+        if (node->lable && strcmp(node->lable, "VarDeclaration") == 0) {
+            // get expr
+            ASTNode* exprNode = node->children[3]; 
+            // check for func call
+            if (containsFuncCall(exprNode)) {
+                int line = getExprLine(exprNode);
+                printf("Error: Global variable '%s' initialized with a function call at line %d. Only constant expressions are allowed.\n",
+                    node->children[1]->token->lexeme, line);
+                (*errorCount)++;
+            }
+        }
+    }
+}
 
 void analyze(ASTNode* root, int* errorCount) 
 {
@@ -415,4 +466,6 @@ void analyze(ASTNode* root, int* errorCount)
     checkTypes(root, errorCount);
     // check types in remold 
     checkAssignment(root, errorCount);
+    // check that global vars only have constant expr
+    checkGlobalInitExprs(root, errorCount);
 }

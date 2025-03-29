@@ -204,7 +204,6 @@ ASTNode* compressAST(ASTNode* node)
 
     recursivelyCompressChildren(node);
 
-
     // remove nodes with no children
     if (node->token == NULL && node->childCount == 0) {
         // keep these
@@ -251,7 +250,10 @@ ASTNode* compressAST(ASTNode* node)
     return node;
 }
 
-
+/// <summary>
+/// This func is used to normalize the AST (add the missing control nodes back)
+/// </summary>
+/// <param name="node"></param>
 void normalizeAST(ASTNode* node) {
     if (!node) return;
     // make sure func dec has a paramList node at index 1 

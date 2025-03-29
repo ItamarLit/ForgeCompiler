@@ -1,15 +1,6 @@
-forge Main ( ) => string 
-{
-	
-	mold int a = 4;
-	mold int b = 4;
-	mold int b = 4;
-	if meet ( a == b) then 
-	{
-		remold a += 4;
-	}
-	
-}
+mold int var = n();
+
+
 
 
 	

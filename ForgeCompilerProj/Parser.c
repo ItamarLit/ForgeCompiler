@@ -21,6 +21,12 @@ static int equalFunc(void* a, void* b);
 static void printKey(void* key);
 
 
+/// <summary>
+/// This func allocates a key for the hashmap and fills it
+/// </summary>
+/// <param name="state"></param>
+/// <param name="symbol"></param>
+/// <returns>Returns a pointer to the key</returns>
 MapKey* getKey(int state, char* symbol) {
     // allocate key
     MapKey* key = malloc(sizeof(MapKey));
@@ -73,6 +79,11 @@ static void gotoPrintValue(void* value) {
 }
 
 
+/// <summary>
+/// This func is used to init the goto table
+/// </summary>
+/// <param name="map"></param>
+/// <param name="filename"></param>
 void InitGotoTable(HashMap** map, char* filename) {
     *map = initHashMap(INITAL_HASHMAP_SIZE, hashFunc, equalFunc, printKey, gotoPrintValue, freeKey, free);
     FillTable(map, filename, NonTerminals, NonTerminalCount, 0, putState);
@@ -158,6 +169,15 @@ unsigned long hashFunc(void* key, int map_size) {
 }
 
 
+/// <summary>
+/// This func is used to fill the Action and Goto tables
+/// </summary>
+/// <param name="map"></param>
+/// <param name="filename"></param>
+/// <param name="symbolArray"></param>
+/// <param name="symbolCount"></param>
+/// <param name="isAction"></param>
+/// <param name="PutRow"></param>
 void FillTable(HashMap** map, char* filename, char** symbolArray, int symbolCount, int isAction,
     void (*PutRow)(int state, const char* symbol, const char* value, HashMap* map))
 {
@@ -217,6 +237,11 @@ static char* getMapValue(HashMap* map, int currentState, char* symbol, int isAct
    
 }
 
+/// <summary>
+/// Helper func to turn token type to terminals
+/// </summary>
+/// <param name="token"></param>
+/// <returns>Returns the terminal of the token</returns>
 const char* token_type_to_terminal(Token* token) {
     switch (token->type) {
     case IDENTIFIER: return "IDENTIFIER";
@@ -226,7 +251,13 @@ const char* token_type_to_terminal(Token* token) {
     }
 }
 
-
+/// <summary>
+/// This is the shift func in the parser
+/// </summary>
+/// <param name="s"></param>
+/// <param name="nextState"></param>
+/// <param name="token"></param>
+/// <param name="nodeLable"></param>
 void Shift(Stack* s, int nextState, Token* token, const char* nodeLable)
 {
     StackData tempData;
@@ -237,6 +268,12 @@ void Shift(Stack* s, int nextState, Token* token, const char* nodeLable)
     PushStack(s, tempData, STATE);
 }
 
+/// <summary>
+/// This is an error recovery func that runs in Panic mode
+/// </summary>
+/// <param name="tokenArray"></param>
+/// <param name="currentIndex"></param>
+/// <returns>Returns the next index to start parsing from</returns>
 int RecoverFromError(pTokenArray tokenArray, int currentIndex) {
     // array of the possible ending tokens
     const char* endingTokens[] = { ";", "}", "$" };
@@ -255,6 +292,14 @@ int RecoverFromError(pTokenArray tokenArray, int currentIndex) {
     return currentIndex;
 }
 
+/// <summary>
+/// This func handles all syntax errors
+/// </summary>
+/// <param name="errorCount"></param>
+/// <param name="s"></param>
+/// <param name="currentIndex"></param>
+/// <param name="tokenArray"></param>
+/// <param name="finishedParsing"></param>
 void HandleSyntaxError(int* errorCount,Stack** s,int* currentIndex,pTokenArray tokenArray,int* finishedParsing)
 {
     // add error count
@@ -281,6 +326,17 @@ void HandleSyntaxError(int* errorCount,Stack** s,int* currentIndex,pTokenArray t
     PushStack(*s, tempData, STATE);
 }
 
+/// <summary>
+/// This func handles the Reduce in the parsing
+/// </summary>
+/// <param name="ruleIndex"></param>
+/// <param name="s"></param>
+/// <param name="array"></param>
+/// <param name="gotoTable"></param>
+/// <param name="tokenArray"></param>
+/// <param name="i"></param>
+/// <param name="errorCount"></param>
+/// <param name="finishedParsing"></param>
 void Reduce(int ruleIndex, Stack** s, GrammarArray* array, HashMap* gotoTable, pTokenArray tokenArray, int* i, int* errorCount, int* finishedParsing)
 {
     GrammarRule* rule = array->rules[ruleIndex];
@@ -326,47 +382,6 @@ void FreeParserResources(GrammarArray* array, HashMap** actionTable, HashMap** g
     freeHashMap(actionTable);
     freeHashMap(gotoTable);
     FreeStack(s);
-}
-
-int shiftEmpty(const char* token, pTokenArray tokenArray, int* currentIndex, Stack** s) {
-    if (*currentIndex > 0 ) {
-        const char* prevToken = tokenArray->tokens[*currentIndex - 1]->lexeme;
-
-        // Get the current parser state
-        StackEntry* topEntry = TopStack(*s);
-        int prevState = topEntry->data.state;
-        int emptyState = -1; // Default invalid state
-
-        if (strcmp(token, ")") == 0 && strcmp(prevToken, "(") == 0) {
-            // Empty parameter list or empty function call
-            if (prevState == STATE_BEFORE_EMPTY_PARAMLIST) {
-                emptyState = STATE_AFTER_EMPTY_PARAMLIST; // Function Declaration case
-            }
-            else if (prevState == STATE_BEFORE_EMPTY_ARGLIST) {
-                emptyState = STATE_AFTER_EMPTY_ARGLIST; // Function Call case
-            }
-        }
-        else if (strcmp(token, "}") == 0 && strcmp(prevToken, "{") == 0) {
-            // Empty block
-            if (prevState == STATE_BEFORE_EMPTY_BLOCK) {
-                emptyState = STATE_AFTER_EMPTY_BLOCK;
-            }
-        }
-        else if (strcmp(prevToken, "}") == 0) {
-            if (prevState == STATE_BEFORE_EMPTY_ELSE) {
-                emptyState = STATE_AFTER_EMPTY_ELSE;
-            }
-        }
-
-        // Perform shift if we found a valid empty state
-        if (emptyState != -1) {
-            printf("Shifting empty for %s in state %d -> %d\n", token, prevState, emptyState);
-            Shift(*s, emptyState, NULL, "empty");
-            return 1; // Successfully shifted empty
-        }
-    }
-
-    return 0; // No empty shift occurred
 }
 
 

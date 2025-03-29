@@ -177,7 +177,7 @@ static Type handleFunctionCall(ASTNode* node)
     if (entry) {
         return entry->returnType;
     }
-    return TYPE_ERROR;
+    return TYPE_UNDEFINED;
 }
 
 
