@@ -137,7 +137,6 @@
     <ClInclude Include="Parser.h" />
     <ClInclude Include="ParseStack.h" />
     <ClInclude Include="SemanticAnalyzer.h" />
-    <ClInclude Include="StatementRule.h" />
     <ClInclude Include="SymbolTable.h" />
     <ClInclude Include="Terminals.h" />
     <ClInclude Include="Token.h" />
@@ -162,7 +161,6 @@
     <ClCompile Include="ParseStack.c" />
     <ClCompile Include="SemanticAnalyzer.c" />
     <ClCompile Include="Source.c" />
-    <ClCompile Include="StatementRule.c" />
     <ClCompile Include="SymbolTable.c" />
     <ClCompile Include="Terminals.c" />
     <ClCompile Include="Token.c" />

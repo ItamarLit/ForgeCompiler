@@ -42,9 +42,6 @@
     <ClInclude Include="Terminals.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StatementRule.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="AST.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -107,9 +104,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Terminals.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StatementRule.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AST.c">
