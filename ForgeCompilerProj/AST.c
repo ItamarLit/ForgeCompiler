@@ -1,5 +1,6 @@
 #pragma warning(disable:4996)
 #include "AST.h"
+#include "Token.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -192,6 +193,25 @@ void mergeNestedLists(ASTNode* node, const char* targetLabel) {
     }
 }
 
+int isKeptSingleNode(const char* label) {
+    const char* singles[] = {
+        "Block", "ReturnStatement", "Expr", "ParamList", "ArgumentList",
+        "GlobalItemList", "OptionalElse", "StatementList", "FuncCallExpr"
+    };
+    for (int i = 0; i < sizeof(singles) / sizeof(singles[0]); i++) {
+        if (strcmp(label, singles[i]) == 0) return 1;
+    }
+    return 0;
+}
+
+int isKeptEmptyNode(const char* label) {
+    const char* empties[] = { "Block", "ParamList", "ArgumentList", "ReturnStatement" };
+    for (int i = 0; i < sizeof(empties) / sizeof(empties[0]); i++) {
+        if (strcmp(label, empties[i]) == 0) return 1;
+    }
+    return 0;
+}
+
 /// <summary>
 /// This function optimizes the syntax tree by removing uneeded nodes
 /// </summary>
@@ -207,10 +227,8 @@ ASTNode* compressAST(ASTNode* node)
     // remove nodes with no children
     if (node->token == NULL && node->childCount == 0) {
         // keep these
-        if (strcmp(node->lable, "Block") == 0 || strcmp(node->lable, "ParamList") == 0 || strcmp(node->lable, "ArgumentList") == 0 
-            || strcmp(node->lable, "ReturnStatement") == 0) {
-            return node; 
-        }
+        if (isKeptEmptyNode(node->lable)) return node;
+
         free(node->children);
         free(node->lable);
         free(node);
@@ -219,24 +237,16 @@ ASTNode* compressAST(ASTNode* node)
     // flatten the nodes with no token but with 1 child
     if (node->token == NULL && node->childCount == 1) {
         // keep these
-        if (strcmp(node->lable, "Block") == 0  || strcmp(node->lable, "ReturnStatement") == 0 || strcmp(node->lable, "Expr") == 0 || 
-            strcmp(node->lable, "ParamList") == 0 ||strcmp(node->lable, "ArgumentList") == 0 || strcmp(node->lable, "GlobalItemList") == 0 ||
-            strcmp(node->lable, "OptionalElse") == 0 || strcmp(node->lable, "StatementList") == 0 || strcmp(node->lable, "FuncCallExpr") == 0) {
-            return node; 
-        }
-        //// get rid of param Expr
-        //if (strcmp(node->lable, "Expr") == 0 && node->children[0] && !(strcmp(node->children[0]->lable, "Expr") == 0)) {
-        //    return node;
-        //}
-        else {
-            ASTNode* child = node->children[0];
-            // update parent pointer
-            child->parent = node->parent;
-            free(node->children);
-            free(node->lable);
-            free(node);
-            return child;
-        }
+        if (isKeptSingleNode(node->lable)) return node;
+
+        ASTNode* child = node->children[0];
+        // update parent pointer
+        child->parent = node->parent;
+        free(node->children);
+        free(node->lable);
+        free(node);
+        return child;
+        
     }
     node = removeRedundantLabeledNode(node);
     if (!node) return NULL;
@@ -308,5 +318,81 @@ void normalizeAST(ASTNode* node) {
     // go over all the AST
     for (int i = 0; i < node->childCount; i++) {
         normalizeAST(node->children[i]);
+    }
+}
+
+
+/// <summary>
+/// This is a helper func that can evaluate constant expressions
+/// </summary>
+/// <param name="node"></param>
+/// <returns></returns>
+int evaluateExpr(ASTNode* node) {
+    if (!node) return 0;
+
+    // literal
+    if (node->token && node->token->type == INT_LITERAL) {
+        return atoi(node->token->lexeme);
+    }
+    // get the node lable
+    const char* label = node->lable;
+    // check if it is an AddExpr
+    if (strcmp(label, "AddExpr") == 0) {
+        return node->children[1]->token->lexeme[0] == '+'
+            ? evaluateExpr(node->children[0]) + evaluateExpr(node->children[2])
+            : evaluateExpr(node->children[0]) - evaluateExpr(node->children[2]);
+    }
+    // check if it is a MulExpr
+    if (strcmp(label, "MulExpr") == 0) {
+        return node->children[1]->token->lexeme[0] == '*'
+            ? evaluateExpr(node->children[0]) * evaluateExpr(node->children[2])
+            : evaluateExpr(node->children[0]) / evaluateExpr(node->children[2]);
+    }
+    // check if it is a unary Expr
+    if (strcmp(label, "UnaryExpr") == 0 && node->childCount == 2) {
+        return -evaluateExpr(node->children[1]);
+    }
+    // the child node is an Expr node
+    return evaluateExpr(node->children[0]);
+}
+
+
+/// <summary>
+/// This func reduces the global vars to just values, ie no expressions
+/// </summary>
+/// <param name="globalItemList"></param>
+void reduceGlobalVars(ASTNode* globalItemList) {
+    // go over all the children
+    for (int i = 0; i < globalItemList->childCount; i++) {
+        ASTNode* varDecl = globalItemList->children[i];
+        // found global var
+        if (strcmp(varDecl->lable, "VarDeclaration") == 0)
+        {
+            // get the expr
+            ASTNode* exprNode = varDecl->children[3];
+            // eval
+            int value = evaluateExpr(exprNode);
+            // replace old nodes
+            varDecl->children[3] = NULL;
+            freeASTNode(exprNode);
+            // create new node
+            char buffer[32];
+            sprintf(buffer, "%d", value);
+            // create new token
+            Token* valueToken = (Token*)malloc(sizeof(Token));
+            if (!valueToken) {
+                printf("Unable to malloc new token");
+                return;
+            }
+            // set node values
+            valueToken->type = INT_LITERAL;
+            strcpy(valueToken->lexeme, buffer);
+            valueToken->tokenRow = 0;
+            valueToken->tokenCol = 0;
+            ASTNode* constantNode = createASTNode(valueToken, "Const");
+            // insert new node
+            varDecl->children[3] = constantNode;
+            constantNode->parent = varDecl;
+        }
     }
 }
