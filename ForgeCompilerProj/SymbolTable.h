@@ -6,6 +6,12 @@
 
 struct ASTNode; //forward declare the ASTNode
 
+typedef enum {
+    IS_GLOBAL,
+    IS_LOCAL,
+    IS_REG,
+} Placement;
+
 
 // value for the hashmap that will represent the table
 typedef struct SymbolEntry {
@@ -16,11 +22,14 @@ typedef struct SymbolEntry {
     Type returnType;    // Function return type
     Type* paramTypes;  // array of param types for functions
     int paramCount;     // param count for functions
+    Placement place;    // enum for var placements
+    int offset;         // int value for offset, 0 - RCX, 1 - RDX, 2 - R8, 3 - R9, affter that offset in bytes
 } SymbolEntry;
 
 typedef struct SymbolTable {
     HashMap* table;              // symbol table
     struct SymbolTable* parent;  // parent scope (NULL if global)
+    int localOffset;            // counter for local vars offset
 } SymbolTable;
 
 // func that will traverse AST and build the symbol tables
@@ -35,5 +44,7 @@ SymbolTable* getClosestScope(struct ASTNode* node);
 SymbolEntry* lookUpSymbol(const char* symbol, SymbolTable* currentScope);
 // this func is used to insert a symbol into the symbol table
 void insertSymbol(HashMap* map, char* name, Type type, int isFunction, Type returnType, Type* paramTypes, int paramCount, int line);
+// this func is used to set the data needed for code gen (place and offset)
+void setCodeGenData(struct ASTNode* node);
 
 #endif
