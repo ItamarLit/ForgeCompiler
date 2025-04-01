@@ -3,7 +3,7 @@ Program -> GlobalItemList
 GlobalItemList -> GlobalItemList GlobalItem 
 GlobalItemList -> GlobalItem
 GlobalItem -> FuncDeclaration
-GlobalItem -> Statement
+GlobalItem -> VarDeclaration ; 
 Statement -> VarDeclaration ;
 Statement -> IfStatement
 Statement -> IfElseStatement
