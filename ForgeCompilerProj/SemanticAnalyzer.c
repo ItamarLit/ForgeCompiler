@@ -54,7 +54,7 @@ void resolveIdentifiers(ASTNode* root, int* errorCount) {
         SymbolEntry* entry = lookUpSymbol(root->token->lexeme, currentScope);
         if (!entry || entry->type == TYPE_UNDEFINED || root->token->tokenRow < entry->line) {
             printf("Error: Undeclared identifier '%s' at line %d, column %d\n",
-                root->token->lexeme, root->token->tokenRow, root->token->tokenCol);
+            root->token->lexeme, root->token->tokenRow, root->token->tokenCol);
             // insert the symbol with ERROR_TYPE so i can continue looking for problems
             if (!entry) {
                 insertSymbol(currentScope->table, root->token->lexeme, TYPE_UNDEFINED, 0, TYPE_UNDEFINED, TYPE_UNDEFINED, 0, root->token->tokenRow);
@@ -322,7 +322,7 @@ void checkFunctionCalls(ASTNode* root, int* errorCount)
         ASTNode* funcCallNode = root->children[0];
         SymbolEntry* funcEntry = lookUpSymbol(funcCallNode->token->lexeme, currentScope);
         // if no entry then the func is undifined
-        if (funcEntry == NULL) {
+        if (!funcEntry) {
             printf("Error: Undeclared function '%s' at line %d\n",
                 funcCallNode->token->lexeme, funcCallNode->token->tokenRow);
             (*errorCount)++;
@@ -354,6 +354,20 @@ void checkFunctionCalls(ASTNode* root, int* errorCount)
 }
 
 
+int isIntOperator(const char* op) {
+    const char* ops[] = { "+=", "-=", "*=", "/=" };
+    for (int i = 0; i < sizeof(ops) / sizeof(ops[0]); i++) {
+        if (strcmp(op, ops[i]) == 0) return 1;
+    }
+    return 0;
+}
+
+
+/// <summary>
+/// This func checks all assignment statements in the code
+/// </summary>
+/// <param name="root"></param>
+/// <param name="errorCount"></param>
 void checkAssignment(ASTNode* root, int* errorCount)
 {
     if (!root) return;
@@ -383,8 +397,7 @@ void checkAssignment(ASTNode* root, int* errorCount)
             }
         }
         // only int can use += *= /= -=
-        else if (strcmp(assignOp, "+=") == 0 || strcmp(assignOp, "-=") == 0 ||
-            strcmp(assignOp, "*=") == 0 || strcmp(assignOp, "/=") == 0) {
+        else if (isIntOperator(assignOp)) {
             if (varEntry->type != TYPE_INT) {
                 printf("Error: Operator '%s' cannot be used with non-integer variable '%s' at line %d\n",
                     assignOp, varNode->token->lexeme, varNode->token->tokenRow);
@@ -450,6 +463,11 @@ void checkGlobalInitExprs(ASTNode* root, int* errorCount) {
     }
 }
 
+/// <summary>
+/// This is the main analyze function, it runs all the different checks on the AST 
+/// </summary>
+/// <param name="root"></param>
+/// <param name="errorCount"></param>
 void analyze(ASTNode* root, int* errorCount) 
 {
     // check all identifiers

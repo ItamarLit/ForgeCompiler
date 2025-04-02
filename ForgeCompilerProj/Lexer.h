@@ -41,8 +41,9 @@ typedef enum states {
     START_AND_STATE,
     AND_STATE,
     START_OR_STATE,
-    OR_STATE
-
+    OR_STATE,
+    NOT_STATE,
+    NOT_EQUAL_STATE,
 } State;
 
 typedef struct {

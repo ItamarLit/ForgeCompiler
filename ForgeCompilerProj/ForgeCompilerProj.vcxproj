@@ -128,6 +128,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AST.h" />
+    <ClInclude Include="CodeGenerator.h" />
+    <ClInclude Include="CodeGenUtils.h" />
+    <ClInclude Include="ExprCodeGen.h" />
     <ClInclude Include="Expressions.h" />
     <ClInclude Include="FileReader.h" />
     <ClInclude Include="GrammarArray.h" />
@@ -137,6 +140,8 @@
     <ClInclude Include="Parser.h" />
     <ClInclude Include="ParseStack.h" />
     <ClInclude Include="SemanticAnalyzer.h" />
+    <ClInclude Include="StmtCodeGen.h" />
+    <ClInclude Include="StringTable.h" />
     <ClInclude Include="SymbolTable.h" />
     <ClInclude Include="Terminals.h" />
     <ClInclude Include="Token.h" />
@@ -151,6 +156,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AST.c" />
+    <ClCompile Include="CodeGenerator.c" />
+    <ClCompile Include="CodeGenUtils.c" />
+    <ClCompile Include="ExprCodeGen.c" />
     <ClCompile Include="Expressions.c" />
     <ClCompile Include="FileReader.c" />
     <ClCompile Include="GrammarArray.c" />
@@ -161,6 +169,8 @@
     <ClCompile Include="ParseStack.c" />
     <ClCompile Include="SemanticAnalyzer.c" />
     <ClCompile Include="Source.c" />
+    <ClCompile Include="StmtCodeGen.c" />
+    <ClCompile Include="StringTable.c" />
     <ClCompile Include="SymbolTable.c" />
     <ClCompile Include="Terminals.c" />
     <ClCompile Include="Token.c" />

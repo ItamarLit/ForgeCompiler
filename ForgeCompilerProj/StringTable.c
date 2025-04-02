@@ -71,33 +71,20 @@ static void printSymbolEntry(void* value) {
     printf("Value: %s ]", ((StringEntry*)value)->label);
 }
 
+/// <summary>
+/// This func will save all the string literals in a program in the readonly segment
+/// </summary>
+/// <param name="node"></param>
+/// <param name="map"></param>
 static void createStringTableRecursive(ASTNode* node, HashMap* map)
 {
     if (!node) return;
-
-    if (node->lable && strcmp(node->lable, "VarDeclaration") == 0) {
-        ASTNode* name = node->children[1];
-        SymbolTable* scope = getClosestScope(node);
-        SymbolEntry* entry = lookUpSymbol(name->token->lexeme, scope);
-        // found local string with no entry
-        if (entry->place == IS_LOCAL && entry->type == TYPE_STRING && !getMapValue(map, node->children[3]->token->lexeme))
-        {
-            insertString(map, node->children[3]->token->lexeme);
-        }
+    // Save all string literals that are in the program and not saved yet
+    if (node->token && node->token->type == STRING_LITERAL && !getMapValue(map, node->token->lexeme))
+    {
+        insertString(map, node->token->lexeme);
     }
-    if (node->lable && strcmp(node->lable, "AssignmentStatement") == 0 ) {
-        ASTNode* name = node->children[0];
-        SymbolTable* scope = getClosestScope(node);
-        SymbolEntry* entry = lookUpSymbol(name->token->lexeme, scope);
-        if (entry->type == TYPE_STRING) {
-            ASTNode* string = node->children[2];
-            // insert every string
-            if (!getMapValue(map, string->token->lexeme))
-            {
-                insertString(map, string->token->lexeme);
-            }
-        }
-    }
+    // go over all the children
     for (int i = 0; i < node->childCount; i++) {
         createStringTableRecursive(node->children[i], map);
     }

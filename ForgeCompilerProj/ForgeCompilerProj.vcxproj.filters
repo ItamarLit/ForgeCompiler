@@ -13,116 +13,179 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\AST">
+      <UniqueIdentifier>{6560feb6-b713-4e86-99f6-2c8143f6828e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\FrontEnd">
+      <UniqueIdentifier>{826fc61f-1258-4b2d-92ed-3c86bdddd3f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Semantic">
+      <UniqueIdentifier>{2d6699f8-fefc-487f-bd67-307703003cc5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\CodeGen">
+      <UniqueIdentifier>{5c5a39c0-4459-4e4a-856f-ae6829fd37fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utils">
+      <UniqueIdentifier>{dc27904d-2f6d-4ceb-aecb-f756273a4a30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\AST">
+      <UniqueIdentifier>{afe1958a-1e4d-4037-b3fb-3d609a66f7c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\FrontEnd">
+      <UniqueIdentifier>{3b560d4e-da92-42a2-83a4-73fd44c93975}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\CodeGen">
+      <UniqueIdentifier>{68a9cb97-385c-4b58-9e57-fb6955c6c7de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils">
+      <UniqueIdentifier>{9e7f5823-1c8d-4f83-973c-d79c86ab3954}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Semantic">
+      <UniqueIdentifier>{d7c2cdad-dae7-4d18-b7af-7d9eabd257b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Tables">
+      <UniqueIdentifier>{20a84aad-208d-4178-8386-d9b955a83b80}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="FileReader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Lexer.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="AST.h">
+      <Filter>Header Files\AST</Filter>
     </ClInclude>
     <ClInclude Include="Token.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HashMap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GrammarArray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NonTerminals.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Parser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ParseStack.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Terminals.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AST.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SemanticAnalyzer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SymbolTable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TypeChecker.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Expressions.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\AST</Filter>
     </ClInclude>
     <ClInclude Include="Types.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\AST</Filter>
+    </ClInclude>
+    <ClInclude Include="NonTerminals.h">
+      <Filter>Header Files\AST</Filter>
+    </ClInclude>
+    <ClInclude Include="Terminals.h">
+      <Filter>Header Files\AST</Filter>
+    </ClInclude>
+    <ClInclude Include="Lexer.h">
+      <Filter>Header Files\FrontEnd</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser.h">
+      <Filter>Header Files\FrontEnd</Filter>
+    </ClInclude>
+    <ClInclude Include="ParseStack.h">
+      <Filter>Header Files\FrontEnd</Filter>
+    </ClInclude>
+    <ClInclude Include="GrammarArray.h">
+      <Filter>Header Files\FrontEnd</Filter>
+    </ClInclude>
+    <ClInclude Include="SymbolTable.h">
+      <Filter>Header Files\Semantic</Filter>
+    </ClInclude>
+    <ClInclude Include="TypeChecker.h">
+      <Filter>Header Files\Semantic</Filter>
+    </ClInclude>
+    <ClInclude Include="SemanticAnalyzer.h">
+      <Filter>Header Files\Semantic</Filter>
+    </ClInclude>
+    <ClInclude Include="CodeGenerator.h">
+      <Filter>Header Files\CodeGen</Filter>
+    </ClInclude>
+    <ClInclude Include="Expressions.h">
+      <Filter>Header Files\CodeGen</Filter>
+    </ClInclude>
+    <ClInclude Include="StringTable.h">
+      <Filter>Header Files\CodeGen</Filter>
+    </ClInclude>
+    <ClInclude Include="FileReader.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="HashMap.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ExprCodeGen.h">
+      <Filter>Header Files\CodeGen</Filter>
+    </ClInclude>
+    <ClInclude Include="StmtCodeGen.h">
+      <Filter>Header Files\CodeGen</Filter>
+    </ClInclude>
+    <ClInclude Include="CodeGenUtils.h">
+      <Filter>Header Files\CodeGen</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Code.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="ActionTable.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="GotoTable.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
     <Text Include="Grammar.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="ActionTable.txt">
+      <Filter>Resource Files\Tables</Filter>
+    </Text>
+    <Text Include="GotoTable.txt">
+      <Filter>Resource Files\Tables</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="FileReader.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Lexer.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Token.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HashMap.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GrammarArray.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="AST.c">
+      <Filter>Source Files\AST</Filter>
     </ClCompile>
     <ClCompile Include="NonTerminals.c">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\AST</Filter>
     </ClCompile>
-    <ClCompile Include="Parser.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ParseStack.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Terminals.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AST.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SemanticAnalyzer.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SymbolTable.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TypeChecker.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="CodeGenerator.c">
+      <Filter>Source Files\CodeGen</Filter>
     </ClCompile>
     <ClCompile Include="Expressions.c">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\CodeGen</Filter>
+    </ClCompile>
+    <ClCompile Include="FileReader.c">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="GrammarArray.c">
+      <Filter>Source Files\FrontEnd</Filter>
+    </ClCompile>
+    <ClCompile Include="HashMap.c">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Lexer.c">
+      <Filter>Source Files\FrontEnd</Filter>
+    </ClCompile>
+    <ClCompile Include="Parser.c">
+      <Filter>Source Files\FrontEnd</Filter>
+    </ClCompile>
+    <ClCompile Include="ParseStack.c">
+      <Filter>Source Files\FrontEnd</Filter>
+    </ClCompile>
+    <ClCompile Include="SemanticAnalyzer.c">
+      <Filter>Source Files\Semantic</Filter>
+    </ClCompile>
+    <ClCompile Include="StringTable.c">
+      <Filter>Source Files\CodeGen</Filter>
+    </ClCompile>
+    <ClCompile Include="SymbolTable.c">
+      <Filter>Source Files\Semantic</Filter>
+    </ClCompile>
+    <ClCompile Include="Terminals.c">
+      <Filter>Source Files\AST</Filter>
+    </ClCompile>
+    <ClCompile Include="Token.c">
+      <Filter>Source Files\AST</Filter>
+    </ClCompile>
+    <ClCompile Include="TypeChecker.c">
+      <Filter>Source Files\Semantic</Filter>
     </ClCompile>
     <ClCompile Include="Types.c">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\AST</Filter>
+    </ClCompile>
+    <ClCompile Include="ExprCodeGen.c">
+      <Filter>Source Files\CodeGen</Filter>
+    </ClCompile>
+    <ClCompile Include="StmtCodeGen.c">
+      <Filter>Source Files\CodeGen</Filter>
+    </ClCompile>
+    <ClCompile Include="CodeGenUtils.c">
+      <Filter>Source Files\CodeGen</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

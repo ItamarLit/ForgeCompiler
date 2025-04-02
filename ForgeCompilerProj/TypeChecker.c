@@ -173,7 +173,7 @@ static Type handleIdentifier(ASTNode* node)
 static Type handleFunctionCall(ASTNode* node)
 {
     SymbolTable* currentScope = getClosestScope(node);
-    SymbolEntry* entry = lookUpSymbol(node->token->lexeme, currentScope);
+    SymbolEntry* entry = lookUpSymbol(node->children[0]->token->lexeme, currentScope);
     if (entry) {
         return entry->returnType;
     }

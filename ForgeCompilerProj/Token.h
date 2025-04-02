@@ -55,7 +55,8 @@ typedef enum {
     AND,
     OR,
     OUTPUT,
-    INPUT
+    INPUT,
+    NOT_EQUAL,
 }TokenType;
 
 typedef struct {

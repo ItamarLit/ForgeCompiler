@@ -7,6 +7,8 @@
 #include "AST.h"
 #include "SymbolTable.h"
 #include "SemanticAnalyzer.h"
+#include "CodeGenerator.h"
+#include "StringTable.h"
 
 int main() {
     // set up data structures for the lexer
@@ -41,6 +43,7 @@ int main() {
     root = compressAST(root);
     // AST normalization
     normalizeAST(root);
+
     printf("Input passed parsing.\n\n");
     printAST(root, 0);
     // Semantic analysis phase
@@ -65,9 +68,21 @@ int main() {
         return -1;
     }
     printf("Input passed semantic analysis.\n\n");
+    // Reduce Global vars
+    reduceGlobalVars(root);
+    HashMap* stringTable = createStringTable(root);
+    //gen_readOnly_data_seg(stringTable);
+    //// gen data seg
+    //gen_data_seg(root, stringTable);
+    //// gen code seg
+    //printf(".code\n");
+    //gen_start_label();
+    //gen_code(root, stringTable);
+    gen_asm(root, stringTable);
     // Cleanup
     freeTokenArray(&ptoken_array);
     freeASTNode(root);
+    freeHashMap(&stringTable);
     return 0;
 }
 

@@ -14,7 +14,11 @@ static const TypeMap typeMap[] = {
         {NULL, TYPE_ERROR}  // ending
 };
 
-
+/// <summary>
+/// This is a helper function that converts a string to a type
+/// </summary>
+/// <param name="stringType"></param>
+/// <returns></returns>
 Type convertStringType(char* stringType)
 {
     for (int i = 0; typeMap[i].stringType != NULL; i++) {
@@ -25,6 +29,11 @@ Type convertStringType(char* stringType)
     return TYPE_ERROR;
 }
 
+/// <summary>
+/// This is a helper function that converts a type into a string
+/// </summary>
+/// <param name="type"></param>
+/// <returns></returns>
 const char* convertTypeToString(Type type)
 {
     for (int i = 0; typeMap[i].stringType != NULL; i++) {

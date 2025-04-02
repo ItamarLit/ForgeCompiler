@@ -11,6 +11,7 @@ typedef struct ASTNode {
     int childCount; // size of the array
     SymbolTable* scope; // symbol table 
     struct ASTNode* parent; // parent pointer
+    int reg;                // register used in code gen      
 } ASTNode;
 
 // func that creates the ast node 
@@ -25,5 +26,7 @@ void printAST(ASTNode* root, int tabCount);
 ASTNode* compressAST(ASTNode* node);
 // func that normalizes AST
 void normalizeAST(ASTNode* node);
+// func that reduces global vars
+void reduceGlobalVars(ASTNode* globalItemList);
 
 #endif

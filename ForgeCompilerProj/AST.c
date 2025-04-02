@@ -1,6 +1,7 @@
 #pragma warning(disable:4996)
 #include "AST.h"
 #include "Token.h"
+#include "SymbolTable.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -195,8 +196,8 @@ void mergeNestedLists(ASTNode* node, const char* targetLabel) {
 
 int isKeptSingleNode(const char* label) {
     const char* singles[] = {
-        "Block", "ReturnStatement", "Expr", "ParamList", "ArgumentList",
-        "GlobalItemList", "OptionalElse", "StatementList", "FuncCallExpr"
+        "Block", "ReturnStatement",  "ParamList", "ArgumentList",
+        "GlobalItemList", "OptionalElse", "StatementList", "FuncCallExpr",
     };
     for (int i = 0; i < sizeof(singles) / sizeof(singles[0]); i++) {
         if (strcmp(label, singles[i]) == 0) return 1;
@@ -267,52 +268,49 @@ ASTNode* compressAST(ASTNode* node)
 void normalizeAST(ASTNode* node) {
     if (!node) return;
     // make sure func dec has a paramList node at index 1 
-    if (strcmp(node->lable, "FuncDeclaration") == 0) {
-        if (strcmp(node->children[1]->lable, "ParamList") != 0) {
-            // create an empty paramlist node
-            ASTNode* emptyParamList = createASTNode(NULL, "ParamList");
-            // move the children forward
-            node->children = (ASTNode**)realloc(node->children, sizeof(ASTNode*) * (node->childCount + 1));
-            for (int i = node->childCount; i > 1; i--) {
-                node->children[i] = node->children[i - 1];
-            }
-            // insert the new param list node at index 1
-            node->children[1] = emptyParamList;
-            emptyParamList->parent = node;
-            node->childCount++;
+    if (strcmp(node->lable, "FuncDeclaration") == 0 && strcmp(node->children[1]->lable, "ParamList") != 0) {
+        // create an empty paramlist node
+        ASTNode* emptyParamList = createASTNode(NULL, "ParamList");
+        // move the children forward
+        node->children = (ASTNode**)realloc(node->children, sizeof(ASTNode*) * (node->childCount + 1));
+        for (int i = node->childCount; i > 1; i--) {
+            node->children[i] = node->children[i - 1];
         }
+        // insert the new param list node at index 1
+        node->children[1] = emptyParamList;
+        emptyParamList->parent = node;
+        node->childCount++;
+        
     }
     // make sure func calls have an argument list at node 1
-    else if (strcmp(node->lable, "FuncCallExpr") == 0) {
-        if (node->childCount < 2 || strcmp(node->children[1]->lable, "ArgumentList") != 0) {
-            // create an empty argument list node
-            ASTNode* emptyArgList = createASTNode(NULL, "ArgumentList");
-            // move the children forward
-            node->children = (ASTNode**)realloc(node->children, sizeof(ASTNode*) * (node->childCount + 1));
-            for (int i = node->childCount; i > 1; i--) {
-                node->children[i] = node->children[i - 1];
-            }
-            // insert the node at the correct index
-            node->children[1] = emptyArgList;
-            emptyArgList->parent = node;
-            node->childCount++;
+    else if (strcmp(node->lable, "FuncCallExpr") == 0 && (node->childCount < 2 || strcmp(node->children[1]->lable, "ArgumentList") != 0)) {
+        // create an empty argument list node
+        ASTNode* emptyArgList = createASTNode(NULL, "ArgumentList");
+        // move the children forward
+        node->children = (ASTNode**)realloc(node->children, sizeof(ASTNode*) * (node->childCount + 1));
+        for (int i = node->childCount; i > 1; i--) {
+            node->children[i] = node->children[i - 1];
         }
+        // insert the node at the correct index
+        node->children[1] = emptyArgList;
+        emptyArgList->parent = node;
+        node->childCount++;
+        
     }
     // make sure the block has a statement list node
-    else if (strcmp(node->lable, "Block") == 0) {
-        if (node->childCount == 0 || strcmp(node->children[0]->lable, "StatementList") != 0) {
-            // create an empty statement list node
-            ASTNode* emptyStmtList = createASTNode(NULL, "StatementList");
-            // move the children forward
-            node->children = (ASTNode**)realloc(node->children, sizeof(ASTNode*) * (node->childCount + 1));
-            for (int i = node->childCount; i > 0; i--) {
-                node->children[i] = node->children[i - 1];
-            }
-            // insert the node at the correct place
-            node->children[0] = emptyStmtList;
-            emptyStmtList->parent = node;
-            node->childCount++;
+    else if (strcmp(node->lable, "Block") == 0 && (node->childCount == 0 || strcmp(node->children[0]->lable, "StatementList") != 0)) {
+        // create an empty statement list node
+        ASTNode* emptyStmtList = createASTNode(NULL, "StatementList");
+        // move the children forward
+        node->children = (ASTNode**)realloc(node->children, sizeof(ASTNode*) * (node->childCount + 1));
+        for (int i = node->childCount; i > 0; i--) {
+            node->children[i] = node->children[i - 1];
         }
+        // insert the node at the correct place
+        node->children[0] = emptyStmtList;
+        emptyStmtList->parent = node;
+        node->childCount++;
+        
     }
 
     // go over all the AST
@@ -363,6 +361,8 @@ int evaluateExpr(ASTNode* node) {
 /// <param name="globalItemList"></param>
 void reduceGlobalVars(ASTNode* globalItemList) {
     // go over all the children
+    SymbolTable* scope = globalItemList->scope;
+
     for (int i = 0; i < globalItemList->childCount; i++) {
         ASTNode* varDecl = globalItemList->children[i];
         // found global var
@@ -370,29 +370,33 @@ void reduceGlobalVars(ASTNode* globalItemList) {
         {
             // get the expr
             ASTNode* exprNode = varDecl->children[3];
-            // eval
-            int value = evaluateExpr(exprNode);
-            // replace old nodes
-            varDecl->children[3] = NULL;
-            freeASTNode(exprNode);
-            // create new node
-            char buffer[32];
-            sprintf(buffer, "%d", value);
-            // create new token
-            Token* valueToken = (Token*)malloc(sizeof(Token));
-            if (!valueToken) {
-                printf("Unable to malloc new token");
-                return;
+            SymbolEntry* entry = lookUpSymbol(varDecl->children[1]->token->lexeme, scope);
+            if (entry->type == TYPE_INT) {
+                // eval
+                int value = evaluateExpr(exprNode);
+                // replace old nodes
+                varDecl->children[3] = NULL;
+                freeASTNode(exprNode);
+                // create new node
+                char buffer[32];
+                sprintf(buffer, "%d", value);
+                // create new token
+                Token* valueToken = (Token*)malloc(sizeof(Token));
+                if (!valueToken) {
+                    printf("Unable to malloc new token");
+                    return;
+                }
+                // set node values
+                valueToken->type = INT_LITERAL;
+                strcpy(valueToken->lexeme, buffer);
+                valueToken->tokenRow = 0;
+                valueToken->tokenCol = 0;
+                ASTNode* constantNode = createASTNode(valueToken, "Const");
+                // insert new node
+                varDecl->children[3] = constantNode;
+                constantNode->parent = varDecl;
             }
-            // set node values
-            valueToken->type = INT_LITERAL;
-            strcpy(valueToken->lexeme, buffer);
-            valueToken->tokenRow = 0;
-            valueToken->tokenCol = 0;
-            ASTNode* constantNode = createASTNode(valueToken, "Const");
-            // insert new node
-            varDecl->children[3] = constantNode;
-            constantNode->parent = varDecl;
+            
         }
     }
 }

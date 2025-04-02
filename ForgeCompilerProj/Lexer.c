@@ -120,6 +120,8 @@ void init_state_machine(HashMap** map) {
     putState(START_STATE, '-', MINUS_STATE, *map);
     putState(START_STATE, '*', MUL_STATE, *map);
     putState(START_STATE, '/', DIV_STATE, *map);
+    putState(START_STATE, '!', NOT_STATE, *map);
+
     // Transition for double operator
     putState(EQUAL_STATE, '=', EQUAL_EQUAL_STATE, *map);
     putState(PLUS_STATE, '=', PLUS_EQUAL_STATE, *map);
@@ -132,7 +134,8 @@ void init_state_machine(HashMap** map) {
     // Transition for ending string literal
     putState(STRING_LITERAL_STATE, '"', TERMINATED_STRING_LITERAL_STATE, *map);
 
-
+    // Transition for the not equal
+    putState(NOT_STATE, '=', NOT_EQUAL_STATE, *map);
 
     // Transitions for the paren
     putState(START_STATE, '(', OPEN_PAREN_STATE, *map);
@@ -203,6 +206,7 @@ TokenType state_to_token_type(State state, char* value) {
         [COLON_STATE] = COLON,
         [AND_STATE] = AND,
         [OR_STATE] = OR,
+        [NOT_EQUAL_STATE] = NOT_EQUAL,
     };
     // check if the token is an error token
     if (state >= VALID_STATE && state < sizeof(state_to_token_type_map) / sizeof(state_to_token_type_map[0])) {

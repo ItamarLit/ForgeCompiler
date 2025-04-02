@@ -1,6 +1,17 @@
-mold int var = n();
+mold string var = "123";
+mold string var1 = "123";
+mold string var2 = "123";
+mold int count = 3;
+mold string var3 = "1233";
 
+forge Factorial(int n) => int {
+    if meet (n==0) then {
+		return 1;
+	}
+	return n * Factorial(n - 1);
+}
 
+forge Main() => void  {
+	Factorial(3);
+}
 
-
-	
