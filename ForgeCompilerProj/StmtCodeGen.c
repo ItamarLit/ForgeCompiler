@@ -3,6 +3,7 @@
 #include "ExprCodeGen.h"
 #include "CodeGenUtils.h"
 #include "SymbolTable.h"
+#include "TypeChecker.h"
 #include <stdio.h>
 
 void gen_statement_list(ASTNode* node, HashMap* stringTable);
@@ -12,6 +13,7 @@ static void gen_if_statement(ASTNode* node, HashMap* stringTable);
 static void gen_while_statement(ASTNode* node, HashMap* stringTable);
 static void gen_return_statement(ASTNode* node, HashMap* stringTable);
 static void gen_func_call(ASTNode* node, HashMap* stringTable);
+static void gen_output_call(ASTNode* node, HashMap* stringTable);
 
 void handle_assign(SymbolEntry* entry, int r1);
 void handle_add_assign(SymbolEntry* entry, int r1);
@@ -29,6 +31,7 @@ static HandlerEntry stmtTable[] =
     {"WhileStatement", gen_while_statement},
     {"ReturnStatement", gen_return_statement},
     {"FuncCallExpr", gen_func_call},
+    {"OutputStatement", gen_output_call},
     {NULL, NULL}
 };
 
@@ -228,4 +231,61 @@ void handle_div_assign(SymbolEntry* entry, int r1) {
         insert_line("mov [%s], rax\n", entry->name);
     else
         insert_line("mov [rbp + %d], rax\n", entry->offset);
+}
+
+static void gen_output_call(ASTNode* node, HashMap* stringTable)
+{
+    // PUSH ALL REGISTERS 
+    
+    // gen expr for child node
+    gen_expr(node->children[1], stringTable);
+    // get the reg
+    int reg = node->children[1]->reg;
+    // move the val into rcx
+    Type exprType = checkExprType(node->children[1]);
+    insert_line("push rcx\n");
+    insert_line("push rdx\n");
+    insert_line("push r8\n");
+    insert_line("push r9\n");
+
+    insert_line("push rbx\n");
+    insert_line("push r10\n");
+    insert_line("push r11\n");
+    insert_line("push r12\n");
+    insert_line("push r13\n");
+    insert_line("push r14\n");
+    insert_line("push r15\n");
+    insert_line("mov rdx, %s\n", scratch_name(reg));
+    switch (exprType)
+    {
+    case TYPE_INT:
+        //insert_line("mov rcx, %s\n", scratch_name(reg));
+        insert_line("call print_int\n");
+        insert_line("lea rdx, new_line\n");
+        insert_line("call print_string\n");
+        break;
+    case TYPE_BOOL:
+        //insert_line("mov rcx, %s\n", scratch_name(reg));
+        insert_line("call print_bool\n");
+        insert_line("lea rdx, new_line\n");
+        insert_line("call print_string\n");
+        break;
+    case TYPE_STRING:
+        insert_line("call print_string\n");
+        insert_line("lea rdx, new_line\n");
+        insert_line("call print_string\n");
+        break;
+    }
+    insert_line("pop r15\n");
+    insert_line("pop r14\n");
+    insert_line("pop r13\n");
+    insert_line("pop r12\n");
+    insert_line("pop r11\n");
+    insert_line("pop r10\n");
+    insert_line("pop rbx\n");
+
+    insert_line("pop r9\n");
+    insert_line("pop r8\n");
+    insert_line("pop rdx\n");
+    insert_line("pop rcx\n");
 }

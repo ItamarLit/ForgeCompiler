@@ -1,14 +1,10 @@
 mold int number = 3;
 
-forge Factorial(int n) => int {
-    if meet (n==0) then {
-		return 1;
-	}
-	return n * Factorial(n - 1);
-}
 
 forge Main() => void  {
-	remold number = Factorial(3);
-	remold number += 3;
+	output(3);
+	output("hello world");
+	output(1 + 1);
+	output(true);
 }
 

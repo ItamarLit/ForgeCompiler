@@ -44,8 +44,8 @@ const char* Terminals[] = {
     "/",
     "INT_LITERAL",
     "STRING_LITERAL",
-    "True",
-    "False",
+    "true",
+    "false",
     "$"
 };
 // get the terminal count
