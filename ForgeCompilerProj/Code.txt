@@ -1,8 +1,4 @@
-mold string var = "123";
-mold string var1 = "123";
-mold string var2 = "123";
-mold int count = 3;
-mold string var3 = "1233";
+mold int number = 3;
 
 forge Factorial(int n) => int {
     if meet (n==0) then {
@@ -12,6 +8,7 @@ forge Factorial(int n) => int {
 }
 
 forge Main() => void  {
-	Factorial(3);
+	remold number = Factorial(3);
+	remold number += 3;
 }
 

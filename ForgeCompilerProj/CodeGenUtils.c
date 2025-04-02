@@ -112,5 +112,6 @@ void insert_line(const char* fmt, ...) {
 	va_end(args);
 	FILE* out = fopen("C:\\Users\\itama\\Desktop\\output.asm", "a");
 	fprintf(out, "%s\n", buffer);
+	printf("%s\n", buffer);
 	fclose(out);
 }
