@@ -25,9 +25,19 @@ const char* scratch_name(int reg);
 const char* label_name();
 // This func will create the code gen for symbols
 const char* symbol_codegen(SymbolEntry* s);
+// this func will return a param reg name based on an index
+char* getParamReg(int offset);
 // This func will create a new ASM file
 void createAsmFile();
 // This func will add a new line to the asm file
 void insert_line(const char* fmt, ...);
+// This func will create the pushes for a func dec start
+void gen_callee_pushes();
+// This func will create the pops for a func dec end
+void gen_callee_pops();
+// This func will create the pushes for a func call
+void gen_caller_pushes();
+// This func will create the pops for a func call end
+void gen_caller_pops();
 
 #endif

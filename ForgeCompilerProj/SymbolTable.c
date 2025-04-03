@@ -188,8 +188,15 @@ void createASTSymbolTable(ASTNode* node, SymbolTable* currentTable, int* errorCo
             else {
                 // local
                 place = IS_LOCAL;
-                // reserve 8 bytes on stack
-                currentTable->localOffset -= 8; 
+                if (strcmp(varType, "string") == 0) {
+                    // reserve 72 bytes on stack
+                    currentTable->localOffset -= 72;
+                }
+                else 
+                {
+                    // reserve 8 bytes on stack
+                    currentTable->localOffset -= 8;
+                }
                 offset = currentTable->localOffset;
             }
          
@@ -329,7 +336,3 @@ SymbolTable* getClosestScope(ASTNode* root)
 }
 
 
-void setCodeGenData(ASTNode* node) 
-{
-    // first setup the 
-}

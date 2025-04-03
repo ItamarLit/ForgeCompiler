@@ -84,7 +84,7 @@ const char* symbol_codegen(SymbolEntry* s)
 		sprintf(str, "[rbp + %d]", s->offset);
 		break;
 	case IS_REG:
-		sprintf(str, "%s", symbRegisterNames[s->offset]);
+		sprintf(str, "%s", getParamReg(s->offset));
 		break;
 	default:
 		printf("Invalid place of entry in symbol table");
@@ -104,6 +104,10 @@ void createAsmFile()
 	fclose(out);
 }
 
+char* getParamReg(int offset) {
+	return symbRegisterNames[offset];
+}
+
 void insert_line(const char* fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
@@ -114,4 +118,50 @@ void insert_line(const char* fmt, ...) {
 	fprintf(out, "%s\n", buffer);
 	printf("%s\n", buffer);
 	fclose(out);
+}
+
+
+void gen_callee_pushes()
+{
+	insert_line("push rbx\n");
+	insert_line("push rdi\n");
+	insert_line("push rsi\n");
+	insert_line("push r12\n");
+	insert_line("push r13\n");
+	insert_line("push r14\n");
+	insert_line("push r15\n");
+}
+
+void gen_callee_pops()
+{
+	insert_line("pop r15\n");
+	insert_line("pop r14\n");
+	insert_line("pop r13\n");
+	insert_line("pop r12\n");
+	insert_line("pop rsi\n");
+	insert_line("pop rdi\n");
+	insert_line("pop rbx\n");
+}
+
+void gen_caller_pushes() 
+{
+	insert_line("push rax\n");
+	insert_line("push rcx\n");
+	insert_line("push rdx\n");
+	insert_line("push r8\n");
+	insert_line("push r9\n");
+	insert_line("push r10\n");
+	insert_line("push r11\n");
+}
+
+
+void gen_caller_pops() 
+{
+	insert_line("pop r11\n");
+	insert_line("pop r10\n");
+	insert_line("pop r9\n");
+	insert_line("pop r8\n");
+	insert_line("pop rdx\n");
+	insert_line("pop rcx\n");
+	insert_line("pop rax\n");
 }

@@ -14,6 +14,7 @@ static void gen_while_statement(ASTNode* node, HashMap* stringTable);
 static void gen_return_statement(ASTNode* node, HashMap* stringTable);
 static void gen_func_call(ASTNode* node, HashMap* stringTable);
 static void gen_output_call(ASTNode* node, HashMap* stringTable);
+static void gen_input_call(ASTNode* node, HashMap* stringTable);
 
 void handle_assign(SymbolEntry* entry, int r1);
 void handle_add_assign(SymbolEntry* entry, int r1);
@@ -32,6 +33,7 @@ static HandlerEntry stmtTable[] =
     {"ReturnStatement", gen_return_statement},
     {"FuncCallExpr", gen_func_call},
     {"OutputStatement", gen_output_call},
+    {"InputStatement", gen_input_call},
     {NULL, NULL}
 };
 
@@ -56,15 +58,16 @@ void gen_statment(ASTNode* node, HashMap* stringTable)
     }
 }
 
-static void gen_var_dec(ASTNode* node, HashMap* stringTable) 
+static void gen_var_dec(ASTNode* node, HashMap* stringTable)
 {
     SymbolTable* currentScope = getClosestScope(node);
     SymbolEntry* entry = lookUpSymbol(node->children[1]->token->lexeme, currentScope);
     if (entry->place != IS_LOCAL) return;
-    // local var dec
+
+    // generate the expression (r1 will hold the result)
     gen_expr(node->children[3], stringTable);
     int r1 = node->children[3]->reg;
-    // move value into stack at correct place
+    // store the value in the stack (pointer for strings)
     insert_line("mov [rbp + %d], %s\n", entry->offset, scratch_name(r1));
     scratch_free(r1);
 }
@@ -234,27 +237,14 @@ void handle_div_assign(SymbolEntry* entry, int r1) {
 }
 
 static void gen_output_call(ASTNode* node, HashMap* stringTable)
-{
-    // PUSH ALL REGISTERS 
-    
+{    
     // gen expr for child node
     gen_expr(node->children[1], stringTable);
     // get the reg
     int reg = node->children[1]->reg;
     // move the val into rcx
     Type exprType = checkExprType(node->children[1]);
-    insert_line("push rcx\n");
-    insert_line("push rdx\n");
-    insert_line("push r8\n");
-    insert_line("push r9\n");
-
-    insert_line("push rbx\n");
-    insert_line("push r10\n");
-    insert_line("push r11\n");
-    insert_line("push r12\n");
-    insert_line("push r13\n");
-    insert_line("push r14\n");
-    insert_line("push r15\n");
+    gen_caller_pushes();
     insert_line("mov rdx, %s\n", scratch_name(reg));
     switch (exprType)
     {
@@ -276,16 +266,71 @@ static void gen_output_call(ASTNode* node, HashMap* stringTable)
         insert_line("call print_string\n");
         break;
     }
-    insert_line("pop r15\n");
-    insert_line("pop r14\n");
-    insert_line("pop r13\n");
-    insert_line("pop r12\n");
-    insert_line("pop r11\n");
-    insert_line("pop r10\n");
-    insert_line("pop rbx\n");
+    gen_caller_pops();
+}
 
-    insert_line("pop r9\n");
-    insert_line("pop r8\n");
-    insert_line("pop rdx\n");
-    insert_line("pop rcx\n");
+static void gen_input_call(ASTNode* node, HashMap* stringTable)
+{
+    // gen expr for child node
+    gen_expr(node->children[1], stringTable);
+    // get the reg
+    int reg = node->children[1]->reg;
+    // get the var type
+    Type exprType = checkExprType(node->children[1]);
+    SymbolTable* scope = getClosestScope(node);
+    SymbolEntry* entry = lookUpSymbol(node->children[1]->token->lexeme, scope);
+    gen_caller_pushes();
+    switch (exprType)
+    {
+    case TYPE_INT:
+        insert_line("call input_int");
+        if (entry->place == IS_GLOBAL) {
+            insert_line("mov [%s], rax", symbol_codegen(entry));
+        }
+        else {
+            // local
+            insert_line("mov %s, rax", symbol_codegen(entry));
+
+        }
+        break;
+    case TYPE_BOOL:
+        insert_line("call input_bool");
+        if (entry->place == IS_GLOBAL) {
+            insert_line("mov [%s], rax", symbol_codegen(entry));
+        }
+        else {
+            // local
+            insert_line("mov %s, rax", symbol_codegen(entry));
+
+        }
+        break;
+    case TYPE_STRING:   
+        // for strings, if the var is global then the buffer is at offset name_buffer if it is a local then the buffer 
+        // is on the stack at the offset + 8 bytes if it is a func param the offset is in the reg
+        if (entry->place == IS_GLOBAL) 
+        {
+            // global
+            insert_line("lea rdi, %s_buffer", symbol_codegen(entry));
+            insert_line("mov rcx, 64");
+            insert_line("call input_string");
+            // change the pointer of the global var
+            insert_line("lea rax, %s_buffer", symbol_codegen(entry));
+            insert_line("mov [%s], rax", symbol_codegen(entry));
+        }
+        else if(entry->place == IS_LOCAL)
+        {
+            // local
+            insert_line("lea rdi, [rbp + %d]", entry->offset + 8);
+            insert_line("mov rcx, 64");
+            insert_line("call input_string");
+            int mem_reg = scratch_alloc();
+            // set the pointer to the correct mem addr
+            insert_line("lea %s, [rbp + %d]", scratch_name(mem_reg), entry->offset + 8);
+            insert_line("mov [rbp + %d], %s", entry->offset, scratch_name(mem_reg));
+            scratch_free(mem_reg);
+        }
+        
+        break;
+    }
+    gen_caller_pops();
 }

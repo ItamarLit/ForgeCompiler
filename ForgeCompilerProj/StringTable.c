@@ -79,7 +79,7 @@ static void printSymbolEntry(void* value) {
 static void createStringTableRecursive(ASTNode* node, HashMap* map)
 {
     if (!node) return;
-    // Save all string literals that are in the program and not saved yet
+    // Save all global string literals that are in the program and not saved yet
     if (node->token && node->token->type == STRING_LITERAL && !getMapValue(map, node->token->lexeme))
     {
         insertString(map, node->token->lexeme);

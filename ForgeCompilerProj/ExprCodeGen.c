@@ -256,36 +256,12 @@ static void gen_func_call_expr(ASTNode* node, HashMap* stringTable)
         insert_line("push rax\n");
         scratch_free(argReg);
     }
-    // before calling the func push any volitile reg or used scratch reg
-
-    insert_line("push rcx\n");
-    insert_line("push rdx\n");
-    insert_line("push r8\n");
-    insert_line("push r9\n");
-
-    insert_line("push rbx\n");
-    insert_line("push r10\n");
-    insert_line("push r11\n");
-    insert_line("push r12\n");
-    insert_line("push r13\n");
-    insert_line("push r14\n");
-    insert_line("push r15\n");
+    // before calling the func push any volitile reg 
+    gen_caller_pushes();
     // call the func
     insert_line("call %s\n", funcName);
     // after call pop all the prev pushed reg
-    insert_line("pop r15\n");
-    insert_line("pop r14\n");
-    insert_line("pop r13\n");
-    insert_line("pop r12\n");
-    insert_line("pop r11\n");
-    insert_line("pop r10\n");
-    insert_line("pop rbx\n");
-
-    insert_line("pop r9\n");
-    insert_line("pop r8\n");
-    insert_line("pop rdx\n");
-    insert_line("pop rcx\n");
-
+    gen_caller_pops();
     // store the ret value in a scratch register
     int r = scratch_alloc();
     insert_line("mov %s, rax\n", scratch_name(r));

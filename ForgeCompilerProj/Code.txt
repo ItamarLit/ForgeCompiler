@@ -1,10 +1,13 @@
-mold int number = 3;
 
-
-forge Main() => void  {
-	output(3);
-	output("hello world");
-	output(1 + 1);
-	output(true);
+forge Hello() => void {
+	mold int number = 0;
+	input(number);
+	output(number);
+	input(number);
+	output(number);
+	
 }
 
+forge Main() => void {
+	Hello();
+}
