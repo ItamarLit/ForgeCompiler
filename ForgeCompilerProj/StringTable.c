@@ -90,7 +90,11 @@ static void createStringTableRecursive(ASTNode* node, HashMap* map)
     }
 }
 
-
+/// <summary>
+/// This function creates a full string table
+/// </summary>
+/// <param name="root"></param>
+/// <returns></returns>
 HashMap* createStringTable(ASTNode* root)
 {
     HashMap* map = initHashMap(INITAL_HASHMAP_SIZE, hashFunc, equalFunc, printStringKey, printSymbolEntry, free, freeStringEntry);
@@ -102,6 +106,12 @@ HashMap* createStringTable(ASTNode* root)
     return map;
 }
 
+/// <summary>
+/// This function is used to lookup string values and get there labels if they exist
+/// </summary>
+/// <param name="string"></param>
+/// <param name="map"></param>
+/// <returns></returns>
 char* lookUpString(char* string, HashMap* map) 
 {
     StringEntry* entry = getMapValue(map, string);

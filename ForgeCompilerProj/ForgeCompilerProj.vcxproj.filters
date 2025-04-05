@@ -108,6 +108,9 @@
     <ClInclude Include="CodeGenUtils.h">
       <Filter>Header Files\CodeGen</Filter>
     </ClInclude>
+    <ClInclude Include="HelperFunctionsCodeGen.h">
+      <Filter>Header Files\CodeGen</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Code.txt">
@@ -185,6 +188,9 @@
       <Filter>Source Files\CodeGen</Filter>
     </ClCompile>
     <ClCompile Include="CodeGenUtils.c">
+      <Filter>Source Files\CodeGen</Filter>
+    </ClCompile>
+    <ClCompile Include="HelperFunctionsCodeGen.c">
       <Filter>Source Files\CodeGen</Filter>
     </ClCompile>
   </ItemGroup>

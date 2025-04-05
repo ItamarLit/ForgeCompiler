@@ -55,7 +55,7 @@ void resolveIdentifiers(ASTNode* root, int* errorCount) {
         if (!entry || entry->type == TYPE_UNDEFINED || root->token->tokenRow < entry->line) {
             printf("Error: Undeclared identifier '%s' at line %d, column %d\n",
             root->token->lexeme, root->token->tokenRow, root->token->tokenCol);
-            // insert the symbol with ERROR_TYPE so i can continue looking for problems
+            // insert the symbol with TYPE_UNDEFINED so i can continue looking for problems
             if (!entry) {
                 insertSymbol(currentScope->table, root->token->lexeme, TYPE_UNDEFINED, 0, TYPE_UNDEFINED, TYPE_UNDEFINED, 0, root->token->tokenRow);
             }

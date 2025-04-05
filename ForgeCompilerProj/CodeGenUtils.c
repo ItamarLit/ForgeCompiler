@@ -50,6 +50,11 @@ void scratch_free(int reg)
 	}
 }
 
+/// <summary>
+/// This func will return the name of the reg based on an index
+/// </summary>
+/// <param name="reg"></param>
+/// <returns>Returns a reg name</returns>
 const char* scratch_name(int reg)
 {
 	return registerNames[reg];
@@ -94,6 +99,9 @@ const char* symbol_codegen(SymbolEntry* s)
 	return str;
 }
 
+/// <summary>
+/// This func will create the asm file 
+/// </summary>
 void createAsmFile() 
 {
 	FILE* out = fopen("C:\\Users\\itama\\Desktop\\output.asm", "w");
@@ -104,23 +112,33 @@ void createAsmFile()
 	fclose(out);
 }
 
+/// <summary>
+/// This func will return a register name from the valid Windows Asm registers
+/// </summary>
+/// <param name="offset"></param>
+/// <returns>Returns a name</returns>
 char* getParamReg(int offset) {
 	return symbRegisterNames[offset];
 }
 
+
 void insert_line(const char* fmt, ...) {
 	va_list args;
+	// start from first arg after fmt
 	va_start(args, fmt);
 	char buffer[256];
+	// fill the buffer with the formated string
 	vsprintf(buffer, fmt, args);
+	// clean up
 	va_end(args);
+	// write into the asm file
 	FILE* out = fopen("C:\\Users\\itama\\Desktop\\output.asm", "a");
 	fprintf(out, "%s\n", buffer);
 	printf("%s\n", buffer);
 	fclose(out);
 }
 
-
+// generate pushes for callee in windows conventions
 void gen_callee_pushes()
 {
 	insert_line("push rbx\n");
@@ -132,6 +150,7 @@ void gen_callee_pushes()
 	insert_line("push r15\n");
 }
 
+// generate pops for callee in windows conventions
 void gen_callee_pops()
 {
 	insert_line("pop r15\n");
@@ -143,6 +162,7 @@ void gen_callee_pops()
 	insert_line("pop rbx\n");
 }
 
+// generate pushes for caller in windows conventions
 void gen_caller_pushes() 
 {
 	insert_line("push rax\n");
@@ -154,7 +174,7 @@ void gen_caller_pushes()
 	insert_line("push r11\n");
 }
 
-
+// generate pops for caller in windows conventions
 void gen_caller_pops() 
 {
 	insert_line("pop r11\n");

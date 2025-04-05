@@ -23,6 +23,7 @@ void handle_sub_assign(SymbolEntry* entry, int r1);
 void handle_mul_assign(SymbolEntry* entry, int r1);
 void handle_div_assign(SymbolEntry* entry, int r1);
 
+// This table matches statement to handler func
 static HandlerEntry stmtTable[] =
 {
     {"VarDeclaration", gen_var_dec},
@@ -37,6 +38,7 @@ static HandlerEntry stmtTable[] =
     {NULL, NULL}
 };
 
+// This table matches assign op to handler func
 static AssignEntry assignTable[] = {
     {"=", handle_assign},
     {"+=", handle_add_assign},
@@ -46,6 +48,11 @@ static AssignEntry assignTable[] = {
     {NULL, NULL} 
 };
 
+/// <summary>
+/// This is the main function that creates statment code
+/// </summary>
+/// <param name="node"></param>
+/// <param name="stringTable"></param>
 void gen_statment(ASTNode* node, HashMap* stringTable)
 {
     if (!node) return;
@@ -58,6 +65,11 @@ void gen_statment(ASTNode* node, HashMap* stringTable)
     }
 }
 
+/// <summary>
+/// This func generates code for a local var dec
+/// </summary>
+/// <param name="node"></param>
+/// <param name="stringTable"></param>
 static void gen_var_dec(ASTNode* node, HashMap* stringTable)
 {
     SymbolTable* currentScope = getClosestScope(node);
@@ -72,6 +84,11 @@ static void gen_var_dec(ASTNode* node, HashMap* stringTable)
     scratch_free(r1);
 }
 
+/// <summary>
+/// This func generates code for an assignment
+/// </summary>
+/// <param name="node"></param>
+/// <param name="stringTable"></param>
 static void gen_assignment_dec(ASTNode* node, HashMap* stringTable)
 {
     gen_expr(node->children[2], stringTable);
@@ -79,10 +96,9 @@ static void gen_assignment_dec(ASTNode* node, HashMap* stringTable)
 
     SymbolTable* currentScope = getClosestScope(node);
     SymbolEntry* entry = lookUpSymbol(node->children[0]->token->lexeme, currentScope);
-    const char* assignOp = node->children[1]->lable; // "+=", "-=", "*=", "/=", "="
-
-    const char* dest = (entry->place == IS_GLOBAL) ? entry->name : NULL;
-    int offset = (entry->place == IS_LOCAL) ? entry->offset : 0;
+    // "+=", "-=", "*=", "/=", "="
+    const char* assignOp = node->children[1]->lable; 
+    // go over the table and match the handler
     for (int i = 0; assignTable[i].op != NULL; i++) {
         if (strcmp(assignOp, assignTable[i].op) == 0) {
             assignTable[i].handler(entry, r1);
@@ -92,7 +108,11 @@ static void gen_assignment_dec(ASTNode* node, HashMap* stringTable)
     scratch_free(r1);
 }
 
-
+/// <summary>
+/// This func generates if statement code
+/// </summary>
+/// <param name="node"></param>
+/// <param name="stringTable"></param>
 void gen_if_statement(ASTNode* node, HashMap* stringTable) {
     // get labels
     char* falseLabel = label_name();
@@ -122,7 +142,11 @@ void gen_if_statement(ASTNode* node, HashMap* stringTable) {
     free(doneLabel);
 }
 
-
+/// <summary>
+/// This func generates while stataement code
+/// </summary>
+/// <param name="node"></param>
+/// <param name="stringTable"></param>
 void gen_while_statement(ASTNode* node, HashMap* stringTable) {
     // gen two labels
     char* startLabel = label_name();
@@ -147,6 +171,11 @@ void gen_while_statement(ASTNode* node, HashMap* stringTable) {
     free(startLabel);
 }
 
+/// <summary>
+/// This is a helper function that returns the func node (the node that holds all the func dec children)
+/// </summary>
+/// <param name="node"></param>
+/// <returns></returns>
 ASTNode* getEnclosingFunction(ASTNode* node) {
     while (node) {
         if (strcmp(node->lable, "FuncDeclaration") == 0)
@@ -157,9 +186,16 @@ ASTNode* getEnclosingFunction(ASTNode* node) {
     return NULL;
 }
 
+/// <summary>
+/// This func generates a return statement in a function
+/// </summary>
+/// <param name="node"></param>
+/// <param name="stringTable"></param>
 void gen_return_statement(ASTNode* node, HashMap* stringTable)
 {
+    // get the main func node
     ASTNode* funcNode = getEnclosingFunction(node);
+    // get the func name
     const char* funcName = funcNode->children[0]->token->lexeme;
     // no return data ( void func )
     if (node->childCount == 0) {
@@ -178,6 +214,11 @@ void gen_return_statement(ASTNode* node, HashMap* stringTable)
     return;
 }
 
+/// <summary>
+/// This func generates code for a func call
+/// </summary>
+/// <param name="node"></param>
+/// <param name="stringTable"></param>
 static void gen_func_call(ASTNode* node, HashMap* stringTable) 
 {
     // calls are expressions, but can be used as statements
@@ -185,6 +226,11 @@ static void gen_func_call(ASTNode* node, HashMap* stringTable)
     scratch_free(node->reg);
 }
 
+/// <summary>
+/// This func generates code for a statement list 
+/// </summary>
+/// <param name="node"></param>
+/// <param name="stringTable"></param>
 void gen_statement_list(ASTNode* node, HashMap* stringTable) {
     if (!node) return;
     if (strcmp(node->lable, "StatementList") == 0) {
@@ -194,6 +240,7 @@ void gen_statement_list(ASTNode* node, HashMap* stringTable) {
     }
 }
 
+/// Functions that handle assignment code generation
 
 void handle_assign(SymbolEntry* entry, int r1) {
     if (entry->place == IS_GLOBAL)
@@ -236,6 +283,11 @@ void handle_div_assign(SymbolEntry* entry, int r1) {
         insert_line("mov [rbp + %d], rax\n", entry->offset);
 }
 
+/// <summary>
+/// This function handles output statement code generation
+/// </summary>
+/// <param name="node"></param>
+/// <param name="stringTable"></param>
 static void gen_output_call(ASTNode* node, HashMap* stringTable)
 {    
     // gen expr for child node
@@ -246,29 +298,29 @@ static void gen_output_call(ASTNode* node, HashMap* stringTable)
     Type exprType = checkExprType(node->children[1]);
     gen_caller_pushes();
     insert_line("mov rdx, %s\n", scratch_name(reg));
-    switch (exprType)
+    // call the correct print func based on type
+    if (exprType == TYPE_INT) 
     {
-    case TYPE_INT:
-        //insert_line("mov rcx, %s\n", scratch_name(reg));
         insert_line("call print_int\n");
-        insert_line("lea rdx, new_line\n");
-        insert_line("call print_string\n");
-        break;
-    case TYPE_BOOL:
-        //insert_line("mov rcx, %s\n", scratch_name(reg));
-        insert_line("call print_bool\n");
-        insert_line("lea rdx, new_line\n");
-        insert_line("call print_string\n");
-        break;
-    case TYPE_STRING:
-        insert_line("call print_string\n");
-        insert_line("lea rdx, new_line\n");
-        insert_line("call print_string\n");
-        break;
     }
+    else if (exprType == TYPE_BOOL)
+    {
+        insert_line("call print_bool\n");
+    }
+    else {
+        insert_line("call print_string\n");
+    }
+    // print a new line
+    insert_line("lea rdx, new_line\n");
+    insert_line("call print_string\n");
     gen_caller_pops();
 }
 
+/// <summary>
+/// This function generates input code 
+/// </summary>
+/// <param name="node"></param>
+/// <param name="stringTable"></param>
 static void gen_input_call(ASTNode* node, HashMap* stringTable)
 {
     // gen expr for child node

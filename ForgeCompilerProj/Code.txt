@@ -1,13 +1,7 @@
+mold string num = "34";
 
-forge Hello() => void {
-	mold int number = 0;
-	input(number);
-	output(number);
-	input(number);
-	output(number);
-	
-}
 
 forge Main() => void {
-	Hello();
+	mold string num = "3";
+	output(num);
 }

@@ -135,6 +135,7 @@
     <ClInclude Include="FileReader.h" />
     <ClInclude Include="GrammarArray.h" />
     <ClInclude Include="HashMap.h" />
+    <ClInclude Include="HelperFunctionsCodeGen.h" />
     <ClInclude Include="Lexer.h" />
     <ClInclude Include="NonTerminals.h" />
     <ClInclude Include="Parser.h" />
@@ -163,6 +164,7 @@
     <ClCompile Include="FileReader.c" />
     <ClCompile Include="GrammarArray.c" />
     <ClCompile Include="HashMap.c" />
+    <ClCompile Include="HelperFunctionsCodeGen.c" />
     <ClCompile Include="Lexer.c" />
     <ClCompile Include="NonTerminals.c" />
     <ClCompile Include="Parser.c" />
