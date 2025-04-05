@@ -1,12 +1,13 @@
 mold string num = "34";
 
-forge Main1(int a) => void {
-	remold a += 3;
-	output(a);
+forge Main1(string a) => string {
+	remold a = "35";
+	return "hello";
+
 }
 
 forge Main(int a) => void {
-	mold int num = 3;
-	Main1(num);
+	output(Main1("34"));
+	remold num = Main1("1");
 	output(num);
 }

@@ -165,7 +165,6 @@ void gen_callee_pops()
 // generate pushes for caller in windows conventions
 void gen_caller_pushes() 
 {
-	insert_line("push rax\n");
 	insert_line("push rcx\n");
 	insert_line("push rdx\n");
 	insert_line("push r8\n");
@@ -183,5 +182,4 @@ void gen_caller_pops()
 	insert_line("pop r8\n");
 	insert_line("pop rdx\n");
 	insert_line("pop rcx\n");
-	insert_line("pop rax\n");
 }

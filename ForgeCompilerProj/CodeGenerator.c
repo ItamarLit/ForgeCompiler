@@ -161,32 +161,32 @@ void gen_function_params_copy(ASTNode* funcNode) {
     for (int i = 0; i < paramCount; i++) {
         SymbolEntry* entry = lookUpSymbol(paramList->children[i]->children[1]->token->lexeme, funcScope);
         if (i == 0) {
-            insert_line("mov %s, rcx", symbol_codegen(entry));
+            insert_line("mov %s, rcx\n", symbol_codegen(entry));
         }
         else if (i == 1) {
-            insert_line("mov %s, rdx", symbol_codegen(entry));
+            insert_line("mov %s, rdx\n", symbol_codegen(entry));
         }
         else if (i == 2) {
-            insert_line("mov %s, r8", symbol_codegen(entry));
+            insert_line("mov %s, r8\n", symbol_codegen(entry));
         }
         else if (i == 3) {
-            insert_line("mov %s, r9", symbol_codegen(entry));
+            insert_line("mov %s, r9\n", symbol_codegen(entry));
         }
         else {
             int stackOffset = 16 + 8 * (i - 4);
-            insert_line("mov rax, [rbp + %d]", stackOffset);
-            insert_line("mov %s, rax", symbol_codegen(entry));
+            insert_line("mov rax, [rbp + %d]\n", stackOffset);
+            insert_line("mov %s, rax\n", symbol_codegen(entry));
         }
         if (entry->type == TYPE_STRING)
         {
             // copy string into buffer and set the offset to point to the buffer
-            insert_line("mov rsi, %s", symbol_codegen(entry));
+            insert_line("mov rsi, %s\n", symbol_codegen(entry));
             // get buffer offset
             int bufferOffset = entry->offset + 8; 
             // copy string into buffer
-            insert_line("lea rdi, [rbp + %d]", bufferOffset);
-            insert_line("call copy_string");
-            insert_line("mov [rbp + %d], rdi", entry->offset);
+            insert_line("lea rdi, [rbp + %d]\n", bufferOffset);
+            insert_line("call copy_string\n");
+            insert_line("mov [rbp + %d], rdi\n", entry->offset);
         }
     }
 }
@@ -222,8 +222,8 @@ void gen_function(ASTNode* node, HashMap* stringTable)
     if (strcmp(funcName, "Main") == 0) 
     {
         
-        insert_line("mov ecx, 0");
-        insert_line("call ExitProcess");
+        insert_line("mov ecx, 0\n");
+        insert_line("call ExitProcess\n");
 
     }
     else
