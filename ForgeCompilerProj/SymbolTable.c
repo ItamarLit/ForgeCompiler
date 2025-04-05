@@ -228,23 +228,15 @@ void createASTSymbolTable(ASTNode* node, SymbolTable* currentTable, int* errorCo
         SymbolTable* functionScope = createNewScope(currentTable);
         node->scope = functionScope;      
         // fill the function scope with the params
-        // offset starts at 16 because we push rbp and ip is on stack
-        int varOffset = 16;
         for (int i = 0; i < decCount; i++) {
-            // set the correct offset
-            Placement place;
-            int offset;
-            if (i < 4) {
-                offset = i;
-                place = IS_REG;
-            }
-            else {
-                offset = varOffset + 8;
-                varOffset += 8;
-                place = IS_LOCAL;
-            }
-            // insert the offset of the param
-            insertSymbol(functionScope->table, paramNames[i], paramTypes[i], 0, TYPE_UNDEFINED, NULL, 0, IGNORE_LINE, place, offset);
+            // check what size is needed for param
+            int sizeNeeded = (paramTypes[i] == TYPE_STRING) ? 72 : 8;
+            functionScope->localOffset -= sizeNeeded;
+            // treat all params as local
+            int offset = functionScope->localOffset;
+            Placement place = IS_LOCAL; 
+            // insert params
+            insertSymbol(functionScope->table, paramNames[i], paramTypes[i], 0,TYPE_UNDEFINED, NULL, 0,IGNORE_LINE, place, offset);
             free(paramNames[i]);
         }
         if (paramNames) {

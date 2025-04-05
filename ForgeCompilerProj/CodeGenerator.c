@@ -121,6 +121,22 @@ static int count_local_var_bytes(ASTNode* node)
     return counter;
 }
 
+int countFunctionParamStackSize(ASTNode* paramList) {
+    int totalSize = 0;
+
+    for (int i = 0; i < paramList->childCount; i++) {
+        ASTNode* paramDecl = paramList->children[i];
+        char* typeLexeme = paramDecl->children[0]->token->lexeme;
+        if (strcmp(typeLexeme, "string") == 0) {
+            totalSize += 72;
+        }
+        else {
+            totalSize += 8;
+        }
+    }
+    return totalSize;
+}
+
 int gen_stack_allocation(int local_bytes)
 {
     int total_bytes = local_bytes;
@@ -134,6 +150,46 @@ int gen_stack_allocation(int local_bytes)
     return total_bytes;
 }
 
+/// <summary>
+/// This helper func will copy function params into the local stack storage
+/// </summary>
+/// <param name="funcNode"></param>
+void gen_function_params_copy(ASTNode* funcNode) {
+    ASTNode* paramList = funcNode->children[1];
+    SymbolTable* funcScope = funcNode->scope;
+    int paramCount = paramList->childCount;
+    for (int i = 0; i < paramCount; i++) {
+        SymbolEntry* entry = lookUpSymbol(paramList->children[i]->children[1]->token->lexeme, funcScope);
+        if (i == 0) {
+            insert_line("mov %s, rcx", symbol_codegen(entry));
+        }
+        else if (i == 1) {
+            insert_line("mov %s, rdx", symbol_codegen(entry));
+        }
+        else if (i == 2) {
+            insert_line("mov %s, r8", symbol_codegen(entry));
+        }
+        else if (i == 3) {
+            insert_line("mov %s, r9", symbol_codegen(entry));
+        }
+        else {
+            int stackOffset = 16 + 8 * (i - 4);
+            insert_line("mov rax, [rbp + %d]", stackOffset);
+            insert_line("mov %s, rax", symbol_codegen(entry));
+        }
+        if (entry->type == TYPE_STRING)
+        {
+            // copy string into buffer and set the offset to point to the buffer
+            insert_line("mov rsi, %s", symbol_codegen(entry));
+            // get buffer offset
+            int bufferOffset = entry->offset + 8; 
+            // copy string into buffer
+            insert_line("lea rdi, [rbp + %d]", bufferOffset);
+            insert_line("call copy_string");
+            insert_line("mov [rbp + %d], rdi", entry->offset);
+        }
+    }
+}
 
 void gen_function(ASTNode* node, HashMap* stringTable)
 {
@@ -148,12 +204,14 @@ void gen_function(ASTNode* node, HashMap* stringTable)
     }
     insert_line("push rbp\n");
     insert_line("mov rbp, rsp\n");
-    // push callee saved registers
-    gen_callee_pushes();
     ASTNode* blockNode = node->children[3];
     // count the amount of local vars in the func and save space for them
-    int localSize = count_local_var_bytes(node);
+    int localSize = count_local_var_bytes(node) + countFunctionParamStackSize(node->children[1]);
     insert_line("sub rsp, %d\n", gen_stack_allocation(localSize));
+    // push callee saved registers
+    gen_callee_pushes();
+    // save func params in local space
+    gen_function_params_copy(node);
     // gen func body
     gen_statement_list(blockNode->children[0], stringTable);
     // setup return label
