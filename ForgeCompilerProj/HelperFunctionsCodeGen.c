@@ -13,15 +13,25 @@ static void gen_copy_string();
 
 void gen_helper_functions() 
 {
+    // gen string len func
     gen_str_len();
+    // gen print string
     gen_print_string();
+    // gen print bool
     gen_print_bool();
+    // gen print int
     gen_print_int();
+    // gen input string
     gen_input_string();
+    // gen input int
     gen_input_int();
+    // gen input bool
     gen_input_bool();
+    // gen invalid input func
     gen_invalid_input();
+    // gen buff overflow func
     gen_buffer_overflow();
+    // gen copy string func
     gen_copy_string();
 }
 

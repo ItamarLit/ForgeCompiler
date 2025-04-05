@@ -10,8 +10,9 @@ int registers[REG_COUNT] = { 0 };
 int reg_spilled[REG_COUNT] = { 0 };
 // array that holds register names
 const char* registerNames[REG_COUNT] = { "rbx", "r10", "r11", "r12", "r13", "r14", "r15"};
-// registers for function calls based on MASM
-static const char* symbRegisterNames[4] = { "rcx", "rdx", "r8", "r9" };
+// win API param registers
+char* paramRegisterNames[4] = { "rcx", "rdx", "r8", "r9" };
+
 
 /// <summary>
 /// This function will find a free register to use, if there isnt one it will push the first one and use it
@@ -118,7 +119,7 @@ void createAsmFile()
 /// <param name="offset"></param>
 /// <returns>Returns a name</returns>
 char* getParamReg(int offset) {
-	return symbRegisterNames[offset];
+	return paramRegisterNames[offset];
 }
 
 

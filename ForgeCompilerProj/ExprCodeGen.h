@@ -4,11 +4,11 @@
 #include "AST.h"
 #include "HashMap.h"
 
-// struct for arethmitic
+// struct for label op pairs
 typedef struct {
     const char* label;
     const char* op;
-} BinEntry;
+} StringLabelPair;
 
 // this func will generate expressions code
 void gen_expr(ASTNode* node, HashMap* stringTable);

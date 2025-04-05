@@ -39,26 +39,30 @@ void gen_data_seg(ASTNode* root, HashMap* stringTable)
             SymbolEntry* entry = lookUpSymbol(name, scope);
             switch (entry->type)
             {
-            case TYPE_INT:
-                insert_line("%s dq %s\n",name, node->children[3]->token->lexeme);
-                break;
-            case TYPE_STRING:
-                // strings will refrence the string in the read only seg originaly but creat buffer if need to change them
-                insert_line("%s_buffer db 64 dup(0)\n", name);
-                insert_line("%s dq offset %s\n",name, lookUpString(node->children[3]->token->lexeme, stringTable));
-                break;
-            case TYPE_BOOL:
-                insert_line("%s dq %s\n", name, strcmp(node->children[3]->token->lexeme, "true")  == 0 ? "1" : "0");
-                break;
-            default:
-                insert_line("Invalid global var type: %s\n", convertTypeToString(entry->type));
-                break;
+                case TYPE_INT:
+                    insert_line("%s dq %s\n",name, node->children[3]->token->lexeme);
+                    break;
+                case TYPE_STRING:
+                    // strings will refrence the string in the read only seg originaly but creat buffer if need to change them
+                    insert_line("%s_buffer db 64 dup(0)\n", name);
+                    insert_line("%s dq offset %s\n",name, lookUpString(node->children[3]->token->lexeme, stringTable));
+                    break;
+                case TYPE_BOOL:
+                    insert_line("%s dq %s\n", name, strcmp(node->children[3]->token->lexeme, "true")  == 0 ? "1" : "0");
+                    break;
+                default:
+                    insert_line("Invalid global var type: %s\n", convertTypeToString(entry->type));
+                    break;
             }
         }
     }
 
 }
 
+/// <summary>
+/// This func will gen the read only string literals that appear in the src code along with needed strings for the compiling process
+/// </summary>
+/// <param name="stringTable"></param>
 void gen_readOnly_data(HashMap* stringTable) {
     int index;
     for (index = 0; index < stringTable->map_size; index++) {
@@ -102,6 +106,11 @@ void gen_code(ASTNode* node, HashMap* stringTable)
     }
 }
 
+/// <summary>
+/// This func counts the bytes needed for local vars in the given func node
+/// </summary>
+/// <param name="node"></param>
+/// <returns>Returns the count of bytes needed</returns>
 static int count_local_var_bytes(ASTNode* node)
 {
     if (!node) return 0;
@@ -122,6 +131,11 @@ static int count_local_var_bytes(ASTNode* node)
     return counter;
 }
 
+/// <summary>
+/// This func will count the needed bytes in a func param list
+/// </summary>
+/// <param name="paramList"></param>
+/// <returns>Returns the count of bytes needed</returns>
 int countFunctionParamStackSize(ASTNode* paramList) {
     int totalSize = 0;
 
@@ -138,6 +152,11 @@ int countFunctionParamStackSize(ASTNode* paramList) {
     return totalSize;
 }
 
+/// <summary>
+/// This func will round the number of bytes to be a mul of 16 (allign the stack)
+/// </summary>
+/// <param name="local_bytes"></param>
+/// <returns>Returns a correct local bytes count</returns>
 int gen_stack_allocation(int local_bytes)
 {
     int total_bytes = local_bytes;
@@ -161,23 +180,19 @@ void gen_function_params_copy(ASTNode* funcNode) {
     int paramCount = paramList->childCount;
     for (int i = 0; i < paramCount; i++) {
         SymbolEntry* entry = lookUpSymbol(paramList->children[i]->children[1]->token->lexeme, funcScope);
-        if (i == 0) {
-            insert_line("mov %s, rcx\n", symbol_codegen(entry));
+        if (i < 4)
+        {
+            // params from registers
+            insert_line("mov %s, %s\n", symbol_codegen(entry), paramRegisterNames[i]);
         }
-        else if (i == 1) {
-            insert_line("mov %s, rdx\n", symbol_codegen(entry));
-        }
-        else if (i == 2) {
-            insert_line("mov %s, r8\n", symbol_codegen(entry));
-        }
-        else if (i == 3) {
-            insert_line("mov %s, r9\n", symbol_codegen(entry));
-        }
-        else {
+        else 
+        {
+            // params from the stack
             int stackOffset = 16 + 8 * (i - 4);
             insert_line("mov rax, [rbp + %d]\n", stackOffset);
             insert_line("mov %s, rax\n", symbol_codegen(entry));
         }
+        // if the param is a string copy into buffer
         if (entry->type == TYPE_STRING)
         {
             // copy string into buffer and set the offset to point to the buffer
@@ -194,6 +209,11 @@ void gen_function_params_copy(ASTNode* funcNode) {
     }
 }
 
+/// <summary>
+/// This func generates code for functions in asm
+/// </summary>
+/// <param name="node"></param>
+/// <param name="stringTable"></param>
 void gen_function(ASTNode* node, HashMap* stringTable)
 {
     if (!node) return;
@@ -201,6 +221,7 @@ void gen_function(ASTNode* node, HashMap* stringTable)
     const char* funcName = node->children[0]->token->lexeme;
     // start of func
     insert_line("%s Proc\n", funcName);
+    // align main func
     if (strcmp(funcName, "Main") == 0)
     {
         insert_line("sub rsp, 8");
@@ -210,6 +231,7 @@ void gen_function(ASTNode* node, HashMap* stringTable)
     ASTNode* blockNode = node->children[3];
     // count the amount of local vars in the func and save space for them
     int localSize = count_local_var_bytes(node) + countFunctionParamStackSize(node->children[1]);
+    // allocate space for local vars
     insert_line("sub rsp, %d\n", gen_stack_allocation(localSize));
     // push callee saved registers
     gen_callee_pushes();
@@ -219,12 +241,14 @@ void gen_function(ASTNode* node, HashMap* stringTable)
     gen_statement_list(blockNode->children[0], stringTable);
     // setup return label
     insert_line("_%s_ret:\n", funcName);
+    // readd stack space
     insert_line("add rsp, %d\n", gen_stack_allocation(localSize));
+    // pop
     gen_callee_pops();
     insert_line("pop rbp\n");
     if (strcmp(funcName, "Main") == 0) 
     {
-        
+        // setup main end
         insert_line("mov ecx, 0\n");
         insert_line("call ExitProcess\n");
 
@@ -237,6 +261,9 @@ void gen_function(ASTNode* node, HashMap* stringTable)
     insert_line("%s Endp\n", funcName);
 }
 
+/// <summary>
+/// This func sets up the win api functions
+/// </summary>
 void gen_winApi()
 {
     insert_line("extern ExitProcess: proc\n");
@@ -245,6 +272,11 @@ void gen_winApi()
     insert_line("extern ReadConsoleA : proc\n");
 }
 
+/// <summary>
+/// This is the main func that generates the output asm file
+/// </summary>
+/// <param name="root"></param>
+/// <param name="stringTable"></param>
 void gen_asm(ASTNode* root, HashMap* stringTable) 
 {
     createAsmFile();

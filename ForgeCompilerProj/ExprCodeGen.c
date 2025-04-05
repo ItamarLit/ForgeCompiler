@@ -111,7 +111,7 @@ static void gen_unary_expr(ASTNode* node, HashMap* stringTable)
 
 static void gen_binary_expr(ASTNode* node, HashMap* stringTable)
 {
-    BinEntry opTable[] =
+    StringLabelPair opTable[] =
     {
         {"+", "add"},
         {"-", "sub"},
@@ -307,6 +307,15 @@ static void gen_equality_expr(ASTNode* node, HashMap* stringTable)
 
 static void gen_relational_expr(ASTNode* node, HashMap* stringTable)
 {
+    StringLabelPair opTable[] =
+    {
+        {">", "jg"},
+        {">=", "jge"},
+        {"<", "jl"},
+        {"<=", "jle"},
+        {NULL, NULL}
+    };
+
     gen_expr(node->children[0], stringTable);
     gen_expr(node->children[2], stringTable);
     // get the two children registers
@@ -320,17 +329,10 @@ static void gen_relational_expr(ASTNode* node, HashMap* stringTable)
     // get the op child
     const char* op = node->children[1]->token->lexeme;
     // set the correct op
-    if (strcmp(op, ">") == 0) {
-        insert_line("jg %s\n", trueLabel);
-    }
-    else if (strcmp(op, ">=") == 0) {
-        insert_line("jge %s\n", trueLabel);
-    }
-    else if (strcmp(op, "<") == 0) {
-        insert_line("jl %s\n", trueLabel);
-    }
-    else if (strcmp(op, "<=") == 0) {
-        insert_line("jle %s\n", trueLabel);
+    for (int i = 0; opTable[i].label != NULL; i++) {
+        if (strcmp(op, opTable[i].label) == 0) {
+            insert_line("%s %s\n", op = opTable[i].op, trueLabel);
+        }
     }
     // false path
     insert_line("mov %s, 0\n", scratch_name(r1));

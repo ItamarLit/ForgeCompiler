@@ -1,11 +1,13 @@
 mold string num = "34";
 
 forge Main1() => int {
-	mold int num = 33;
-	return num;
+	return 3;
+}
+
+forge Main2() => int {
+	return 4;
 }
 
 forge Main(int a) => void {
-	mold int num1 = Main1();
-	output(num1);
+	output(Main1() + Main2());
 }

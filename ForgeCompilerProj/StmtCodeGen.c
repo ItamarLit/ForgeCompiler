@@ -5,6 +5,7 @@
 #include "SymbolTable.h"
 #include "TypeChecker.h"
 #include <stdio.h>
+#include <string.h>
 
 void gen_statement_list(ASTNode* node, HashMap* stringTable);
 static void gen_var_dec(ASTNode* node, HashMap* stringTable);
@@ -215,10 +216,10 @@ void gen_return_statement(ASTNode* node, HashMap* stringTable)
         if (entry->type == TYPE_STRING && entry->place == IS_LOCAL) 
         {
             // copy the string into the global buffer
-            insert_line("mov rsi, %s", scratch_name(r));
-            insert_line("mov rdi, offset global_copy_buffer"); 
-            insert_line("call copy_string");
-            insert_line("mov rax, offset global_copy_buffer");
+            insert_line("mov rsi, %s\n", scratch_name(r));
+            insert_line("mov rdi, offset global_copy_buffer\n"); 
+            insert_line("call copy_string\n");
+            insert_line("mov rax, offset global_copy_buffer\n");
         }
     }
     // free the reg
@@ -345,58 +346,41 @@ static void gen_input_call(ASTNode* node, HashMap* stringTable)
     Type exprType = checkExprType(node->children[1]);
     SymbolTable* scope = getClosestScope(node);
     SymbolEntry* entry = lookUpSymbol(node->children[1]->token->lexeme, scope);
+    // push caller registers
     gen_caller_pushes();
-    switch (exprType)
+    // check for bool or int
+    if (exprType == TYPE_INT || exprType == TYPE_BOOL) 
     {
-    case TYPE_INT:
-        insert_line("call input_int");
-        if (entry->place == IS_GLOBAL) {
-            insert_line("mov [%s], rax", symbol_codegen(entry));
-        }
-        else {
-            // local
-            insert_line("mov %s, rax", symbol_codegen(entry));
-
-        }
-        break;
-    case TYPE_BOOL:
-        insert_line("call input_bool");
-        if (entry->place == IS_GLOBAL) {
-            insert_line("mov [%s], rax", symbol_codegen(entry));
-        }
-        else {
-            // local
-            insert_line("mov %s, rax", symbol_codegen(entry));
-
-        }
-        break;
-    case TYPE_STRING:   
-        // for strings, if the var is global then the buffer is at offset name_buffer if it is a local then the buffer 
-        // is on the stack at the offset + 8 bytes if it is a func param the offset is in the reg
-        if (entry->place == IS_GLOBAL) 
-        {
-            // global
-            insert_line("lea rdi, %s_buffer", symbol_codegen(entry));
-            insert_line("mov rcx, 64");
-            insert_line("call input_string");
-            // change the pointer of the global var
-            insert_line("lea rax, %s_buffer", symbol_codegen(entry));
-            insert_line("mov [%s], rax", symbol_codegen(entry));
-        }
-        else if(entry->place == IS_LOCAL)
-        {
-            // local
-            insert_line("lea rdi, [rbp + %d]", entry->offset + 8);
-            insert_line("mov rcx, 64");
-            insert_line("call input_string");
-            int mem_reg = scratch_alloc();
-            // set the pointer to the correct mem addr
-            insert_line("lea %s, [rbp + %d]", scratch_name(mem_reg), entry->offset + 8);
-            insert_line("mov [rbp + %d], %s", entry->offset, scratch_name(mem_reg));
-            scratch_free(mem_reg);
-        }
-        
-        break;
+        // call the correct function
+        insert_line("call %s", exprType == TYPE_INT ? "input_int\n" : "input_bool\n");
+        // move the input into the correct place
+        insert_line(entry->place == IS_GLOBAL ? "mov [%s], rax\n" : "mov %s, rax\n", symbol_codegen(entry));
+    }
+    // handle string input
+    if (exprType == TYPE_STRING && entry->place == IS_LOCAL) 
+    {
+        // the buffer is on the stack at offset + 8 bytes
+        int offset = entry->offset + 8;
+        // local
+        insert_line("lea rdi, [rbp + %d]\n", offset);
+        insert_line("mov rcx, 64\n");
+        insert_line("call input_string\n");
+        int mem_reg = scratch_alloc();
+        // set the pointer to the correct mem addr
+        insert_line("lea %s, [rbp + %d]\n", scratch_name(mem_reg), offset);
+        insert_line("mov [rbp + %d], %s\n", entry->offset, scratch_name(mem_reg));
+        scratch_free(mem_reg);
+    }
+    // handle global string input
+    if (exprType == TYPE_STRING && entry->place == IS_GLOBAL) 
+    {
+        // if the var is global then the buffer is at offset name_buffer
+        insert_line("lea rdi, %s_buffer\n", symbol_codegen(entry));
+        insert_line("mov rcx, 64\n");
+        insert_line("call input_string\n");
+        // change the pointer of the global var
+        insert_line("lea rax, %s_buffer\n", symbol_codegen(entry));
+        insert_line("mov [%s], rax\n", symbol_codegen(entry));
     }
     gen_caller_pops();
 }

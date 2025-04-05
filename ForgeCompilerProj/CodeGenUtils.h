@@ -13,8 +13,12 @@ typedef struct {
     GenHandler handler;
 } HandlerEntry;
 
+// registers for function calls based on MASM
+extern char* paramRegisterNames[4];
+
 // scratch reg count
 #define REG_COUNT 7
+
 // This func will return a number that represents a free register
 int scratch_alloc();
 // This func will free a register that was inuse
