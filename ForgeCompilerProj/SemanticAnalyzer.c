@@ -207,6 +207,16 @@ void validateReturnExprType(ASTNode* node, Type retType, int* errorCount, const 
                     printf("Error: Return type mismatch in function: % s. Expected '%s', got '%s' on line: %d \n",funcName, convertTypeToString(retType), convertTypeToString(returnExprType), exprRow);
                     (*errorCount)++;
                 }
+               /* if (node->children[0]->token->type == IDENTIFIER)
+                {
+                    SymbolTable* scope = getClosestScope(node);
+                    SymbolEntry* entry = lookUpSymbol(node->token->lexeme, scope);
+                    if (entry->type == IS_LOCAL) {
+                        printf("Error: Cannot return local var, memory will be lost on line: %d \n"xprRow);
+                        (*errorCount)++;
+                    }
+                }*/
+               
             }
         }
     }

@@ -206,7 +206,21 @@ void gen_return_statement(ASTNode* node, HashMap* stringTable)
     // get the reg 
     int r = node->children[1]->reg;
     // move return data to rax
-    insert_line("mov rax, %s\n", scratch_name(r));
+    insert_line("mov rax, %s\n", scratch_name(r));  
+    // if the return is a local string then copy to global buffer
+    if (node->children[1]->token->type == IDENTIFIER) 
+    {
+        SymbolTable* scope = getClosestScope(node);
+        SymbolEntry* entry = lookUpSymbol(node->children[1]->token->lexeme, scope);
+        if (entry->type == TYPE_STRING && entry->place == IS_LOCAL) 
+        {
+            // copy the string into the global buffer
+            insert_line("mov rsi, %s", scratch_name(r));
+            insert_line("mov rdi, offset global_copy_buffer"); 
+            insert_line("call copy_string");
+            insert_line("mov rax, offset global_copy_buffer");
+        }
+    }
     // free the reg
     scratch_free(r);
     // go to the return

@@ -75,6 +75,7 @@ void gen_readOnly_data(HashMap* stringTable) {
     insert_line("false_str db %s,0\n", "\"false\"");
     insert_line("new_line db 13,10,0\n");
     insert_line("number_buffer db 21 dup(0)\n");
+    insert_line("global_copy_buffer db 64 dup(0)\n");
     insert_line("bytes_written dd 0\n");
     insert_line("bytes_read dq 0\n"); 
     insert_line("invalid_input_str db \"The input type did not match, goodbye!\",0\n");
@@ -185,7 +186,9 @@ void gen_function_params_copy(ASTNode* funcNode) {
             int bufferOffset = entry->offset + 8; 
             // copy string into buffer
             insert_line("lea rdi, [rbp + %d]\n", bufferOffset);
+            insert_line("push rdi\n");
             insert_line("call copy_string\n");
+            insert_line("pop rdi\n");
             insert_line("mov [rbp + %d], rdi\n", entry->offset);
         }
     }
