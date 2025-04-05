@@ -203,13 +203,13 @@ void gen_return_statement(ASTNode* node, HashMap* stringTable)
         printf("jmp _%s_ret\n", funcName);
         return;
     }
-    gen_expr(node->children[1], stringTable);
+    gen_expr(node->children[0], stringTable);
     // get the reg 
-    int r = node->children[1]->reg;
+    int r = node->children[0]->reg;
     // move return data to rax
     insert_line("mov rax, %s\n", scratch_name(r));  
     // if the return is a local string then copy to global buffer
-    if (node->children[1]->token->type == IDENTIFIER) 
+    if (node->childCount >= 2 && node->children[1]->token->type == IDENTIFIER) 
     {
         SymbolTable* scope = getClosestScope(node);
         SymbolEntry* entry = lookUpSymbol(node->children[1]->token->lexeme, scope);

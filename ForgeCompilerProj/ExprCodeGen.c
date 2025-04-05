@@ -120,11 +120,14 @@ static void gen_binary_expr(ASTNode* node, HashMap* stringTable)
     };
     // gen left
     gen_expr(node->children[0], stringTable);
+    int r1 = node->children[0]->reg;
+    // save the reg so it isnt ruined
+    insert_line("push %s", scratch_name(r1));
     // gen right
     gen_expr(node->children[2], stringTable);
-    // get the registers
-    int r1 = node->children[0]->reg;
     int r2 = node->children[2]->reg;
+    // get the reg back
+    insert_line("pop %s", scratch_name(r1));
     // get the asm op
     const char* op = NULL;
     // handle div seperatly
@@ -331,7 +334,7 @@ static void gen_relational_expr(ASTNode* node, HashMap* stringTable)
     // set the correct op
     for (int i = 0; opTable[i].label != NULL; i++) {
         if (strcmp(op, opTable[i].label) == 0) {
-            insert_line("%s %s\n", op = opTable[i].op, trueLabel);
+            insert_line("%s %s\n", opTable[i].op, trueLabel);
         }
     }
     // false path

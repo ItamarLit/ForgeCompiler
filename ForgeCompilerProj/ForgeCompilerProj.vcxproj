@@ -130,6 +130,7 @@
     <ClInclude Include="AST.h" />
     <ClInclude Include="CodeGenerator.h" />
     <ClInclude Include="CodeGenUtils.h" />
+    <ClInclude Include="ErrorHandler.h" />
     <ClInclude Include="ExprCodeGen.h" />
     <ClInclude Include="Expressions.h" />
     <ClInclude Include="FileReader.h" />
@@ -159,6 +160,7 @@
     <ClCompile Include="AST.c" />
     <ClCompile Include="CodeGenerator.c" />
     <ClCompile Include="CodeGenUtils.c" />
+    <ClCompile Include="ErrorHandler.c" />
     <ClCompile Include="ExprCodeGen.c" />
     <ClCompile Include="Expressions.c" />
     <ClCompile Include="FileReader.c" />

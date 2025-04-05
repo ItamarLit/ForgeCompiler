@@ -1,13 +1,17 @@
 mold string num = "34";
+mold bool test = false;
 
-forge Main1() => int {
-	return 3;
+forge Main2(int number) => int 
+{
+	if meet (number == 1) then
+	{
+		return 1;
+	}
+	return number * Main2(number - 1);
 }
 
-forge Main2() => int {
-	return 4;
-}
 
-forge Main(int a) => void {
-	output(Main1() + Main2());
+forge Main() => void 
+{
+	output(Main2(3));
 }
