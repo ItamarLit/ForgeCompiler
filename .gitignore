@@ -361,3 +361,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+Debug/
+ProjectData/output.asm
+ProjectData/output.obj
+ProjectData/output.exe
