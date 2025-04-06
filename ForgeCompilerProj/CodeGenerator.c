@@ -40,15 +40,15 @@ void gen_data_seg(ASTNode* root, HashMap* stringTable)
             switch (entry->type)
             {
                 case TYPE_INT:
-                    insert_line("%s dq %s\n",name, node->children[3]->token->lexeme);
+                    insert_line("%s dq %s\n",entry->name, node->children[3]->token->lexeme);
                     break;
                 case TYPE_STRING:
                     // strings will refrence the string in the read only seg originaly but creat buffer if need to change them
-                    insert_line("%s_buffer db 64 dup(0)\n", name);
-                    insert_line("%s dq offset %s\n",name, lookUpString(node->children[3]->token->lexeme, stringTable));
+                    insert_line("%s_buffer db 64 dup(0)\n", entry->name);
+                    insert_line("%s dq offset %s\n", entry->name, lookUpString(node->children[3]->token->lexeme, stringTable));
                     break;
                 case TYPE_BOOL:
-                    insert_line("%s dq %s\n", name, strcmp(node->children[3]->token->lexeme, "true")  == 0 ? "1" : "0");
+                    insert_line("%s dq %s\n", entry->name, strcmp(node->children[3]->token->lexeme, "true")  == 0 ? "1" : "0");
                     break;
                 default:
                     insert_line("Invalid global var type: %s\n", convertTypeToString(entry->type));

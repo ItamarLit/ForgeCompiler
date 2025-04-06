@@ -21,7 +21,9 @@ int main() {
     // read the input code
     char* inputStr = readFile("Code.txt");
     if (!inputStr) {
-        printf("Failed to read input file.\n");
+        fprintf(stderr, "**************************\n");
+        fprintf(stderr, "Failed to read input file.\n");
+        fprintf(stderr, "**************************\n");
         freeHashMap(&state_machine);
         freeTokenArray(&ptoken_array);
         return -1;
@@ -33,7 +35,9 @@ int main() {
     freeHashMap(&state_machine);
     if (lexErrors) 
     {
-        printf("Lexing failed with %d errors.\n", lexErrors);
+        fprintf(stderr, "**************************\n");
+        fprintf(stderr, "Lexing failed with %d errors.\n", lexErrors);
+        fprintf(stderr, "**************************\n");
         return -1;
     }
     printTokens(ptoken_array);
@@ -42,7 +46,9 @@ int main() {
     int parseErrors = 0;
     ASTNode* root = ParseInput(ptoken_array, &parseErrors);
     if (parseErrors || !root) {
-        printf("Parsing failed with %d errors.\n", parseErrors);
+        fprintf(stderr, "**************************\n");
+        fprintf(stderr, "Parsing failed with %d errors.\n", parseErrors);
+        fprintf(stderr, "**************************\n");
         freeTokenArray(&ptoken_array);
         return -1;
     }
@@ -57,7 +63,9 @@ int main() {
     int semErrors = 0;
     SymbolTable* globalTable = createNewScope(NULL);
     if (!globalTable) {
-        printf("Failed to create global symbol table.\n");
+        fprintf(stderr, "**************************\n");
+        fprintf(stderr, "Failed to create global symbol table.\n");
+        fprintf(stderr, "**************************\n");
         freeASTNode(root);
         freeTokenArray(&ptoken_array);
         return -1;
@@ -69,7 +77,9 @@ int main() {
     int analyzeErrors = 0;
     analyze(root, &analyzeErrors);
     if (semErrors || analyzeErrors) {
-        printf("Semantic analysis failed with %d symbol errors and %d analysis errors.\n", semErrors, analyzeErrors);
+        fprintf(stderr, "**************************\n");
+        fprintf(stderr, "Semantic analysis failed with %d symbol errors and %d analysis errors.\n", semErrors, analyzeErrors);
+        fprintf(stderr, "**************************\n");
         freeTokenArray(&ptoken_array);
         freeASTNode(root);
         return -1;
@@ -78,13 +88,6 @@ int main() {
     // Reduce Global vars
     reduceGlobalVars(root);
     HashMap* stringTable = createStringTable(root);
-    //gen_readOnly_data_seg(stringTable);
-    //// gen data seg
-    //gen_data_seg(root, stringTable);
-    //// gen code seg
-    //printf(".code\n");
-    //gen_start_label();
-    //gen_code(root, stringTable);
     gen_asm(root, stringTable);
     // Cleanup
     freeTokenArray(&ptoken_array);

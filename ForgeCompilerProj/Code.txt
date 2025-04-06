@@ -1,16 +1,19 @@
-forge Main2(int number) => int 
+## Test comment
+
+mold int test = 4;
+mold string test2 = "Hello world";
+
+forge Main3(string number) => string 
 {
-	## Test comment
-	## How are you
-	if meet (number == 1) then
-	{
-		return 1;
-	}
-	return number * Main2(number - 1);
+	input(number);
+	return "number";
 }
+
 
 
 forge Main() => void 
 {
-	output(Main2(3));
+	remold test2 = Main3(test2);
+	## output(Main2(test));
+	output(test2);
 }

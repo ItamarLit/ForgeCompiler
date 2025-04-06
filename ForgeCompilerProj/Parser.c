@@ -7,6 +7,7 @@
 #include "ParseStack.h"
 #include "GrammarArray.h"
 #include "AST.h"
+#include "ErrorHandler.h"
 #include <string.h>
 #include <stdio.h>  
 #include <stdlib.h>
@@ -310,7 +311,7 @@ void HandleSyntaxError(int* errorCount,Stack** s,int* currentIndex,pTokenArray t
         errorToken = tokenArray->tokens[*currentIndex - 1];
     }
     // show the error
-    printf("Syntax Error at token '%s' on line %d, col %d.\n",errorToken->lexeme,errorToken->tokenRow,errorToken->tokenCol);
+    output_error(SYNTAX, "Syntax Error at token '%s' on line %d, col %d.\n", errorToken->lexeme, errorToken->tokenRow, errorToken->tokenCol);
     // recover
     *currentIndex = RecoverFromError(tokenArray, *currentIndex);
     Token* t = tokenArray->tokens[*currentIndex];

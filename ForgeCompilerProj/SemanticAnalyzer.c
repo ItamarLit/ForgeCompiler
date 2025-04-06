@@ -1,6 +1,7 @@
 #pragma warning (disable:4996)
 #include "SemanticAnalyzer.h"
 #include "TypeChecker.h"
+#include "ErrorHandler.h"
 #include <string.h>
 
 /// <summary>
@@ -33,7 +34,7 @@ static void handleInvalidExpr(Type exprType, int exprLine, int* errorCount)
 {
     if (exprType == TYPE_ERROR)
     {
-        printf("Error: Invalid expression on line: %d\n", exprLine);
+        output_error(SEMANTIC, "Error: Invalid expression on line: %d\n", exprLine);
         (*errorCount)++;
     }
    
@@ -53,8 +54,7 @@ void resolveIdentifiers(ASTNode* root, int* errorCount) {
     if (root->token && root->token->type == IDENTIFIER) {
         SymbolEntry* entry = lookUpSymbol(root->token->lexeme, currentScope);
         if (!entry || entry->type == TYPE_UNDEFINED || root->token->tokenRow < entry->line) {
-            printf("Error: Undeclared identifier '%s' at line %d, column %d\n",
-            root->token->lexeme, root->token->tokenRow, root->token->tokenCol);
+            output_error(SEMANTIC, "Error: Undeclared identifier '%s' at line %d, column %d\n", root->token->lexeme, root->token->tokenRow, root->token->tokenCol);
             // insert the symbol with TYPE_UNDEFINED so i can continue looking for problems
             if (!entry) {
                 insertSymbol(currentScope->table, root->token->lexeme, TYPE_UNDEFINED, 0, TYPE_UNDEFINED, TYPE_UNDEFINED, 0, root->token->tokenRow);
@@ -86,12 +86,12 @@ void checkTypes(ASTNode* root, int* errorCount)
         if (exprType != TYPE_UNDEFINED) {
             // check that the types match only in defined vars
             if (exprType != TYPE_ERROR && varEntry && exprType != varEntry->type) {
-                printf("Error: Expr of type: %s is not valid for var of type: %s, on line: %d\n", convertTypeToString(exprType), convertTypeToString(varEntry->type), varEntry->line);
+                output_error(SEMANTIC, "Error: Expr of type: %s is not valid for var of type: %s, on line: %d\n", convertTypeToString(exprType), convertTypeToString(varEntry->type), varEntry->line);
                 (*errorCount)++;
             }
             // check that a var isnt init with itself ( illegal )
             if (root->children[3]->childCount == 1 && root->children[3]->children[0]->token && root->children[3]->children[0]->token->type == IDENTIFIER && varEntry && strcmp(root->children[3]->children[0]->token->lexeme, varEntry->name) == 0) {
-                printf("Error: Cannot init a var: %s with itself, on line: %d\n", varEntry->name, varEntry->line);
+                output_error(SEMANTIC, "Error: Cannot init a var: %s with itself, on line: %d\n", varEntry->name, varEntry->line);
                 (*errorCount)++;
             }
         }
@@ -187,14 +187,14 @@ void validateReturnExprType(ASTNode* node, Type retType, int* errorCount, const 
         // if the func is void cant return anything
         if (retType == TYPE_VOID) {
             if (node->childCount > 0) {
-                printf("Error: Function: %s declared 'void' cannot return a value\n", funcName);
+                output_error(SEMANTIC, "Error: Function: %s declared 'void' cannot return a value\n", funcName);
                 (*errorCount)++;
             }
         }
         else {
             // if the func isnt void and there is no value in return then error
             if (node->childCount == 0) {
-                printf("Error: Function: %s return type '%s' requires a return value\n", funcName, convertTypeToString(retType));
+                output_error(SEMANTIC, "Error: Function: %s return type '%s' requires a return value\n", funcName, convertTypeToString(retType));
                 (*errorCount)++;
             }
             else {
@@ -204,19 +204,9 @@ void validateReturnExprType(ASTNode* node, Type retType, int* errorCount, const 
                 // handle invalid expr
                 handleInvalidExpr(returnExprType, exprRow, errorCount);
                 if (returnExprType != TYPE_ERROR && returnExprType != retType) {
-                    printf("Error: Return type mismatch in function: % s. Expected '%s', got '%s' on line: %d \n",funcName, convertTypeToString(retType), convertTypeToString(returnExprType), exprRow);
+                    output_error(SEMANTIC, "Error: Return type mismatch in function: % s. Expected '%s', got '%s' on line: %d \n", funcName, convertTypeToString(retType), convertTypeToString(returnExprType), exprRow);
                     (*errorCount)++;
                 }
-               /* if (node->children[0]->token->type == IDENTIFIER)
-                {
-                    SymbolTable* scope = getClosestScope(node);
-                    SymbolEntry* entry = lookUpSymbol(node->token->lexeme, scope);
-                    if (entry->type == IS_LOCAL) {
-                        printf("Error: Cannot return local var, memory will be lost on line: %d \n"xprRow);
-                        (*errorCount)++;
-                    }
-                }*/
-               
             }
         }
     }
@@ -247,8 +237,7 @@ void checkReturn(ASTNode* root, int* errorCount) {
             if (retType != TYPE_ERROR && retType == TYPE_VOID) continue;
             // check that func has return in all paths
             if (!functionAlwaysReturns(body)) {
-                printf("Error: Function '%s' is missing a return statement in all paths\n",
-                    (node->children[0]->token->lexeme));
+                output_error(SEMANTIC, "Error: Function '%s' is missing a return statement in all paths\n", (node->children[0]->token->lexeme));
                 (*errorCount)++;
             }
             // check the functions return expr types
@@ -277,7 +266,7 @@ void checkMain(ASTNode* root, int* errorCount) {
         }
     }
     if (!foundMain) {
-        printf("Error: No 'Main' function found\n");
+        output_error(SEMANTIC, "Error: No 'Main' function found\n");
         (*errorCount)++;
     }
 }
@@ -299,7 +288,7 @@ void checkBoolExprTypes(ASTNode* root, int* errorCount)
         handleInvalidExpr(exprType, getExprLine(root->children[0]), errorCount);
         // check that the type is bool
         if (exprType != TYPE_ERROR && exprType != TYPE_BOOL) {
-            printf("Error: Expr type inside while must be boolean at line: %d\n", getExprLine(root));
+            output_error(SEMANTIC, "Error: Expr type inside while must be boolean at line: %d\n", getExprLine(root));
             (*errorCount)++;
         }
     }
@@ -309,7 +298,7 @@ void checkBoolExprTypes(ASTNode* root, int* errorCount)
         // handle the invalid expr
         handleInvalidExpr(exprType, getExprLine(root->children[0]), errorCount);
         if (exprType != TYPE_ERROR  && exprType != TYPE_BOOL) {
-            printf("Error: Expr type inside if must be boolean at line: %d\n", getExprLine(root));
+            output_error(SEMANTIC, "Error: Expr type inside if must be boolean at line: %d\n", getExprLine(root));
             (*errorCount)++;
         }
     }
@@ -333,8 +322,7 @@ void checkFunctionCalls(ASTNode* root, int* errorCount)
         SymbolEntry* funcEntry = lookUpSymbol(funcCallNode->token->lexeme, currentScope);
         // if no entry then the func is undifined
         if (!funcEntry) {
-            printf("Error: Undeclared function '%s' at line %d\n",
-                funcCallNode->token->lexeme, funcCallNode->token->tokenRow);
+            output_error(SEMANTIC, "Error: Undeclared function '%s' at line %d\n", funcCallNode->token->lexeme, funcCallNode->token->tokenRow);
             (*errorCount)++;
         }
         else
@@ -342,8 +330,7 @@ void checkFunctionCalls(ASTNode* root, int* errorCount)
             ASTNode* argumentList = root->children[1];
             // check the param count is the same and also the param types
             if (argumentList->childCount != funcEntry->paramCount) {
-                printf("Error: Missing params for function call '%s' at line %d\n",
-                    funcCallNode->token->lexeme, funcCallNode->token->tokenRow);
+                output_error(SEMANTIC, "Error: Missing params for function call '%s' at line %d\n", funcCallNode->token->lexeme, funcCallNode->token->tokenRow);
                 (*errorCount)++;
             }
             else {
@@ -352,7 +339,7 @@ void checkFunctionCalls(ASTNode* root, int* errorCount)
                     Type argType = checkExprType(argumentList->children[i]);
                     handleInvalidExpr(argType, funcCallNode->token->tokenRow, errorCount);
                     if (argType != TYPE_ERROR && argType != funcEntry->paramTypes[i]) {
-                        printf("Invalid arguments for function: %s, used at line: %d, expected: '%s' but got '%s'\n", funcCallNode->token->lexeme, funcCallNode->token->tokenRow, convertTypeToString(funcEntry->paramTypes[i]), convertTypeToString(argType));
+                        output_error(SEMANTIC, "Invalid arguments for function: %s, used at line: %d, expected: '%s' but got '%s'\n", funcCallNode->token->lexeme, funcCallNode->token->tokenRow, convertTypeToString(funcEntry->paramTypes[i]), convertTypeToString(argType));
                         (*errorCount)++;
                     }
                 }
@@ -401,21 +388,18 @@ void checkAssignment(ASTNode* root, int* errorCount)
         if (strcmp(assignOp, "=") == 0) {
             // check that the expr type matches
             if (exprType != TYPE_ERROR && exprType != varEntry->type) {
-                printf("Error: Cannot assign value of type '%s' to variable '%s' of type '%s' at line %d\n",
-                    convertTypeToString(exprType), varNode->token->lexeme, convertTypeToString(varEntry->type), varNode->token->tokenRow);
+                output_error(SEMANTIC, "Error: Cannot assign value of type '%s' to variable '%s' of type '%s' at line %d\n", convertTypeToString(exprType), varNode->token->lexeme, convertTypeToString(varEntry->type), varNode->token->tokenRow);
                 (*errorCount)++;
             }
         }
         // only int can use += *= /= -=
         else if (isIntOperator(assignOp)) {
             if (varEntry->type != TYPE_INT) {
-                printf("Error: Operator '%s' cannot be used with non-integer variable '%s' at line %d\n",
-                    assignOp, varNode->token->lexeme, varNode->token->tokenRow);
+                output_error(SEMANTIC, "Error: Operator '%s' cannot be used with non-integer variable '%s' at line %d\n", assignOp, varNode->token->lexeme, varNode->token->tokenRow);
                 (*errorCount)++;
             }
             if (exprType != TYPE_INT) {
-                printf("Error: Operator '%s' cannot be used with non-integer expression of type '%s' at line %d\n",
-                    assignOp, convertTypeToString(exprType), getExprLine(exprNode));
+                output_error(SEMANTIC, "Error: Operator '%s' cannot be used with non-integer expression of type '%s' at line %d\n", assignOp, convertTypeToString(exprType), getExprLine(exprNode));
                 (*errorCount)++;
             }
         }
@@ -465,8 +449,7 @@ void checkGlobalInitExprs(ASTNode* root, int* errorCount) {
             // check for func call
             if (containsFuncCall(exprNode)) {
                 int line = getExprLine(exprNode);
-                printf("Error: Global variable '%s' initialized with a function call at line %d. Only constant expressions are allowed.\n",
-                    node->children[1]->token->lexeme, line);
+                output_error(SEMANTIC, "Error: Global variable '%s' initialized with a function call at line %d. Only constant expressions are allowed.\n", node->children[1]->token->lexeme, line);
                 (*errorCount)++;
             }
         }

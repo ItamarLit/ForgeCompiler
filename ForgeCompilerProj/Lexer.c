@@ -1,5 +1,6 @@
 #include "lexer.h"
 #include "Token.h"
+#include "ErrorHandler.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -298,7 +299,7 @@ void addAndResetLexer(pTokenArray ptoken_array, State* current_state, State* las
         *current_state = START_STATE;
         *last_accepting_state = START_STATE;
         *lexeme_index = 0;
-        *col++;
+        (*col)++;
     }
 }
 
@@ -318,6 +319,33 @@ int getNextState(HashMap* map, int currentState, char inputChar)
     return (nextPtr) ? *nextPtr : -1;
 }
 
+
+void handleLexemeTooLongError(char** input, char* current_lexeme, int* lexeme_index, pTokenArray ptoken_array, int* errorCount, int* row, int* col, State* current_state, State* last_accepting_state, HashMap* map)
+{
+    // Null terminate
+    current_lexeme[*lexeme_index] = '\0';
+    // show error
+    output_error(LEXICAL, "Token: '%s' exceeds max len of %d at line %d\n", current_lexeme, MAX_LEXEME_LEN, row);
+    (*errorCount)++;
+    // skip until next valid start spot
+    while (**input != '\0' && getNextState(map, START_STATE, **input) != START_STATE)
+    {
+        (*input)++;
+        (*col)++;
+    }
+    // reset
+    *lexeme_index = 0;
+    *current_state = START_STATE;
+    *last_accepting_state = START_STATE;
+}
+
+
+
+
+
+
+
+
 /// <summary>
 /// This func handles error tokens, it collects all the char of an error token, adds it to the array and resets the lexer
 /// </summary>
@@ -329,16 +357,34 @@ int getNextState(HashMap* map, int currentState, char inputChar)
 /// <param name="current_state"></param>
 /// <param name="last_accepting_state"></param>
 void handleErrorToken(HashMap* map, char** input, char* current_lexeme, int* lexeme_index, pTokenArray ptoken_array, State* current_state, State* last_accepting_state, int row, int* col, int* errorCount)
-{
-    // read all the invalid tokens
-    while (**input != '\0' && (getNextState(map, START_STATE, **input) == -1 || getNextState(map, START_STATE, **input) == COMMENT_START_STATE))
+{   // flag
+    int overflow = 0;
+    // go over input while error
+    while (**input != '\0' && (getNextState(map, START_STATE, **input) == -1))
     {
-        current_lexeme[(*lexeme_index)++] = **input;
+        if (*lexeme_index < MAX_LEXEME_LEN - 1)
+        {
+            current_lexeme[(*lexeme_index)++] = **input;
+        }
+        else
+        {
+            overflow = 1;  
+        }
         (*input)++;
+        (*col)++;
     }
-    // finalize as ERROR token and reset
-    addAndResetLexer(ptoken_array, current_state, last_accepting_state, current_lexeme, lexeme_index, ERROR_TOKEN_STATE, row, col);
+    current_lexeme[*lexeme_index] = '\0';
+    // check if the ERROR token is also overflow
+    if (overflow)
+    {
+        output_error(LEXICAL, "Token: '%s' exceeds max len of %d at line %d\n", current_lexeme, MAX_LEXEME_LEN, row);
+        (*errorCount)++;
+    }
+    // regular error 
+    output_error(LEXICAL, "Invalid token: %s encountered at line: %d", current_lexeme, row);
     (*errorCount)++;
+    // add error token
+    addAndResetLexer(ptoken_array, current_state, last_accepting_state, current_lexeme, lexeme_index, ERROR_TOKEN_STATE, row, col);
 }
 
 void checkNewRow(char input, int* row, int* col) 
@@ -370,12 +416,18 @@ void lex(HashMap* map, char* input, pTokenArray ptoken_array, int* errorCount) {
         // check if there is a valid transition and if so check that it isnt a whitespace skip (Start_State)
         if (current_state != -1 && current_state != START_STATE  && current_state != COMMENT_STATE)
         {
-            // add the current char
-            current_lexeme[lexeme_index++] = *input;
-            input++;
-            colCounter++;
-            // save current state
-            last_accepting_state = current_state;
+            if (lexeme_index >= MAX_LEXEME_LEN - 1) {
+                handleLexemeTooLongError(&input, current_lexeme, &lexeme_index,ptoken_array, errorCount, &rowCounter, &colCounter, &current_state, &last_accepting_state, map);
+            }
+            else 
+            {
+                // add the current char
+                current_lexeme[lexeme_index++] = *input;
+                input++;
+                colCounter++;
+                // save current state
+                last_accepting_state = current_state;
+            }
         }
         else
         {
