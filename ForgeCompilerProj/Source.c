@@ -1,3 +1,4 @@
+#pragma warning (disable:4996)
 #include "HashMap.h"
 #include "Lexer.h"
 #include "Token.h"
@@ -9,8 +10,88 @@
 #include "SemanticAnalyzer.h"
 #include "CodeGenerator.h"
 #include "StringTable.h"
+#include "CompilerUtils.h"
+#include <string.h>
+#include <stdio.h>
 
-int main() {
+/// <summary>
+/// This helper function will create a path to an output.asm file in the same path as the input file
+/// </summary>
+/// <param name="filepath"></param>
+/// <param name="new_filename"></param>
+/// <returns>Returns the new path</returns>
+char* change_extension(const char* filepath, const char* new_filename) {
+    // find last backslash
+    const char* last_backslash = strrchr(filepath, '\\');
+    // calc dir len 
+    int dir_len = last_backslash ? (last_backslash - filepath + 1) : 0;
+    // create string
+    char* output = malloc(dir_len + strlen(new_filename) + 1);
+    if (!output) return NULL;
+    if (dir_len > 0) {
+        strncpy(output, filepath, dir_len);
+    }
+    output[dir_len] = '\0';
+    strcat(output, new_filename);
+    return output;
+}
+
+int main(int argc, char* argv[]) 
+{
+    // create flags 
+    int tokensFlag = 0;
+    int astFlag = 0;
+    int symbolFlag = 0;
+    int asmFlag = 0;
+    flagEntry flagTable[] = {
+        {&tokensFlag, "-T"},
+        {&astFlag, "-A"},
+        {&symbolFlag, "-S"},
+        {&asmFlag, "-O"},
+        {NULL, NULL},
+    };
+   
+    if (argc < 2) {
+        fprintf(stderr, "Usage: <batch file> <input file> [flags]\n");
+        return 1;
+    }
+    const char* inputFile = argv[1];
+    char* outputFile = change_extension(inputFile, "output.asm");
+    printf("Input: %s\n", inputFile);
+    printf("Output: %s\n", outputFile);
+    // read the input code
+    char* inputStr = readFile(inputFile);
+    if (!inputStr) {
+        fprintf(stderr, "**************************\n");
+        fprintf(stderr, "Failed to read input file.\n");
+        fprintf(stderr, "**************************\n");
+        return 1;
+    }
+    // set flags
+    for (int i = 2; i < argc; i++) {
+        for (int j = 0; flagTable[j].label != NULL; j++) 
+        {
+            if (strcmp(flagTable[j].label, argv[i]) == 0) *(flagTable[j].flag) = 1;
+        }
+    }
+    // run compiler
+    int exitCode = compile(outputFile,inputStr, tokensFlag, astFlag, symbolFlag, asmFlag);
+    free(outputFile);
+    return exitCode;
+}
+
+/// <summary>
+/// This is the main compiler function it runs the compiler and returns an exit code
+/// </summary>
+/// <param name="outputPath"></param>
+/// <param name="inputStr"></param>
+/// <param name="tokensFlag"></param>
+/// <param name="astFlag"></param>
+/// <param name="symbolFlag"></param>
+/// <param name="asmFlag"></param>
+/// <returns>Exit code</returns>
+int compile(const char* outputPath, const char* inputStr, int tokensFlag, int astFlag, int symbolFlag, int asmFlag)
+{
     // set up data structures for the lexer
     HashMap* state_machine = NULL;
     init_state_machine(&state_machine);
@@ -18,30 +99,20 @@ int main() {
     pTokenArray ptoken_array;
     init_state_machine(&state_machine);
     initTokenArray(&ptoken_array);
-    // read the input code
-    char* inputStr = readFile("Code.txt");
-    if (!inputStr) {
-        fprintf(stderr, "**************************\n");
-        fprintf(stderr, "Failed to read input file.\n");
-        fprintf(stderr, "**************************\n");
-        freeHashMap(&state_machine);
-        freeTokenArray(&ptoken_array);
-        return -1;
-    }
     int lexErrors = 0;
     // Lexical analysis
     lex(state_machine, inputStr, ptoken_array, &lexErrors);
     free(inputStr);
     freeHashMap(&state_machine);
-    if (lexErrors) 
+    if (lexErrors)
     {
         fprintf(stderr, "**************************\n");
         fprintf(stderr, "Lexing failed with %d errors.\n", lexErrors);
         fprintf(stderr, "**************************\n");
-        return -1;
+        return 1;
     }
-    printTokens(ptoken_array);
-
+    printf("\n\nInput passed lexing.\n\n");
+    if(tokensFlag) printTokens(ptoken_array);
     // Syntax analysis
     int parseErrors = 0;
     ASTNode* root = ParseInput(ptoken_array, &parseErrors);
@@ -50,15 +121,17 @@ int main() {
         fprintf(stderr, "Parsing failed with %d errors.\n", parseErrors);
         fprintf(stderr, "**************************\n");
         freeTokenArray(&ptoken_array);
-        return -1;
+        return 1;
     }
     // AST compression
     root = compressAST(root);
     // AST normalization
     normalizeAST(root);
-
-    printf("Input passed parsing.\n\n");
-    printAST(root, 0);
+    printf("\n\nInput passed parsing.\n\n");
+    if (astFlag) {
+        printf("Here is the AST:\n");
+        printAST(root, 0);
+    }
     // Semantic analysis phase
     int semErrors = 0;
     SymbolTable* globalTable = createNewScope(NULL);
@@ -68,12 +141,12 @@ int main() {
         fprintf(stderr, "**************************\n");
         freeASTNode(root);
         freeTokenArray(&ptoken_array);
-        return -1;
+        return 1;
     }
     // create the symbol table
     createASTSymbolTable(root, globalTable, &semErrors);
     root->scope = globalTable;
-    //printSymbolTables(root);
+    if(symbolFlag) printSymbolTables(root);
     int analyzeErrors = 0;
     analyze(root, &analyzeErrors);
     if (semErrors || analyzeErrors) {
@@ -82,18 +155,16 @@ int main() {
         fprintf(stderr, "**************************\n");
         freeTokenArray(&ptoken_array);
         freeASTNode(root);
-        return -1;
+        return 1;
     }
-    printf("Input passed semantic analysis.\n\n");
+    printf("\n\nInput passed semantic analysis.\n\n");
     // Reduce Global vars
     reduceGlobalVars(root);
     HashMap* stringTable = createStringTable(root);
-    gen_asm(root, stringTable);
+    gen_asm(outputPath, root, stringTable, asmFlag);
     // Cleanup
     freeTokenArray(&ptoken_array);
     freeASTNode(root);
     freeHashMap(&stringTable);
     return 0;
 }
-
-

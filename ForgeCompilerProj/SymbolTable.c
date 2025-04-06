@@ -176,10 +176,11 @@ void createASTSymbolTable(ASTNode* node, SymbolTable* currentTable, int* errorCo
     if (node->lable && strcmp(node->lable, "VarDeclaration") == 0) {
         // get the var name
         char* varName = node->children[1]->token->lexeme;  
+        char* newVarName = change_name(varName);
         // get the var type
         char* varType = node->children[0]->token->lexeme;  
         // check if the var exists already in the table
-        if (getMapValue(currentTable->table, varName)) {
+        if (getMapValue(currentTable->table, newVarName)) {
             output_error(SEMANTIC, "Variable % s already declared in this scope\n", varName);
             (*errorCount)++;
         }
@@ -205,24 +206,24 @@ void createASTSymbolTable(ASTNode* node, SymbolTable* currentTable, int* errorCo
                 }
                 offset = currentTable->localOffset;
             }
-         
             // insert the symbol
-            char* newVarName = change_name(varName);
             insertSymbol(currentTable->table, newVarName, convertStringType(varType), 0, TYPE_UNDEFINED, NULL, 0, node->children[1]->token->tokenRow, place, offset);
-            free(newVarName);
         }
+        free(newVarName);
+
     }
     // handle new scope for functions
     else if ( node->lable && strcmp(node->lable, "FuncDeclaration") == 0) {
         // get the function name
         char* funcName = node->children[0]->token->lexeme; 
+        char* newFuncName = change_name(funcName);
         // get the paramlist node
         ASTNode* paramList = node->children[1]; 
         // get the return type
         char* returnType = node->children[2]->token->lexeme; 
         // check if the func is declared
-        if (getMapValue(currentTable->table, funcName)) {
-            output_error(SEMANTIC, "Function %s already declared\n", funcName);
+        if (getMapValue(currentTable->table, newFuncName)) {
+            output_error(SEMANTIC, "Function %s already declared\n", newFuncName);
             (*errorCount)++;
         }
         // go over all param dec in func 
@@ -231,7 +232,6 @@ void createASTSymbolTable(ASTNode* node, SymbolTable* currentTable, int* errorCo
         // get the types and names
         int decCount = extractFunctionParameters(paramList, &paramNames, &paramTypes);
         // insert the func into the table
-        char* newFuncName = change_name(funcName);
         insertSymbol(currentTable->table, newFuncName, convertStringType(returnType), 1, convertStringType(returnType), paramTypes, decCount, IGNORE_LINE, IS_GLOBAL, -1);
         free(newFuncName);
         // create new symbol table for func scope

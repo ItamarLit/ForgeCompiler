@@ -12,7 +12,9 @@ int reg_spilled[REG_COUNT] = { 0 };
 const char* registerNames[REG_COUNT] = { "rbx", "r10", "r11", "r12", "r13", "r14", "r15"};
 // win API param registers
 char* paramRegisterNames[4] = { "rcx", "rdx", "r8", "r9" };
-
+// global asm output path
+char* asm_output_path = NULL;
+int outputFlag = 0;
 
 /// <summary>
 /// This function will find a free register to use, if there isnt one it will push the first one and use it
@@ -103,13 +105,15 @@ const char* symbol_codegen(SymbolEntry* s)
 /// <summary>
 /// This func will create the asm file 
 /// </summary>
-void createAsmFile() 
+void createAsmFile(char* path, int flag) 
 {
-	FILE* out = fopen("C:\\Users\\itama\\Desktop\\output.asm", "w");
+	FILE* out = fopen(path, "w");
 	if (!out) {
 		perror("Error opening file");
 		return 1;
 	}
+	asm_output_path = path;
+	outputFlag = flag;
 	fclose(out);
 }
 
@@ -133,9 +137,9 @@ void insert_line(const char* fmt, ...) {
 	// clean up
 	va_end(args);
 	// write into the asm file
-	FILE* out = fopen("C:\\Users\\itama\\Desktop\\output.asm", "a");
+	FILE* out = fopen(asm_output_path, "a");
 	fprintf(out, "%s\n", buffer);
-	printf("%s\n", buffer);
+	if(outputFlag) printf("%s\n", buffer);
 	fclose(out);
 }
 

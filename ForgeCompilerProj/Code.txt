@@ -3,7 +3,7 @@
 mold int test = 4;
 mold string test2 = "Hello world";
 
-forge Main3(string number) => string 
+forge Main3(int number) => string 
 {
 	input(number);
 	return "number";

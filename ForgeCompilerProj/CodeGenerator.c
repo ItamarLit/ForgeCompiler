@@ -277,9 +277,9 @@ void gen_winApi()
 /// </summary>
 /// <param name="root"></param>
 /// <param name="stringTable"></param>
-void gen_asm(ASTNode* root, HashMap* stringTable) 
+void gen_asm(char* path, ASTNode* root, HashMap* stringTable, int flag) 
 {
-    createAsmFile();
+    createAsmFile(path, flag);
     // gen the winApi funcs
     gen_winApi();
     // gen data seg

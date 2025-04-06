@@ -130,6 +130,7 @@
     <ClInclude Include="AST.h" />
     <ClInclude Include="CodeGenerator.h" />
     <ClInclude Include="CodeGenUtils.h" />
+    <ClInclude Include="CompilerUtils.h" />
     <ClInclude Include="ErrorHandler.h" />
     <ClInclude Include="ExprCodeGen.h" />
     <ClInclude Include="Expressions.h" />
