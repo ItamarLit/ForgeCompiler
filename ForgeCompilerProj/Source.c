@@ -26,11 +26,18 @@ int main() {
         freeTokenArray(&ptoken_array);
         return -1;
     }
+    int lexErrors = 0;
     // Lexical analysis
-    lex(state_machine, inputStr, ptoken_array);
+    lex(state_machine, inputStr, ptoken_array, &lexErrors);
     free(inputStr);
     freeHashMap(&state_machine);
-    //printTokens(ptoken_array);
+    if (lexErrors) 
+    {
+        printf("Lexing failed with %d errors.\n", lexErrors);
+        return -1;
+    }
+    printTokens(ptoken_array);
+
     // Syntax analysis
     int parseErrors = 0;
     ASTNode* root = ParseInput(ptoken_array, &parseErrors);

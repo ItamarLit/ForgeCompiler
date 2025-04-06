@@ -1,8 +1,7 @@
-mold string num = "34";
-mold bool test = false;
-
 forge Main2(int number) => int 
 {
+	## Test comment
+	## How are you
 	if meet (number == 1) then
 	{
 		return 1;

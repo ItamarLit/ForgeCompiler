@@ -84,6 +84,8 @@ void init_state_machine(HashMap** map) {
     putState(START_STATE, '\n', START_STATE, *map);
     putState(START_STATE, '\t', START_STATE, *map);
     putState(START_STATE, '\r', START_STATE, *map);
+    putState(COMMENT_STATE,' ', COMMENT_STATE, *map);
+    putState(COMMENT_STATE,'"', COMMENT_STATE, *map);
 
 
     for (char c = 'a'; c <= 'z'; c++) {
@@ -92,6 +94,7 @@ void init_state_machine(HashMap** map) {
         // for identifier state
         putState(IDENTIFIER_STATE, c, IDENTIFIER_STATE, *map);
         putState(STRING_LITERAL_STATE, c, STRING_LITERAL_STATE, *map);
+        putState(COMMENT_STATE, c, COMMENT_STATE, *map);
 
 
     }
@@ -100,6 +103,7 @@ void init_state_machine(HashMap** map) {
         // for identifier state
         putState(IDENTIFIER_STATE, c, IDENTIFIER_STATE, *map);
         putState(STRING_LITERAL_STATE, c, STRING_LITERAL_STATE, *map);
+        putState(COMMENT_STATE, c, COMMENT_STATE, *map);
 
     }
     for (char c = '0'; c <= '9'; c++) {
@@ -110,17 +114,23 @@ void init_state_machine(HashMap** map) {
         putState(IDENTIFIER_STATE, c, IDENTIFIER_STATE, *map);
         // for int state
         putState(INT_LITERAL_STATE, c, INT_LITERAL_STATE, *map);
-
+        putState(COMMENT_STATE, c, COMMENT_STATE, *map);
 
     }
 
     // Transitions for operators
     putState(START_STATE, '=', EQUAL_STATE, *map);
+    putState(COMMENT_STATE, '=', COMMENT_STATE, *map);
     putState(START_STATE, '+', PLUS_STATE, *map);
+    putState(COMMENT_STATE, '+', COMMENT_STATE, *map);
     putState(START_STATE, '-', MINUS_STATE, *map);
+    putState(COMMENT_STATE, '-', COMMENT_STATE, *map);
     putState(START_STATE, '*', MUL_STATE, *map);
+    putState(COMMENT_STATE, '*', COMMENT_STATE, *map);
     putState(START_STATE, '/', DIV_STATE, *map);
+    putState(COMMENT_STATE, '/', COMMENT_STATE, *map);
     putState(START_STATE, '!', NOT_STATE, *map);
+    putState(COMMENT_STATE, '!', COMMENT_STATE, *map);
 
     // Transition for double operator
     putState(EQUAL_STATE, '=', EQUAL_EQUAL_STATE, *map);
@@ -139,20 +149,30 @@ void init_state_machine(HashMap** map) {
 
     // Transitions for the paren
     putState(START_STATE, '(', OPEN_PAREN_STATE, *map);
+    putState(COMMENT_STATE, '(', COMMENT_STATE, *map);
+
     putState(START_STATE, ')', CLOSED_PAREN_STATE, *map);
+    putState(COMMENT_STATE, ')', COMMENT_STATE, *map);
 
     // Transitions for the braces
     putState(START_STATE, '{', OPEN_BRACE_STATE, *map);
+    putState(COMMENT_STATE, '{', COMMENT_STATE, *map);
+
     putState(START_STATE, '}', CLOSE_BRACE_STATE, *map);
+    putState(COMMENT_STATE, '}', COMMENT_STATE, *map);
 
     // Trasition for the semi colon, comma, and colon
     putState(START_STATE, ';', SEMI_COLON_STATE, *map);
+    putState(COMMENT_STATE, ';', COMMENT_STATE, *map);
     putState(START_STATE, ',', COMMA_STATE, *map);
-    putState(START_STATE, ':', COLON_STATE, *map);
+    putState(COMMENT_STATE, ',', COMMENT_STATE, *map);
 
     // Transaction for the > < state
     putState(START_STATE, '<', SMALLER_THAN_STATE, *map);
+    putState(COMMENT_STATE, '<', COMMENT_STATE, *map);
+
     putState(START_STATE, '>', LARGER_THAN_STATE, *map);
+    putState(COMMENT_STATE, '>', COMMENT_STATE, *map);
     // Transaction for the <= >= states
     putState(SMALLER_THAN_STATE, '=', SMALLER_EQUAL_STATE, *map);
     putState(LARGER_THAN_STATE, '=', LARGER_EQUAL_STATE, *map);
@@ -161,11 +181,19 @@ void init_state_machine(HashMap** map) {
     putState(EQUAL_STATE, '>', FUNC_RET_TYPE_STATE, *map);
     // Transactions for the start & state and start | state
     putState(START_STATE, '&', START_AND_STATE, *map);
+    putState(COMMENT_STATE, '&', COMMENT_STATE, *map);
     putState(START_STATE, '|', START_OR_STATE, *map);
+    putState(COMMENT_STATE, '|', COMMENT_STATE, *map);
     // Transactions for the && and || state
     // Transaction for the start & state and start | state
     putState(START_AND_STATE, '&', AND_STATE, *map);
     putState(START_OR_STATE, '|', OR_STATE, *map);
+    //Transition for the comment state
+    putState(START_STATE, '#', COMMENT_START_STATE, *map);
+    putState(COMMENT_START_STATE, '#', COMMENT_STATE, *map);
+    // Transition for finishing comment
+    putState(COMMENT_STATE, '\n', START_STATE, *map);
+
 
 }
 
@@ -300,16 +328,17 @@ int getNextState(HashMap* map, int currentState, char inputChar)
 /// <param name="ptoken_array"></param>
 /// <param name="current_state"></param>
 /// <param name="last_accepting_state"></param>
-void handleErrorToken(HashMap* map, char** input, char* current_lexeme, int* lexeme_index, pTokenArray ptoken_array, State* current_state, State* last_accepting_state, int row, int* col)
+void handleErrorToken(HashMap* map, char** input, char* current_lexeme, int* lexeme_index, pTokenArray ptoken_array, State* current_state, State* last_accepting_state, int row, int* col, int* errorCount)
 {
     // read all the invalid tokens
-    while (**input != '\0' && getNextState(map, START_STATE, **input) == -1)
+    while (**input != '\0' && (getNextState(map, START_STATE, **input) == -1 || getNextState(map, START_STATE, **input) == COMMENT_START_STATE))
     {
         current_lexeme[(*lexeme_index)++] = **input;
         (*input)++;
     }
     // finalize as ERROR token and reset
     addAndResetLexer(ptoken_array, current_state, last_accepting_state, current_lexeme, lexeme_index, ERROR_TOKEN_STATE, row, col);
+    (*errorCount)++;
 }
 
 void checkNewRow(char input, int* row, int* col) 
@@ -327,7 +356,7 @@ void checkNewRow(char input, int* row, int* col)
 /// <param name="map"></param>
 /// <param name="input"></param>
 /// <param name="ptoken_array"></param>
-void lex(HashMap* map, char* input, pTokenArray ptoken_array) {
+void lex(HashMap* map, char* input, pTokenArray ptoken_array, int* errorCount) {
     State current_state = START_STATE;
     State last_accepting_state = -1;
     char current_lexeme[MAX_LEXEME_LEN];
@@ -339,7 +368,7 @@ void lex(HashMap* map, char* input, pTokenArray ptoken_array) {
         // get the next state from the hash map o(1)
         current_state = getNextState(map, current_state, *input);
         // check if there is a valid transition and if so check that it isnt a whitespace skip (Start_State)
-        if (current_state != -1 && current_state != START_STATE)
+        if (current_state != -1 && current_state != START_STATE  && current_state != COMMENT_STATE)
         {
             // add the current char
             current_lexeme[lexeme_index++] = *input;
@@ -350,10 +379,11 @@ void lex(HashMap* map, char* input, pTokenArray ptoken_array) {
         }
         else
         {
-            // check if the token that is invalid is a whitespace and needs to be skipped
-            if (current_state == START_STATE) {
+            // check if the token that is invalid is a whitespace and needs to be skipped or a commnet
+            if (current_state == START_STATE || current_state == COMMENT_STATE) {
                 input++;
                 colCounter++;
+                lexeme_index = 0;
             }
             // check that the token is acceptable
             else if (last_accepting_state > START_STATE)
@@ -362,7 +392,7 @@ void lex(HashMap* map, char* input, pTokenArray ptoken_array) {
             }
             // this else will happen if there are any unrecognized chars
             else {
-                handleErrorToken(map, &input, current_lexeme, &lexeme_index, ptoken_array, &current_state, &last_accepting_state, rowCounter, &colCounter);
+                handleErrorToken(map, &input, current_lexeme, &lexeme_index, ptoken_array, &current_state, &last_accepting_state, rowCounter, &colCounter, errorCount);
             }
             checkNewRow(*input, &rowCounter, &colCounter);
         }

@@ -4,11 +4,13 @@
 #include "HashMap.h"
 #include "Token.h"
 
-#define VALID_STATE 2
+#define VALID_STATE 4
 
 // states in FSM
 typedef enum states {
     // NOT accepting
+    COMMENT_STATE,
+    COMMENT_START_STATE,
     START_STATE,
     ERROR_TOKEN_STATE,
     // accepting
@@ -61,7 +63,7 @@ typedef struct FsmKey {
 // func that inits the state machine
 void init_state_machine(HashMap** map);
 // func that preforms the lexing
-void lex(HashMap* map, char* input, pTokenArray ptoken_array);
+void lex(HashMap* map, char* input, pTokenArray ptoken_array, int* errorCount);
 // func that will identifiy the keywords
 TokenType identifyKeyowrd(char* lexeme);
 // func that will identify the token type
