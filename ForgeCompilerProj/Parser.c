@@ -399,10 +399,10 @@ ASTNode* ParseInput(pTokenArray tokenArray, int* errorCount)
     // setup action and goto tables
     HashMap* actionTable = NULL;
     HashMap* gotoTable = NULL;
-    InitActionTable(&actionTable, "ActionTable.txt");
-    InitGotoTable(&gotoTable, "GotoTable.txt");
+    InitActionTable(&actionTable, "ProjectData/ActionTable.txt");
+    InitGotoTable(&gotoTable, "ProjectData/GotoTable.txt");
     // setup grammar array
-    GrammarArray* array = InitGrammarArray("Grammar.txt");
+    GrammarArray* array = InitGrammarArray("ProjectData/Grammar.txt");
     // push initial state onto the stack
     tempData.state = 0;
     PushStack(s, tempData, STATE);
