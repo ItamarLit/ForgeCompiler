@@ -213,13 +213,15 @@ static void gen_input_string()
     insert_line("xor rax, rax\n");
     // get the input
     insert_line("call ReadConsoleA\n");
-    insert_line("mov rax, bytes_read\n");
+    insert_line("xor rax, rax\n");
+    insert_line("mov eax, bytes_read\n");
     insert_line("cmp rax, 63\n");
     insert_line("jb skip_error\n");
     insert_line("call buffer_overflow\n");
     insert_line("skip_error:\n");
     // null terminate the input
-    insert_line("mov rax, bytes_read\n");
+    insert_line("xor rax, rax\n");
+    insert_line("mov eax, bytes_read\n");
     insert_line("cmp rax, 0\n");
     // nothing was read
     insert_line("je input_done\n");

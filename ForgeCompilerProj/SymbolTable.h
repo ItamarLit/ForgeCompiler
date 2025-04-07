@@ -33,18 +33,17 @@ typedef struct SymbolTable {
 } SymbolTable;
 
 // func that will traverse AST and build the symbol tables
-void createASTSymbolTable(struct ASTNode* node, SymbolTable* currentTable, int* errorCount);
+void create_AST_symbol_table(struct ASTNode* node, SymbolTable* currentTable, int* errorCount);
 // func that creates new symbol tables
-SymbolTable* createNewScope(SymbolTable* parent);
+SymbolTable* create_new_scope(SymbolTable* parent);
 // func for printing the symbol tables
-void printSymbolTables(struct ASTNode* node);
+void print_symbol_tables(struct ASTNode* node);
 // this func is used to get the closest scope
-SymbolTable* getClosestScope(struct ASTNode* node);
+SymbolTable* get_closest_scope(struct ASTNode* node);
 // this func is used to lookup a symbol from a current scope up the scopes
-SymbolEntry* lookUpSymbol(const char* symbol, SymbolTable* currentScope);
+SymbolEntry* lookup_symbol(const char* symbol, SymbolTable* currentScope);
 // this func is used to insert a symbol into the symbol table
-void insertSymbol(HashMap* map, char* name, Type type, int isFunction, Type returnType, Type* paramTypes, int paramCount, int line);
-// this func is used to set the data needed for code gen (place and offset)
-void setCodeGenData(struct ASTNode* node);
+void insert_symbol(HashMap* map, char* name, Type type, int isFunction, Type returnType, Type* paramTypes, int paramCount, int line, Placement place, int offset);
+
 
 #endif

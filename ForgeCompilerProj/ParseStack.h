@@ -33,23 +33,23 @@ typedef struct {
 typedef void (*AssignFunc)(StackEntry* entry, StackData data);
 
 // different assignment funcs based on data type
-void assignState(StackEntry* entry, StackData data); 
-void assignNode(StackEntry* entry, StackData data); 
+void assign_state(StackEntry* entry, StackData data); 
+void assign_node(StackEntry* entry, StackData data); 
 
 // func table
 extern AssignFunc assignFuncs[];
 
 // func to init the stack 
-Stack* InitStack();
+Stack* init_stack();
 // func to check if the stack is empty
-int  IsStackEmpty(Stack* s);
+int is_stack_empty(Stack* s);
 // func that pops an item from the stack
-StackEntry* PopStack(Stack* s);
+StackEntry* pop(Stack* s);
 // func that pushes an item onto the stack
-void PushStack(Stack* s, StackData data, StackDataType type);
+void push(Stack* s, StackData data, StackDataType type);
 // func that returns the stack top
-StackEntry* TopStack(Stack* s);
+StackEntry* top(Stack* s);
 // func that frees the stack
-void FreeStack(Stack* s);
+void free_stack(Stack* s);
 
 #endif

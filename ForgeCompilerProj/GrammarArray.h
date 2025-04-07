@@ -16,13 +16,13 @@ typedef struct {
 }GrammarArray, * pGrammarArray;
 
 // func that will insert a grammar rule into the array
-void InsertRule(GrammarArray* grammar, int index, const char* leftRule, const char* rightRule);
+void insert_rule(GrammarArray* grammar, int index, const char* leftRule, const char* rightRule);
 // func that will setup the grammar array from the Grammar.txt file
-GrammarArray* InitGrammarArray(const char* filename);
+GrammarArray* init_grammar_array(const char* filename);
 // frees all memory from the array after use
-void FreeGrammarArray(GrammarArray* grammar);
+void free_grammar_array(GrammarArray* grammar);
 // Print func used in debugging
-void PrintGrammarRules(GrammarArray* grammar);
+void print_grammar_rules(GrammarArray* grammar);
 
 #endif
 

@@ -12,7 +12,7 @@
 /// <param name="key"></param>
 /// <param name="map_size"></param>
 /// <returns>Returns an index in the hashmap</returns>
-static unsigned long hashFunc(void* key, int map_size) {
+static unsigned long hash_func(void* key, int map_size) {
     char* fkey = (char*)key;
     unsigned long hash = djb2Hash(fkey);
     return hash % map_size;
@@ -29,7 +29,7 @@ static unsigned long hashFunc(void* key, int map_size) {
 /// <param name="paramTypes"></param>
 /// <param name="paramCount"></param>
 /// <param name="line"></param>
-void insertSymbol(HashMap* map, char* name, Type type, int isFunction, Type returnType, Type* paramTypes, int paramCount, int line, Placement place, int offset) {
+void insert_symbol(HashMap* map, char* name, Type type, int isFunction, Type returnType, Type* paramTypes, int paramCount, int line, Placement place, int offset) {
     // Allocate and fill SymbolEntry struct
     SymbolEntry* entry = malloc(sizeof(SymbolEntry));
     if (!entry) {
@@ -61,7 +61,7 @@ void insertSymbol(HashMap* map, char* name, Type type, int isFunction, Type retu
     entry->place = place;
     entry->offset = offset;
     // insert value in hashmap
-    insertNewValue(strdup(name), entry, map);
+    insert_new_value(strdup(name), entry, map);
 }
 
 /// <summary>
@@ -70,39 +70,39 @@ void insertSymbol(HashMap* map, char* name, Type type, int isFunction, Type retu
 /// <param name="map"></param>
 /// <param name="name"></param>
 /// <returns>Returns the map value based on a name</returns>
-static SymbolEntry* getMapValue(HashMap* map, char* name) {
-    return (SymbolEntry*)getHashMapValue(name, map);
+static SymbolEntry* get_map_value(HashMap* map, char* name) {
+    return (SymbolEntry*)get_hashmap_value(name, map);
 }
 
-void freeSymbolEntry(void* value) {
+void free_symbol_entry(void* value) {
     SymbolEntry* entry = (SymbolEntry*)value;
     free(entry->name);
     free(entry->paramTypes);
     free(entry);
 }
 
-static int equalFunc(void* a, void* b) {
+static int equal_func(void* a, void* b) {
     char* k1 = (char*)a;
     char* k2 = (char*)b;
     return strcmp(k1, k2) == 0;
 }
 
-void printStringKey(void* key) {
+void print_string_key(void* key) {
     printf("[Key: symbol: %s ", (char*)key);
 }
 
-void printSymbolEntry(void* value) {
+void print_symbol_entry(void* value) {
     SymbolEntry* entry = (SymbolEntry*)value;
     printf(" Value: Name: %s, Type: %s, Function: %d, ParamCount: %d, ParamTypes: ",
-        entry->name, convertTypeToString(entry->type), entry->isFunction, entry->paramCount);
+        entry->name, convert_type_to_string(entry->type), entry->isFunction, entry->paramCount);
     if (entry->paramCount == 0) {
         printf("No params ]");
         return;
     }
     for (int i = 0; i < entry->paramCount - 1; i++) {
-        printf("%s, ", convertTypeToString(entry->paramTypes[i]));
+        printf("%s, ", convert_type_to_string(entry->paramTypes[i]));
     }
-    printf("%s ]", convertTypeToString(entry->paramTypes[entry->paramCount - 1]));
+    printf("%s ]", convert_type_to_string(entry->paramTypes[entry->paramCount - 1]));
 }
 
 /// <summary>
@@ -112,7 +112,7 @@ void printSymbolEntry(void* value) {
 /// <param name="paramNames"></param>
 /// <param name="paramTypes"></param>
 /// <returns>Returns a count of the amount of parameters</returns>
-int extractFunctionParameters(ASTNode* paramNode, char*** paramNames, Type** paramTypes) {
+int extract_function_parameters(ASTNode* paramNode, char*** paramNames, Type** paramTypes) {
     // get children count
     int childrenCount = paramNode->childCount;
     if (childrenCount == 0) {
@@ -140,7 +140,7 @@ int extractFunctionParameters(ASTNode* paramNode, char*** paramNames, Type** par
             }
             *paramTypes = tempType;
             ASTNode* typeNode = paramDecl->children[0];
-            (*paramTypes)[decCount] = convertStringType(typeNode->token->lexeme);
+            (*paramTypes)[decCount] = convert_string_type(typeNode->token->lexeme);
             ASTNode* nameNode = paramDecl->children[1];
             (*paramNames)[decCount] = strdup(nameNode->token->lexeme);
             decCount++;
@@ -155,13 +155,13 @@ int extractFunctionParameters(ASTNode* paramNode, char*** paramNames, Type** par
 /// </summary>
 /// <param name="parent"></param>
 /// <returns>Returns a pointer to the newly created table</returns>
-SymbolTable* createNewScope(SymbolTable* parent) {
+SymbolTable* create_new_scope(SymbolTable* parent) {
     SymbolTable* newTable = (SymbolTable*)malloc(sizeof(SymbolTable));
     if (!newTable) {
         fprintf(stderr, "Unable to malloc memory for symbol table\n");
         return NULL;
     }
-    newTable->table = initHashMap(INITAL_HASHMAP_SIZE, hashFunc, equalFunc, printStringKey, printSymbolEntry, free, freeSymbolEntry);
+    newTable->table = init_hashmap(INITAL_HASHMAP_SIZE, hash_func, equal_func, print_string_key, print_symbol_entry, free, free_symbol_entry);
     newTable->parent = parent;  // link the current table to its parent
     newTable->localOffset = 0;
     return newTable;
@@ -185,7 +185,7 @@ char* change_name(const char* name) {
 /// <param name="node"></param>
 /// <param name="currentTable"></param>
 /// <param name="errorCount"></param>
-void createASTSymbolTable(ASTNode* node, SymbolTable* currentTable, int* errorCount) {
+void create_AST_symbol_table(ASTNode* node, SymbolTable* currentTable, int* errorCount) {
     if (!node) return;
 
     if (node->lable && strcmp(node->lable, "VarDeclaration") == 0) {
@@ -195,7 +195,7 @@ void createASTSymbolTable(ASTNode* node, SymbolTable* currentTable, int* errorCo
         // get the var type
         char* varType = node->children[0]->token->lexeme;  
         // check if the var exists already in the table
-        if (getMapValue(currentTable->table, newVarName)) {
+        if (get_map_value(currentTable->table, newVarName)) {
             output_error(SEMANTIC, "Variable % s already declared in this scope\n", varName);
             (*errorCount)++;
         }
@@ -222,7 +222,7 @@ void createASTSymbolTable(ASTNode* node, SymbolTable* currentTable, int* errorCo
                 offset = currentTable->localOffset;
             }
             // insert the symbol
-            insertSymbol(currentTable->table, newVarName, convertStringType(varType), 0, TYPE_UNDEFINED, NULL, 0, node->children[1]->token->tokenRow, place, offset);
+            insert_symbol(currentTable->table, newVarName, convert_string_type(varType), 0, TYPE_UNDEFINED, NULL, 0, node->children[1]->token->tokenRow, place, offset);
         }
         free(newVarName);
 
@@ -237,7 +237,7 @@ void createASTSymbolTable(ASTNode* node, SymbolTable* currentTable, int* errorCo
         // get the return type
         char* returnType = node->children[2]->token->lexeme; 
         // check if the func is declared
-        if (getMapValue(currentTable->table, newFuncName)) {
+        if (get_map_value(currentTable->table, newFuncName)) {
             output_error(SEMANTIC, "Function %s already declared\n", newFuncName);
             (*errorCount)++;
         }
@@ -245,12 +245,12 @@ void createASTSymbolTable(ASTNode* node, SymbolTable* currentTable, int* errorCo
         char** paramNames = NULL;
         Type* paramTypes = NULL;
         // get the types and names
-        int decCount = extractFunctionParameters(paramList, &paramNames, &paramTypes);
+        int decCount = extract_function_parameters(paramList, &paramNames, &paramTypes);
         // insert the func into the table
-        insertSymbol(currentTable->table, newFuncName, convertStringType(returnType), 1, convertStringType(returnType), paramTypes, decCount, IGNORE_LINE, IS_GLOBAL, -1);
+        insert_symbol(currentTable->table, newFuncName, convert_string_type(returnType), 1, convert_string_type(returnType), paramTypes, decCount, IGNORE_LINE, IS_GLOBAL, -1);
         free(newFuncName);
         // create new symbol table for func scope
-        SymbolTable* functionScope = createNewScope(currentTable);
+        SymbolTable* functionScope = create_new_scope(currentTable);
         node->scope = functionScope;      
         // fill the function scope with the params
         for (int i = 0; i < decCount; i++) {
@@ -262,7 +262,7 @@ void createASTSymbolTable(ASTNode* node, SymbolTable* currentTable, int* errorCo
             Placement place = IS_LOCAL; 
             // insert params
             char* newVarName = change_name(paramNames[i]);
-            insertSymbol(functionScope->table, newVarName, paramTypes[i], 0,TYPE_UNDEFINED, NULL, 0,IGNORE_LINE, place, offset);
+            insert_symbol(functionScope->table, newVarName, paramTypes[i], 0,TYPE_UNDEFINED, NULL, 0,IGNORE_LINE, place, offset);
             free(paramNames[i]);
             free(newVarName);
         }
@@ -273,22 +273,22 @@ void createASTSymbolTable(ASTNode* node, SymbolTable* currentTable, int* errorCo
             free(paramTypes);
         }
         // go over function body
-        createASTSymbolTable(node->children[3], functionScope, errorCount);
+        create_AST_symbol_table(node->children[3], functionScope, errorCount);
     }
     // handle new scope for blocks
     else if (node->lable && strcmp(node->lable, "Block") == 0) {
         // create a new symbol table for this block
-        SymbolTable* blockScope = createNewScope(currentTable);
+        SymbolTable* blockScope = create_new_scope(currentTable);
         node->scope = blockScope;
         // go over statements in the block
         for (int i = 0; i < node->childCount; i++) {
-            createASTSymbolTable(node->children[i], blockScope, errorCount);
+            create_AST_symbol_table(node->children[i], blockScope, errorCount);
         }
     }
     else {
         // go over the children
         for (int i = 0; i < node->childCount; i++) {
-            createASTSymbolTable(node->children[i], currentTable, errorCount);
+            create_AST_symbol_table(node->children[i], currentTable, errorCount);
         }
     }
 }
@@ -297,19 +297,19 @@ void createASTSymbolTable(ASTNode* node, SymbolTable* currentTable, int* errorCo
 /// This is a helper function used to debug and see the tables
 /// </summary>
 /// <param name="node"></param>
-void printSymbolTables(ASTNode* node) {
+void print_symbol_tables(ASTNode* node) {
     if (node == NULL) {
         return;
     }
     // check if there is a symbol table
     if (node->scope) {
         printf("Symbol Table for AST Node: %s\n", node->lable ? node->lable : "Unnamed Node");
-        printHashMap(node->scope->table);
+        print_hashmap(node->scope->table);
         printf("\n");  
     }
     // call for all children
     for (int i = 0; i < node->childCount; i++) {
-        printSymbolTables(node->children[i]);
+        print_symbol_tables(node->children[i]);
     }
 }
 
@@ -319,12 +319,12 @@ void printSymbolTables(ASTNode* node) {
 /// <param name="symbol"></param>
 /// <param name="currentScope"></param>
 /// <returns>Returns the SymbolTable entry or NULL if it wasnt found</returns>
-SymbolEntry* lookUpSymbol(const char* symbol, SymbolTable* currentScope)
+SymbolEntry* lookup_symbol(const char* symbol, SymbolTable* currentScope)
 {
     char* newName = change_name(symbol);
     // go over all the scopes
     while (currentScope && newName) {
-        SymbolEntry* value = (SymbolEntry*)getHashMapValue(newName, currentScope->table);
+        SymbolEntry* value = (SymbolEntry*)get_hashmap_value(newName, currentScope->table);
         if (value != NULL && strcmp(newName, value->name) == 0) {
             return value;
         }
@@ -340,7 +340,7 @@ SymbolEntry* lookUpSymbol(const char* symbol, SymbolTable* currentScope)
 /// </summary>
 /// <param name="root"></param>
 /// <returns>Returns the scope if it found one or NULL if it didnt</returns>
-SymbolTable* getClosestScope(ASTNode* root)
+SymbolTable* get_closest_scope(ASTNode* root)
 {
     // climb tree to get the closest scope
     SymbolTable* currentScope = NULL;

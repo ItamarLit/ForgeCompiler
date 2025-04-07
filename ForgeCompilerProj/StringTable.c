@@ -10,7 +10,7 @@
 /// <param name="key"></param>
 /// <param name="map_size"></param>
 /// <returns>Returns an index in the hashmap</returns>
-static unsigned long hashFunc(void* key, int map_size) {
+static unsigned long hash_func(void* key, int map_size) {
     char* fkey = (char*)key;
     unsigned long hash = djb2Hash(fkey);
     return hash % map_size;
@@ -20,7 +20,7 @@ static unsigned long hashFunc(void* key, int map_size) {
 /// This is a helper func that gens a unique str name that refrences the read only string
 /// </summary>
 /// <returns></returns>
-char* genStrLabel() 
+char* gen_str_label() 
 {
     static int labelNum = 0;
     // static so pointer is valid after the function returns
@@ -36,15 +36,15 @@ void insertString(HashMap* map, char* string) {
         fprintf(stderr, "Unable to malloc string entry for string table\n");
         return;
     }
-    entry->label = strdup(genStrLabel());
+    entry->label = strdup(gen_str_label());
     // remove 2 for the "
     entry->originalLen = strlen(string) - 2;
     // insert value in hashmap
-    insertNewValue(strdup(string), entry, map);
+    insert_new_value(strdup(string), entry, map);
 }
 
-static StringEntry* getMapValue(HashMap* map, char* string) {
-    return (StringEntry*)getHashMapValue(string, map);
+static StringEntry* get_map_value(HashMap* map, char* string) {
+    return (StringEntry*)get_hashmap_value(string, map);
 }
 
 void freeStringEntry(void* value) {
@@ -53,17 +53,17 @@ void freeStringEntry(void* value) {
     free(entry);
 }
 
-static int equalFunc(void* a, void* b) {
+static int equal_func(void* a, void* b) {
     char* k1 = (char*)a;
     char* k2 = (char*)b;
     return strcmp(k1, k2) == 0;
 }
 
-static void printStringKey(void* key) {
+static void print_string_key(void* key) {
     printf("[Key: string: %s ", (char*)key);
 }
 
-static void printSymbolEntry(void* value) {
+static void print_symbol_entry(void* value) {
     printf("Value: %s ]", ((StringEntry*)value)->label);
 }
 
@@ -72,17 +72,17 @@ static void printSymbolEntry(void* value) {
 /// </summary>
 /// <param name="node"></param>
 /// <param name="map"></param>
-static void createStringTableRecursive(ASTNode* node, HashMap* map)
+static void create_string_tableRecursive(ASTNode* node, HashMap* map)
 {
     if (!node) return;
     // Save all global string literals that are in the program and not saved yet
-    if (node->token && node->token->type == STRING_LITERAL && !getMapValue(map, node->token->lexeme))
+    if (node->token && node->token->type == STRING_LITERAL && !get_map_value(map, node->token->lexeme))
     {
         insertString(map, node->token->lexeme);
     }
     // go over all the children
     for (int i = 0; i < node->childCount; i++) {
-        createStringTableRecursive(node->children[i], map);
+        create_string_tableRecursive(node->children[i], map);
     }
 }
 
@@ -91,14 +91,14 @@ static void createStringTableRecursive(ASTNode* node, HashMap* map)
 /// </summary>
 /// <param name="root"></param>
 /// <returns></returns>
-HashMap* createStringTable(ASTNode* root)
+HashMap* create_string_table(ASTNode* root)
 {
-    HashMap* map = initHashMap(INITAL_HASHMAP_SIZE, hashFunc, equalFunc, printStringKey, printSymbolEntry, free, freeStringEntry);
+    HashMap* map = init_hashmap(INITAL_HASHMAP_SIZE, hash_func, equal_func, print_string_key, print_symbol_entry, free, freeStringEntry);
     if (!map) {
         fprintf(stderr, "Failed to create string table hashmap.\n");
         return NULL;
     }
-    createStringTableRecursive(root, map);
+    create_string_tableRecursive(root, map);
     return map;
 }
 
@@ -108,9 +108,9 @@ HashMap* createStringTable(ASTNode* root)
 /// <param name="string"></param>
 /// <param name="map"></param>
 /// <returns></returns>
-char* lookUpString(char* string, HashMap* map) 
+char* look_up_string(char* string, HashMap* map) 
 {
-    StringEntry* entry = getMapValue(map, string);
+    StringEntry* entry = get_map_value(map, string);
     if (!entry) return NULL;
     return entry->label;
 }

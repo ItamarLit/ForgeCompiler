@@ -5,26 +5,26 @@
 #include <string.h>
 
 // assignemnt functions for the different data types
-void assignState(StackEntry* entry, StackData data)
+void assign_state(StackEntry* entry, StackData data)
 { 
 	entry->data.state = data.state;
 }
 
-void assignNode(StackEntry* entry, StackData data)
+void assign_node(StackEntry* entry, StackData data)
 { 
 	entry->data.node = data.node; 
 }
 
 AssignFunc assignFuncs[] = {
-	assignState,  // STATE = 0
-	assignNode,   // NODE = 1
+	assign_state,  // STATE = 0
+	assign_node,   // NODE = 1
 };
 
 /// <summary>
 /// Init func for the stack
 /// </summary>
 /// <returns></returns>
-Stack* InitStack()
+Stack* init_stack()
 {
 	Stack* sptr = (Stack*)malloc(sizeof(Stack));
 	if (!sptr) {
@@ -42,12 +42,14 @@ Stack* InitStack()
 /// <param name="s"></param>
 /// <param name="data"></param>
 /// <param name="type"></param>
-void PushStack(Stack* s, StackData data, StackDataType type)
+void push(Stack* s, StackData data, StackDataType type)
 {
 	StackEntry** temp = (StackEntry**)realloc(s->items, sizeof(StackEntry*) * (s->top + 2));
 	if (!temp)
+	{
 		fprintf(stderr, "Failed to reallocate memory for stack");
 		return;
+	}
 	s->items = temp;
 	StackEntry* entry = (StackEntry*)malloc(sizeof(StackEntry));
 	if (!entry) {
@@ -66,7 +68,7 @@ void PushStack(Stack* s, StackData data, StackDataType type)
 /// </summary>
 /// <param name="s"></param>
 /// <returns></returns>
-int IsStackEmpty(Stack* s)
+int is_stack_empty(Stack* s)
 {
 	return s->top == -1;
 }
@@ -76,9 +78,9 @@ int IsStackEmpty(Stack* s)
 /// </summary>
 /// <param name="s"></param>
 /// <returns>Returns a pointer to StackEntry from the top of the stack</returns>
-StackEntry* PopStack(Stack* s)
+StackEntry* pop(Stack* s)
 {
-	if (!IsStackEmpty(s)) {
+	if (!is_stack_empty(s)) {
 		StackEntry* x = s->items[s->top--];
 		StackEntry** temp = (StackEntry**)realloc(s->items, sizeof(StackEntry*) * (s->top + 1));
 		if (!temp) 
@@ -97,9 +99,9 @@ StackEntry* PopStack(Stack* s)
 /// </summary>
 /// <param name="s"></param>
 /// <returns>Returns a pointer to StackEntry from the top of the stack</returns>
-StackEntry* TopStack(Stack* s)
+StackEntry* top(Stack* s)
 {
-	if (IsStackEmpty(s))
+	if (is_stack_empty(s))
 	{
 		printf("Stack empty \n");
 		return NULL;
@@ -111,10 +113,10 @@ StackEntry* TopStack(Stack* s)
 /// Free func for the stack
 /// </summary>
 /// <param name="s"></param>
-void FreeStack(Stack* s) {
+void free_stack(Stack* s) {
 	for (int i = 0; i <= s->top; i++) {
 		if (s->items[i]->type == NODE) {
-			freeASTNode(s->items[i]->data.node);
+			free_AST_node(s->items[i]->data.node);
 		}
 		free(s->items[i]);  
 	}

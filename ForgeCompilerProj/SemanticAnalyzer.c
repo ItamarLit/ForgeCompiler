@@ -10,7 +10,7 @@
 /// <param name="node"></param>
 /// <param name="fn"></param>
 /// <param name="errorCount"></param>
-static void traverseChildren(ASTNode* node, void (*fn)(ASTNode*, int*), int* errorCount) {
+static void traverse_children(ASTNode* node, void (*fn)(ASTNode*, int*), int* errorCount) {
     if (!node) return;
     for (int i = 0; i < node->childCount; i++) {
         fn(node->children[i], errorCount);
@@ -22,7 +22,7 @@ static void traverseChildren(ASTNode* node, void (*fn)(ASTNode*, int*), int* err
 /// </summary>
 /// <param name="root"></param>
 /// <returns>Returns the row where the expr starts</returns>
-static int getExprLine(ASTNode* root) {
+static int get_expr_line(ASTNode* root) {
     ASTNode* node = root;
     while (!node->token) {
         node = node->children[0];
@@ -30,7 +30,7 @@ static int getExprLine(ASTNode* root) {
     return node->token->tokenRow;
 }
 
-static void handleInvalidExpr(Type exprType, int exprLine, int* errorCount) 
+static void handle_invalid_expr(Type exprType, int exprLine, int* errorCount) 
 {
     if (exprType == TYPE_ERROR)
     {
@@ -46,23 +46,23 @@ static void handleInvalidExpr(Type exprType, int exprLine, int* errorCount)
 /// <param name="root"></param>
 /// <param name="currentScope"></param>
 /// <param name="errorCount"></param>
-void resolveIdentifiers(ASTNode* root, int* errorCount) {
+void resolve_identifiers(ASTNode* root, int* errorCount) {
     if (!root) return;
     // climb tree to get the closest scope
-    SymbolTable* currentScope = getClosestScope(root);
+    SymbolTable* currentScope = get_closest_scope(root);
     // check if the type is identifier
     if (root->token && root->token->type == IDENTIFIER) {
-        SymbolEntry* entry = lookUpSymbol(root->token->lexeme, currentScope);
+        SymbolEntry* entry = lookup_symbol(root->token->lexeme, currentScope);
         if (!entry || entry->type == TYPE_UNDEFINED || root->token->tokenRow < entry->line) {
             output_error(SEMANTIC, "Error: Undeclared identifier '%s' at line %d, column %d\n", root->token->lexeme, root->token->tokenRow, root->token->tokenCol);
             // insert the symbol with TYPE_UNDEFINED so i can continue looking for problems
             if (!entry) {
-                insertSymbol(currentScope->table, root->token->lexeme, TYPE_UNDEFINED, 0, TYPE_UNDEFINED, TYPE_UNDEFINED, 0, root->token->tokenRow);
+                insert_symbol(currentScope->table, root->token->lexeme, TYPE_UNDEFINED, 0, TYPE_UNDEFINED, TYPE_UNDEFINED, 0, root->token->tokenRow, IS_LOCAL, -1);
             }
             (*errorCount)++;
         }
     }
-    traverseChildren(root, resolveIdentifiers, errorCount);
+    traverse_children(root, resolve_identifiers, errorCount);
 }
 
 /// <summary>
@@ -70,23 +70,23 @@ void resolveIdentifiers(ASTNode* root, int* errorCount) {
 /// </summary>
 /// <param name="root"></param>
 /// <param name="errorCount"></param>
-void checkTypes(ASTNode* root, int* errorCount) 
+void check_types(ASTNode* root, int* errorCount) 
 {
     if (root == NULL) return;
     // get the closest scope
-    SymbolTable* currentScope = getClosestScope(root);
+    SymbolTable* currentScope = get_closest_scope(root);
     // check if the type is var dec
     if (root->lable && strcmp(root->lable, "VarDeclaration") == 0) {
         // get the var entry from the symbol table
-        SymbolEntry* varEntry = lookUpSymbol(root->children[1]->token->lexeme, currentScope);
+        SymbolEntry* varEntry = lookup_symbol(root->children[1]->token->lexeme, currentScope);
         // get the var expr type
-        Type exprType = checkExprType(root->children[3]);
+        Type exprType = check_expr_type(root->children[3]);
         // check if the expr is invalid
-        handleInvalidExpr(exprType, varEntry->line, errorCount);
+        handle_invalid_expr(exprType, varEntry->line, errorCount);
         if (exprType != TYPE_UNDEFINED) {
             // check that the types match only in defined vars
             if (exprType != TYPE_ERROR && varEntry && exprType != varEntry->type) {
-                output_error(SEMANTIC, "Error: Expr of type: %s is not valid for var of type: %s, on line: %d\n", convertTypeToString(exprType), convertTypeToString(varEntry->type), varEntry->line);
+                output_error(SEMANTIC, "Error: Expr of type: %s is not valid for var of type: %s, on line: %d\n", convert_type_to_string(exprType), convert_type_to_string(varEntry->type), varEntry->line);
                 (*errorCount)++;
             }
             // check that a var isnt init with itself ( illegal )
@@ -97,7 +97,7 @@ void checkTypes(ASTNode* root, int* errorCount)
         }
        
     }
-    traverseChildren(root, checkTypes, errorCount);
+    traverse_children(root, check_types, errorCount);
 }
 
 /// <summary>
@@ -105,7 +105,7 @@ void checkTypes(ASTNode* root, int* errorCount)
 /// </summary>
 /// <param name="node"></param>
 /// <returns>True if a return statement was found, else false</returns>
-static int containsReturn(ASTNode* node) {
+static int contains_return(ASTNode* node) {
     if (node == NULL) return 0;
     // check all children
     for (int i = 0; i < node->childCount; i++) {
@@ -114,7 +114,7 @@ static int containsReturn(ASTNode* node) {
         if (child->lable && strcmp(child->lable, "ReturnStatement") == 0)
             return 1;
         // check child
-        if (containsReturn(child)) {
+        if (contains_return(child)) {
             return 1;
         }
     }
@@ -126,7 +126,7 @@ static int containsReturn(ASTNode* node) {
 /// </summary>
 /// <param name="block"></param>
 /// <returns>Returns true if all paths have return else false</returns>
-static int functionAlwaysReturns(ASTNode* block) {
+static int function_always_returns(ASTNode* block) {
     if (block == NULL) return 0;
 
     int hasReturn = 0;   
@@ -152,8 +152,8 @@ static int functionAlwaysReturns(ASTNode* block) {
                     elseBlock = stmt->children[j];
             }
             // check if the if block or else block have a return
-            int ifReturns = containsReturn(ifBlock);
-            int elseReturns = containsReturn(elseBlock);
+            int ifReturns = contains_return(ifBlock);
+            int elseReturns = contains_return(elseBlock);
             // if there is an else block
             if (elseBlock) {
                 // check if both blocks have return
@@ -179,7 +179,7 @@ static int functionAlwaysReturns(ASTNode* block) {
 /// <param name="node"></param>
 /// <param name="retType"></param>
 /// <param name="errorCount"></param>
-void validateReturnExprType(ASTNode* node, Type retType, int* errorCount, const char* funcName)
+void validate_return_expr_type(ASTNode* node, Type retType, int* errorCount, const char* funcName)
 {
     if (!node) return;
     // if we found a return statement node check its return type
@@ -194,17 +194,17 @@ void validateReturnExprType(ASTNode* node, Type retType, int* errorCount, const 
         else {
             // if the func isnt void and there is no value in return then error
             if (node->childCount == 0) {
-                output_error(SEMANTIC, "Error: Function: %s return type '%s' requires a return value\n", funcName, convertTypeToString(retType));
+                output_error(SEMANTIC, "Error: Function: %s return type '%s' requires a return value\n", funcName, convert_type_to_string(retType));
                 (*errorCount)++;
             }
             else {
                 // check the type of the returned expr
-                Type returnExprType = checkExprType(node->children[0]);
-                int exprRow = getExprLine(node->children[0]);
+                Type returnExprType = check_expr_type(node->children[0]);
+                int exprRow = get_expr_line(node->children[0]);
                 // handle invalid expr
-                handleInvalidExpr(returnExprType, exprRow, errorCount);
+                handle_invalid_expr(returnExprType, exprRow, errorCount);
                 if (returnExprType != TYPE_ERROR && returnExprType != retType) {
-                    output_error(SEMANTIC, "Error: Return type mismatch in function: % s. Expected '%s', got '%s' on line: %d \n", funcName, convertTypeToString(retType), convertTypeToString(returnExprType), exprRow);
+                    output_error(SEMANTIC, "Error: Return type mismatch in function: % s. Expected '%s', got '%s' on line: %d \n", funcName, convert_type_to_string(retType), convert_type_to_string(returnExprType), exprRow);
                     (*errorCount)++;
                 }
             }
@@ -212,7 +212,7 @@ void validateReturnExprType(ASTNode* node, Type retType, int* errorCount, const 
     }
     // go over all the children to find more return statemnts
     for (int i = 0; i < node->childCount; i++) {
-        validateReturnExprType(node->children[i], retType, errorCount, funcName);
+        validate_return_expr_type(node->children[i], retType, errorCount, funcName);
     }
 }
 
@@ -222,7 +222,7 @@ void validateReturnExprType(ASTNode* node, Type retType, int* errorCount, const 
 /// </summary>
 /// <param name="root"></param>
 /// <param name="errorCount"></param>
-void checkReturn(ASTNode* root, int* errorCount) {
+void check_return(ASTNode* root, int* errorCount) {
     if (root == NULL) return;
     // check all func dec
     for (int i = 0; i < root->childCount; i++) {
@@ -230,18 +230,18 @@ void checkReturn(ASTNode* root, int* errorCount) {
         // find func dec
         if (node->lable && strcmp(node->lable, "FuncDeclaration") == 0) {
             // get the func return type and the func name
-            Type retType = convertStringType(node->children[2]->token->lexeme);
+            Type retType = convert_string_type(node->children[2]->token->lexeme);
             char* funcName = node->children[0]->token->lexeme;
             ASTNode* body = node->children[3];
             // if type void no return needed
             if (retType != TYPE_ERROR && retType == TYPE_VOID) continue;
             // check that func has return in all paths
-            if (!functionAlwaysReturns(body)) {
+            if (!function_always_returns(body)) {
                 output_error(SEMANTIC, "Error: Function '%s' is missing a return statement in all paths\n", (node->children[0]->token->lexeme));
                 (*errorCount)++;
             }
             // check the functions return expr types
-            validateReturnExprType(body, retType, errorCount, funcName);
+            validate_return_expr_type(body, retType, errorCount, funcName);
 
         }
     }
@@ -252,7 +252,7 @@ void checkReturn(ASTNode* root, int* errorCount) {
 /// </summary>
 /// <param name="root"></param>
 /// <param name="errorCount"></param>
-void checkMain(ASTNode* root, int* errorCount) {
+void check_main(ASTNode* root, int* errorCount) {
     int foundMain = 0;
     // go over all children of root and check for main func
     for (int i = 0; i < root->childCount && !foundMain; i++) {
@@ -260,7 +260,7 @@ void checkMain(ASTNode* root, int* errorCount) {
         // check if node is func dec
         if (node->lable && strcmp(node->lable, "FuncDeclaration") == 0) {
             // check the func name
-            if (lookUpSymbol("Main", node->scope) != NULL) {
+            if (lookup_symbol("Main", node->scope) != NULL) {
                 foundMain = 1;
             }
         }
@@ -278,32 +278,32 @@ void checkMain(ASTNode* root, int* errorCount) {
 /// </summary>
 /// <param name="root"></param>
 /// <param name="errorCount"></param>
-void checkBoolExprTypes(ASTNode* root, int* errorCount) 
+void check_bool_expr_types(ASTNode* root, int* errorCount) 
 {
     if (!root) return;
     // check if the type is bool in while statement
     if (root->lable && strcmp(root->lable, "WhileStatement") == 0) {
-        Type exprType = checkExprType(root->children[0]);
+        Type exprType = check_expr_type(root->children[0]);
         // handle invalid expr
-        handleInvalidExpr(exprType, getExprLine(root->children[0]), errorCount);
+        handle_invalid_expr(exprType, get_expr_line(root->children[0]), errorCount);
         // check that the type is bool
         if (exprType != TYPE_ERROR && exprType != TYPE_BOOL) {
-            output_error(SEMANTIC, "Error: Expr type inside while must be boolean at line: %d\n", getExprLine(root));
+            output_error(SEMANTIC, "Error: Expr type inside while must be boolean at line: %d\n", get_expr_line(root));
             (*errorCount)++;
         }
     }
     // check that the type is bool in the if statements
     if (root->lable && strcmp(root->lable, "IfStatement") == 0) {
-        Type exprType = checkExprType(root->children[0]);
+        Type exprType = check_expr_type(root->children[0]);
         // handle the invalid expr
-        handleInvalidExpr(exprType, getExprLine(root->children[0]), errorCount);
+        handle_invalid_expr(exprType, get_expr_line(root->children[0]), errorCount);
         if (exprType != TYPE_ERROR  && exprType != TYPE_BOOL) {
-            output_error(SEMANTIC, "Error: Expr type inside if must be boolean at line: %d\n", getExprLine(root));
+            output_error(SEMANTIC, "Error: Expr type inside if must be boolean at line: %d\n", get_expr_line(root));
             (*errorCount)++;
         }
     }
     // go over all children
-    traverseChildren(root, checkBoolExprTypes, errorCount);
+    traverse_children(root, check_bool_expr_types, errorCount);
 }
 
 /// <summary>
@@ -311,15 +311,15 @@ void checkBoolExprTypes(ASTNode* root, int* errorCount)
 /// </summary>
 /// <param name="root"></param>
 /// <param name="errorCount"></param>
-void checkFunctionCalls(ASTNode* root, int* errorCount)
+void check_function_calls(ASTNode* root, int* errorCount)
 {
     if (!root) return;
     // climb tree to get the closest scope
-    SymbolTable* currentScope = getClosestScope(root);
+    SymbolTable* currentScope = get_closest_scope(root);
     // check if the type is func call
     if (root->lable && strcmp(root->lable, "FuncCallExpr") == 0) {
         ASTNode* funcCallNode = root->children[0];
-        SymbolEntry* funcEntry = lookUpSymbol(funcCallNode->token->lexeme, currentScope);
+        SymbolEntry* funcEntry = lookup_symbol(funcCallNode->token->lexeme, currentScope);
         // if no entry then the func is undifined
         if (!funcEntry) {
             output_error(SEMANTIC, "Error: Undeclared function '%s' at line %d\n", funcCallNode->token->lexeme, funcCallNode->token->tokenRow);
@@ -336,10 +336,10 @@ void checkFunctionCalls(ASTNode* root, int* errorCount)
             else {
                 // check that the param types match
                 for (int i = 0; i < funcEntry->paramCount; i++) {
-                    Type argType = checkExprType(argumentList->children[i]);
-                    handleInvalidExpr(argType, funcCallNode->token->tokenRow, errorCount);
+                    Type argType = check_expr_type(argumentList->children[i]);
+                    handle_invalid_expr(argType, funcCallNode->token->tokenRow, errorCount);
                     if (argType != TYPE_ERROR && argType != funcEntry->paramTypes[i]) {
-                        output_error(SEMANTIC, "Invalid arguments for function: %s, used at line: %d, expected: '%s' but got '%s'\n", funcCallNode->token->lexeme, funcCallNode->token->tokenRow, convertTypeToString(funcEntry->paramTypes[i]), convertTypeToString(argType));
+                        output_error(SEMANTIC, "Invalid arguments for function: %s, used at line: %d, expected: '%s' but got '%s'\n", funcCallNode->token->lexeme, funcCallNode->token->tokenRow, convert_type_to_string(funcEntry->paramTypes[i]), convert_type_to_string(argType));
                         (*errorCount)++;
                     }
                 }
@@ -347,11 +347,11 @@ void checkFunctionCalls(ASTNode* root, int* errorCount)
         }
     }
     // go over all children
-    traverseChildren(root, checkFunctionCalls, errorCount);
+    traverse_children(root, check_function_calls, errorCount);
 }
 
 
-int isIntOperator(const char* op) {
+int is_int_Operator(const char* op) {
     const char* ops[] = { "+=", "-=", "*=", "/=" };
     for (int i = 0; i < sizeof(ops) / sizeof(ops[0]); i++) {
         if (strcmp(op, ops[i]) == 0) return 1;
@@ -365,16 +365,16 @@ int isIntOperator(const char* op) {
 /// </summary>
 /// <param name="root"></param>
 /// <param name="errorCount"></param>
-void checkAssignment(ASTNode* root, int* errorCount)
+void check_assignment(ASTNode* root, int* errorCount)
 {
     if (!root) return;
-    SymbolTable* currentScope = getClosestScope(root);
+    SymbolTable* currentScope = get_closest_scope(root);
 
     if (root->lable && strcmp(root->lable, "AssignmentStatement") == 0) {
         ASTNode* varNode = root->children[0]; 
         ASTNode* exprNode = root->children[2]; 
         // look up var
-        SymbolEntry* varEntry = lookUpSymbol(varNode->token->lexeme, currentScope);
+        SymbolEntry* varEntry = lookup_symbol(varNode->token->lexeme, currentScope);
         if (!varEntry) {
             // undeclared var, already caught in identifier checks
             return;
@@ -382,30 +382,30 @@ void checkAssignment(ASTNode* root, int* errorCount)
         // get op 
         const char* assignOp = root->children[1]->token->lexeme;
         // check the expr type
-        Type exprType = checkExprType(exprNode);
-        handleInvalidExpr(exprType, varNode->token->tokenRow, errorCount);
+        Type exprType = check_expr_type(exprNode);
+        handle_invalid_expr(exprType, varNode->token->tokenRow, errorCount);
         // all types can use =
         if (strcmp(assignOp, "=") == 0) {
             // check that the expr type matches
             if (exprType != TYPE_ERROR && exprType != varEntry->type) {
-                output_error(SEMANTIC, "Error: Cannot assign value of type '%s' to variable '%s' of type '%s' at line %d\n", convertTypeToString(exprType), varNode->token->lexeme, convertTypeToString(varEntry->type), varNode->token->tokenRow);
+                output_error(SEMANTIC, "Error: Cannot assign value of type '%s' to variable '%s' of type '%s' at line %d\n", convert_type_to_string(exprType), varNode->token->lexeme, convert_type_to_string(varEntry->type), varNode->token->tokenRow);
                 (*errorCount)++;
             }
         }
         // only int can use += *= /= -=
-        else if (isIntOperator(assignOp)) {
+        else if (is_int_Operator(assignOp)) {
             if (varEntry->type != TYPE_INT) {
                 output_error(SEMANTIC, "Error: Operator '%s' cannot be used with non-integer variable '%s' at line %d\n", assignOp, varNode->token->lexeme, varNode->token->tokenRow);
                 (*errorCount)++;
             }
             if (exprType != TYPE_INT) {
-                output_error(SEMANTIC, "Error: Operator '%s' cannot be used with non-integer expression of type '%s' at line %d\n", assignOp, convertTypeToString(exprType), getExprLine(exprNode));
+                output_error(SEMANTIC, "Error: Operator '%s' cannot be used with non-integer expression of type '%s' at line %d\n", assignOp, convert_type_to_string(exprType), get_expr_line(exprNode));
                 (*errorCount)++;
             }
         }
     }
     // go over children
-    traverseChildren(root, checkAssignment, errorCount);
+    traverse_children(root, check_assignment, errorCount);
 }
 
 /// <summary>
@@ -413,7 +413,7 @@ void checkAssignment(ASTNode* root, int* errorCount)
 /// </summary>
 /// <param name="node"></param>
 /// <returns>Returns 1 if found call func 0 if not</returns>
-static int containsFuncCall(ASTNode* node) {
+static int contains_func_call(ASTNode* node) {
     if (!node) return 0;
 
     if (node->lable && strcmp(node->lable, "FuncCallExpr") == 0) {
@@ -421,7 +421,7 @@ static int containsFuncCall(ASTNode* node) {
     }
 
     for (int i = 0; i < node->childCount; i++) {
-        if (containsFuncCall(node->children[i])) {
+        if (contains_func_call(node->children[i])) {
             return 1;
         }
     }
@@ -435,7 +435,7 @@ static int containsFuncCall(ASTNode* node) {
 /// </summary>
 /// <param name="root"></param>
 /// <param name="errorCount"></param>
-void checkGlobalInitExprs(ASTNode* root, int* errorCount) {
+void check_global_init_exprs(ASTNode* root, int* errorCount) {
     if (!root) return;
     // get global sym table
     SymbolTable* scope = root->scope;
@@ -447,8 +447,8 @@ void checkGlobalInitExprs(ASTNode* root, int* errorCount) {
             // get expr
             ASTNode* exprNode = node->children[3]; 
             // check for func call
-            if (containsFuncCall(exprNode)) {
-                int line = getExprLine(exprNode);
+            if (contains_func_call(exprNode)) {
+                int line = get_expr_line(exprNode);
                 output_error(SEMANTIC, "Error: Global variable '%s' initialized with a function call at line %d. Only constant expressions are allowed.\n", node->children[1]->token->lexeme, line);
                 (*errorCount)++;
             }
@@ -464,19 +464,19 @@ void checkGlobalInitExprs(ASTNode* root, int* errorCount) {
 void analyze(ASTNode* root, int* errorCount) 
 {
     // check all identifiers
-    resolveIdentifiers(root, errorCount);
+    resolve_identifiers(root, errorCount);
     // check that there is a main func
-    checkMain(root, errorCount);
+    check_main(root, errorCount);
     // check that there is a return statement in every function and check the return types
-    checkReturn(root, errorCount);
+    check_return(root, errorCount);
     // check that the while and if expr are bool
-    checkBoolExprTypes(root, errorCount);
+    check_bool_expr_types(root, errorCount);
     // check the function calls, correct types and number of params
-    checkFunctionCalls(root, errorCount);
+    check_function_calls(root, errorCount);
     // check the types of the vars
-    checkTypes(root, errorCount);
+    check_types(root, errorCount);
     // check types in remold 
-    checkAssignment(root, errorCount);
+    check_assignment(root, errorCount);
     // check that global vars only have constant expr
-    checkGlobalInitExprs(root, errorCount);
+    check_global_init_exprs(root, errorCount);
 }

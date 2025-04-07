@@ -6,7 +6,7 @@
 #include <string.h>
 
 
-int countTokens(const char* rhs) {
+int count_tokens(const char* rhs) {
     int token_count = 1; // At least one token exists
     for (int i = 0; rhs[i] != '\0'; i++) {
         if (isspace(rhs[i])) {
@@ -24,7 +24,7 @@ int countTokens(const char* rhs) {
 /// <param name="index"></param>
 /// <param name="leftRule"></param>
 /// <param name="rightRule"></param>
-void InsertRule(GrammarArray* grammar, int index, const char* leftRule, const char* rightRule) {
+void insert_rule(GrammarArray* grammar, int index, const char* leftRule, const char* rightRule) {
 	grammar->rules[index] = (GrammarRule*)malloc(sizeof(GrammarRule));
 	if (!grammar->rules[index]) {
 		fprintf(stderr, "Failed to allocate GrammarRule\n");
@@ -32,7 +32,7 @@ void InsertRule(GrammarArray* grammar, int index, const char* leftRule, const ch
 	}
 	grammar->rules[index]->leftRule = strdup(leftRule);
 	grammar->rules[index]->rightRule = strdup(rightRule);
-    grammar->rules[index]->rightWordCount = countTokens(rightRule);
+    grammar->rules[index]->rightWordCount = count_tokens(rightRule);
 }
 
 /// <summary>
@@ -40,7 +40,7 @@ void InsertRule(GrammarArray* grammar, int index, const char* leftRule, const ch
 /// </summary>
 /// <param name="filename"></param>
 /// <returns>Returns a grammar array</returns>
-GrammarArray* InitGrammarArray(const char* filename) {
+GrammarArray* init_grammar_array(const char* filename) {
 	// malloc the main struct
 	GrammarArray* grammar = (GrammarArray*)malloc(sizeof(GrammarArray));
 	if (!grammar) {
@@ -56,7 +56,7 @@ GrammarArray* InitGrammarArray(const char* filename) {
 	}
     grammar->count = 0;
 	// setup the rules into the array
-    char* buffer = readFile(filename);
+    char* buffer = read_file(filename);
     if (!buffer) {
         fprintf(stderr, "Failed to read file: %s\n", filename);
         free(grammar->rules);
@@ -84,7 +84,7 @@ GrammarArray* InitGrammarArray(const char* filename) {
         char* left = trim(line);
         char* right = trim(arrowPos + 2);
         // insert the rule
-        InsertRule(grammar, grammar->count, left, right);
+        insert_rule(grammar, grammar->count, left, right);
         grammar->count++;
         // get next line
         line = strtok(NULL, "\n");
@@ -98,7 +98,7 @@ GrammarArray* InitGrammarArray(const char* filename) {
 /// This func is used to free all the allocated memory of a given grammar array
 /// </summary>
 /// <param name="grammar"></param>
-void FreeGrammarArray(GrammarArray* grammar) {
+void free_grammar_array(GrammarArray* grammar) {
 	for (int i = 0; i < grammar->count; i++) {
 		if (grammar->rules[i]) {
 			free(grammar->rules[i]->leftRule);
@@ -114,7 +114,7 @@ void FreeGrammarArray(GrammarArray* grammar) {
 /// This is a debug func used to print a given grammar
 /// </summary>
 /// <param name="grammar"></param>
-void PrintGrammarRules(GrammarArray* grammar) {
+void print_grammar_rules(GrammarArray* grammar) {
     if (!grammar) {
         printf("GrammarArray is NULL.\n");
         return;

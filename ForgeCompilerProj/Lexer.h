@@ -65,7 +65,7 @@ void init_state_machine(HashMap** map);
 // func that preforms the lexing
 void lex(HashMap* map, char* input, pTokenArray ptoken_array, int* errorCount);
 // func that will identifiy the keywords
-TokenType identifyKeyowrd(char* lexeme);
+TokenType identify_keyowrd(char* lexeme);
 // func that will identify the token type
 TokenType state_to_token_type(State state, char* value);
 

@@ -3,17 +3,24 @@
 mold int test = 4;
 mold string test2 = "Hello world";
 
-forge Main3(string number) => string 
+forge Fac(int number) => int 
 {
-	input(number);
-	return "number";
+	## Test comment
+	if meet (number == 1) then
+	{
+		return 1;
+	}
+	return number * Fac(number - 1);
 }
+
 
 
 
 forge Main() => void 
 {
-	remold test2 = Main3(test2);
-	## output(Main2(test));
-	output(test2);
+	mold int test = 0;
+	output("Please enter a number");
+	input(test);
+	output("The factorial of the number you entered is");
+	output(Fac(test));
 }

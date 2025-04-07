@@ -73,8 +73,8 @@ void gen_statment(ASTNode* node, HashMap* stringTable)
 /// <param name="stringTable"></param>
 static void gen_var_dec(ASTNode* node, HashMap* stringTable)
 {
-    SymbolTable* currentScope = getClosestScope(node);
-    SymbolEntry* entry = lookUpSymbol(node->children[1]->token->lexeme, currentScope);
+    SymbolTable* currentScope = get_closest_scope(node);
+    SymbolEntry* entry = lookup_symbol(node->children[1]->token->lexeme, currentScope);
     if (entry->place != IS_LOCAL) return;
 
     // generate the expression (r1 will hold the result)
@@ -95,8 +95,8 @@ static void gen_assignment_dec(ASTNode* node, HashMap* stringTable)
     gen_expr(node->children[2], stringTable);
     int r1 = node->children[2]->reg;
 
-    SymbolTable* currentScope = getClosestScope(node);
-    SymbolEntry* entry = lookUpSymbol(node->children[0]->token->lexeme, currentScope);
+    SymbolTable* currentScope = get_closest_scope(node);
+    SymbolEntry* entry = lookup_symbol(node->children[0]->token->lexeme, currentScope);
     // "+=", "-=", "*=", "/=", "="
     const char* assignOp = node->children[1]->lable; 
     // go over the table and match the handler
@@ -177,7 +177,7 @@ void gen_while_statement(ASTNode* node, HashMap* stringTable) {
 /// </summary>
 /// <param name="node"></param>
 /// <returns></returns>
-ASTNode* getEnclosingFunction(ASTNode* node) {
+ASTNode* get_enclosing_function(ASTNode* node) {
     while (node) {
         if (strcmp(node->lable, "FuncDeclaration") == 0)
             return node;
@@ -195,7 +195,7 @@ ASTNode* getEnclosingFunction(ASTNode* node) {
 void gen_return_statement(ASTNode* node, HashMap* stringTable)
 {
     // get the main func node
-    ASTNode* funcNode = getEnclosingFunction(node);
+    ASTNode* funcNode = get_enclosing_function(node);
     // get the func name
     const char* funcName = funcNode->children[0]->token->lexeme;
     // no return data ( void func )
@@ -209,10 +209,10 @@ void gen_return_statement(ASTNode* node, HashMap* stringTable)
     // move return data to rax
     insert_line("mov rax, %s\n", scratch_name(r));  
     // if the return is a local string then copy to global buffer
-    if (node->childCount == 1 && node->children[0]->token->type == IDENTIFIER)
+    if (node->childCount == 1 && node->children[0]->token && node->children[0]->token->type == IDENTIFIER)
     {
-        SymbolTable* scope = getClosestScope(node);
-        SymbolEntry* entry = lookUpSymbol(node->children[0]->token->lexeme, scope);
+        SymbolTable* scope = get_closest_scope(node);
+        SymbolEntry* entry = lookup_symbol(node->children[0]->token->lexeme, scope);
         if (entry->type == TYPE_STRING) 
         {
             // copy the string into the global buffer
@@ -310,7 +310,7 @@ static void gen_output_call(ASTNode* node, HashMap* stringTable)
     // get the reg
     int reg = node->children[1]->reg;
     // move the val into rcx
-    Type exprType = checkExprType(node->children[1]);
+    Type exprType = check_expr_type(node->children[1]);
     gen_caller_pushes();
     insert_line("mov rdx, %s\n", scratch_name(reg));
     // call the correct print func based on type
@@ -343,9 +343,9 @@ static void gen_input_call(ASTNode* node, HashMap* stringTable)
     // get the reg
     int reg = node->children[1]->reg;
     // get the var type
-    Type exprType = checkExprType(node->children[1]);
-    SymbolTable* scope = getClosestScope(node);
-    SymbolEntry* entry = lookUpSymbol(node->children[1]->token->lexeme, scope);
+    Type exprType = check_expr_type(node->children[1]);
+    SymbolTable* scope = get_closest_scope(node);
+    SymbolEntry* entry = lookup_symbol(node->children[1]->token->lexeme, scope);
     // push caller registers
     gen_caller_pushes();
     // check for bool or int

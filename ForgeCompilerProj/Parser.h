@@ -13,10 +13,10 @@ typedef struct MapKey {
 
 
 // func for init of action table from file
-void InitActionTable(HashMap** map, char* filename);
+void init_action_table(HashMap** map, char* filename);
 // func for init of goto table from file
-void InitGotoTable(HashMap** map, char* filename);
+void init_goto_table(HashMap** map, char* filename);
 // main parse function
-ASTNode* ParseInput(pTokenArray tokenArray, int* errorCount);
+ASTNode* parse(pTokenArray tokenArray, int* errorCount);
 
 #endif

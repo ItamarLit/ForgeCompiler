@@ -92,7 +92,7 @@ const char* symbol_codegen(SymbolEntry* s)
 		sprintf(str, "[rbp + %d]", s->offset);
 		break;
 	case IS_REG:
-		sprintf(str, "%s", getParamReg(s->offset));
+		sprintf(str, "%s", get_param_reg(s->offset));
 		break;
 	default:
 		printf("Invalid place of entry in symbol table");
@@ -105,7 +105,7 @@ const char* symbol_codegen(SymbolEntry* s)
 /// <summary>
 /// This func will create the asm file 
 /// </summary>
-void createAsmFile(char* path, int flag) 
+void create_asm_file(char* path, int flag) 
 {
 	FILE* out = fopen(path, "w");
 	if (!out) {
@@ -122,7 +122,7 @@ void createAsmFile(char* path, int flag)
 /// </summary>
 /// <param name="offset"></param>
 /// <returns>Returns a name</returns>
-char* getParamReg(int offset) {
+char* get_param_reg(int offset) {
 	return paramRegisterNames[offset];
 }
 

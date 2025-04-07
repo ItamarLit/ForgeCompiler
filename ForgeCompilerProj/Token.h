@@ -73,16 +73,16 @@ typedef struct {
 }TokenArray, * pTokenArray;
 
 // function to add a token to an arr of tokens 
-void addToken(pTokenArray* ptoken_array, TokenType token_type, const char* lexeme, int row, int col);
+void add_token(pTokenArray* ptoken_array, TokenType token_type, const char* lexeme, int row, int col);
 // func that prints the tokens
-void printTokens(pTokenArray ptoken_array);
+void print_tokens(pTokenArray ptoken_array);
 // func that creates a token arr in the heap
-Token** createTokens(int size);
+Token** create_tokens(int size);
 // func that will enlarge the token arr
-void resizeTokenArr(pTokenArray* ptoken_array);
+void resize_token_arr(pTokenArray* ptoken_array);
 // func to set a new TokenArray
-void initTokenArray(pTokenArray* ptoken_array);
+void init_token_array(pTokenArray* ptoken_array);
 // free the token array struct
-void freeTokenArray(pTokenArray* ptoken_array);
+void free_token_array(pTokenArray* ptoken_array);
 
 #endif

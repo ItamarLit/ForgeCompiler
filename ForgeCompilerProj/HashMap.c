@@ -6,14 +6,14 @@
 /// <param name="key"></param>
 /// <param name="map"></param>
 /// <returns>The func will return a value or Null </returns>
-void* getHashMapValue(void* key, HashMap* map)
+void* get_hashmap_value(void* key, HashMap* map)
 {
 	// Get the hashcode for the key
-	unsigned long hashCode = map->HashFunc(key, map->map_size);
+	unsigned long hashCode = map->hash_func(key, map->map_size);
 	HashNode* current = map->arr[hashCode];
 	// Go over the linked list until we find the same key
 	while (current != NULL) {
-		if (map->EqualFunc(key, current->key)) {
+		if (map->equal_func(key, current->key)) {
 			return current->value;  
 		}
 		current = current->next;
@@ -27,15 +27,16 @@ void* getHashMapValue(void* key, HashMap* map)
 /// <param name="key"></param>
 /// <param name="value"></param>
 /// <param name="map"></param>
-void insertNewValue(void* key, void* value, HashMap* map)
+void insert_new_value(void* key, void* value, HashMap* map)
 {
 	// get the hashcode
-	unsigned long hashCode = map->HashFunc(key, map->map_size);
+	unsigned long hashCode = map->hash_func(key, map->map_size);
 	HashNode* current = map->arr[hashCode];
 	// check if the key exists
 	while (current) {
-		if (map->EqualFunc(current->key, key)) {
+		if (map->equal_func(current->key, key)) {
 			// overite the value if found key
+			map->FreeValue(current->value);
 			current->value = value;
 			return; 
 		}
@@ -45,12 +46,12 @@ void insertNewValue(void* key, void* value, HashMap* map)
 	if (!map->arr[hashCode])
 		map->usedSpaces++;
 	// no key found, need new node
-	HashNode* node = getHashNode(key, value);
+	HashNode* node = get_hash_node(key, value);
 	node->next = map->arr[hashCode];
 	map->arr[hashCode] = node;
 	// resize map if needed
 	if ((float)map->usedSpaces / map->map_size >= map->load_factor) {
-		resizeMap(map);
+		resize_map(map);
 	}
 }
 
@@ -60,7 +61,7 @@ void insertNewValue(void* key, void* value, HashMap* map)
 /// <param name="key"></param>
 /// <param name="value"></param>
 /// <returns>Returns a HashNode* or Null if it wasnt able to allocate memory</returns>
-HashNode* getHashNode(void* key, void* value) 
+HashNode* get_hash_node(void* key, void* value) 
 {
 	HashNode* node = (HashNode*)malloc(sizeof(HashNode));
 	if (!node) {
@@ -78,11 +79,11 @@ HashNode* getHashNode(void* key, void* value)
 /// This func inits the starting hashmap, it creates a hashmap based on a specific size and also sets the hash and equals func
 /// </summary>
 /// <param name="size"></param>
-/// <param name="HashFunc"></param>
-/// <param name="EqualFunc"></param>
+/// <param name="hash_func"></param>
+/// <param name="equal_func"></param>
 /// <returns>Returns a pointer to a new hashmap or NULL if it wasnt able to allocate memory</returns>
-HashMap* initHashMap(int size, unsigned long (*HashFunc)(void*, int), int (*EqualFunc)(void*, void*),
-	void (*PrintKey)(void*), void (*PrintValue)(void*), void (*FreeKey)(void*), void (*FreeValue)(void*))
+HashMap* init_hashmap(int size, unsigned long (*hash_func)(void*, int), int (*equal_func)(void*, void*),
+	void (*print_key)(void*), void (*print_value)(void*), void (*free_key)(void*), void (*FreeValue)(void*))
 {
 	// create the map
 	HashMap* map = (HashMap*)malloc(sizeof(HashMap));
@@ -101,12 +102,12 @@ HashMap* initHashMap(int size, unsigned long (*HashFunc)(void*, int), int (*Equa
 	map->map_size = size;
 	map->load_factor = 0.75f;
 	map->usedSpaces = 0;
-	map->HashFunc = HashFunc;
-	map->EqualFunc = EqualFunc;
-	map->FreeKey = FreeKey;
+	map->hash_func = hash_func;
+	map->equal_func = equal_func;
+	map->free_key = free_key;
 	map->FreeValue = FreeValue;
-	map->PrintKey = PrintKey;
-	map->PrintValue = PrintValue;
+	map->print_key = print_key;
+	map->print_value = print_value;
 	return map;
 }
 
@@ -114,7 +115,7 @@ HashMap* initHashMap(int size, unsigned long (*HashFunc)(void*, int), int (*Equa
 /// This func will free the hashmap and all of the pointers in it
 /// </summary>
 /// <param name="map"></param>
-void freeHashMap(HashMap** map) {
+void free_hashmap(HashMap** map) {
 	// check if we need to free anything
 	if (map == NULL || *map == NULL) {
 		return;
@@ -127,7 +128,7 @@ void freeHashMap(HashMap** map) {
 			HashNode* temp = currentHead;
 			currentHead = currentHead->next;
 			// free the pointers to the data
-			(*map)->FreeKey(temp->key);
+			(*map)->free_key(temp->key);
 			(*map)->FreeValue(temp->value);
 			// free the node itself
 			free(temp);
@@ -148,7 +149,7 @@ void freeHashMap(HashMap** map) {
 /// This func is used to resize the hashmap
 /// </summary>
 /// <param name="map"></param>
-void resizeMap(HashMap* map) {
+void resize_map(HashMap* map) {
 	// save old data
 	int oldSize = map->map_size;
 	HashNode** oldArr = map->arr;
@@ -166,7 +167,7 @@ void resizeMap(HashMap* map) {
 		while (current != NULL) {
 			HashNode* nextNode = current->next;
 			// reinsert the hash nodes
-			insertNewValue(current->key, current->value, map);
+			insert_new_value(current->key, current->value, map);
 			// free the current node
 			free(current);
 			current = nextNode;
@@ -180,7 +181,7 @@ void resizeMap(HashMap* map) {
 /// This is a print function for the hashmap
 /// </summary>
 /// <param name="map"></param>
-void printHashMap(HashMap* map) {
+void print_hashmap(HashMap* map) {
 	if (map == NULL) {
 		printf("HashMap is NULL.\n");
 		return;
@@ -193,8 +194,8 @@ void printHashMap(HashMap* map) {
 			HashNode* current = map->arr[i];
 			
 			while (current != NULL) {
-				map->PrintKey(current->key);
-				map->PrintValue(current->value);
+				map->print_key(current->key);
+				map->print_value(current->value);
 				current = current->next;
 			}
 			printf("-> NULL");

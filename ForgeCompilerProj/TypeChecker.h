@@ -27,7 +27,7 @@ typedef struct {
 
 
 // this func is used to check the type of any given expression
-Type checkExprType(ASTNode* exprRoot);
+Type check_expr_type(ASTNode* exprRoot);
 
 
 #endif 

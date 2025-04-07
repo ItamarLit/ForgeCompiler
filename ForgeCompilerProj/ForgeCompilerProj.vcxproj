@@ -177,6 +177,9 @@
     <ClCompile Include="TypeChecker.c" />
     <ClCompile Include="Types.c" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="t.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

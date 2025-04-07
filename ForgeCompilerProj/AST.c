@@ -14,7 +14,7 @@ static const char* REDUNDANT_NODES[] = {
 
 const int REDUNDANT_NODE_COUNT = sizeof(REDUNDANT_NODES) / sizeof(REDUNDANT_NODES[0]);
 
-int isRedundantNode(const char* label) {
+int is_redundant_node(const char* label) {
     for (int i = 0; i < REDUNDANT_NODE_COUNT; i++) {
         if (strcmp(label, REDUNDANT_NODES[i]) == 0) {
             return 1; 
@@ -29,7 +29,7 @@ int isRedundantNode(const char* label) {
 /// <param name="children"></param>
 /// <param name="childCount"></param>
 /// <returns> Returns a pointer to the newly created ast node </returns>
-ASTNode* createASTNode(Token* token, const char* lable) {
+ASTNode* create_AST_node(Token* token, const char* lable) {
     ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
     if (!node) {
         fprintf(stderr, "Failded to malloc memory for AST node");
@@ -43,7 +43,7 @@ ASTNode* createASTNode(Token* token, const char* lable) {
     return node;
 }
 
-void addChild(ASTNode* child, ASTNode* parent) {
+void add_child(ASTNode* child, ASTNode* parent) {
     // alocate the array of pointers of children
     ASTNode** temp = (ASTNode**)realloc(parent->children, sizeof(ASTNode*) * (parent->childCount + 1));
     if (!temp) 
@@ -62,16 +62,16 @@ void addChild(ASTNode* child, ASTNode* parent) {
 /// This function gets an AST node and frees it including freeing its children, but it doesnt touch the tokens
 /// </summary>
 /// <param name="node"></param>
-void freeASTNode(ASTNode* node) {
+void free_AST_node(ASTNode* node) {
     if (node == NULL) {
         return;
     }
     // free all the children using recursion
     for (int i = 0; i < node->childCount; i++) {
-        freeASTNode(node->children[i]);
+        free_AST_node(node->children[i]);
     }
     if (node->scope) {
-        freeHashMap(&(node->scope->table));
+        free_hashmap(&(node->scope->table));
         free(node->scope);
     }
     // free the array of pointers
@@ -82,7 +82,7 @@ void freeASTNode(ASTNode* node) {
     free(node);
 }
 
-void printAST(ASTNode* root, int tabcount) 
+void print_AST(ASTNode* root, int tabcount) 
 {
     if (root == NULL) {
         return;
@@ -98,7 +98,7 @@ void printAST(ASTNode* root, int tabcount)
         printf("%s\n", root->lable);
     }
     for (int i = 0; i < root->childCount; i++) {
-        printAST(root->children[i], tabcount + 1);
+        print_AST(root->children[i], tabcount + 1);
     }
 }
 
@@ -106,7 +106,7 @@ void printAST(ASTNode* root, int tabcount)
 /// This is a helper function that removes now NULL children from the array
 /// </summary>
 /// <param name="node"></param>
-void removeNullChildren(ASTNode* node) {
+void remove_null_children(ASTNode* node) {
     int newCount = 0;
     for (int i = 0; i < node->childCount; i++) {
         if (node->children[i] != NULL) {
@@ -120,20 +120,20 @@ void removeNullChildren(ASTNode* node) {
 /// This is a helper function that compresses children of a given node
 /// </summary>
 /// <param name="node"></param>
-void recursivelyCompressChildren(ASTNode* node) {
+void recursively_compress_children(ASTNode* node) {
     for (int i = 0; i < node->childCount; i++) {
-        node->children[i] = compressAST(node->children[i]);
+        node->children[i] = compress_AST(node->children[i]);
         if (node->children[i]) {
             node->children[i]->parent = node; 
         }
     }
-    removeNullChildren(node);
+    remove_null_children(node);
 }
 
-ASTNode* removeRedundantLabeledNode(ASTNode* node) {
+ASTNode* remove_redundant_labeled_node(ASTNode* node) {
     if (!node) return NULL;
 
-    if (node->token && isRedundantNode(node->token->lexeme)) {
+    if (node->token && is_redundant_node(node->token->lexeme)) {
         // if node has no children just free it
         if (node->childCount == 0) {
             free(node->children);
@@ -151,7 +151,7 @@ ASTNode* removeRedundantLabeledNode(ASTNode* node) {
 /// </summary>
 /// <param name="node"></param>
 /// <param name="targetLabel"></param>
-void mergeNestedLists(ASTNode* node, const char* targetLabel) {
+void merge_nested_lists(ASTNode* node, const char* targetLabel) {
     // check if the node has the targetLable
     if (node->lable && strcmp(node->lable, targetLabel) == 0) {
         // create a merged node arr
@@ -214,7 +214,7 @@ void mergeNestedLists(ASTNode* node, const char* targetLabel) {
     }
 }
 
-int isKeptSingleNode(const char* label) {
+int is_kept_single_node(const char* label) {
     const char* singles[] = {
         "Block", "ReturnStatement",  "ParamList", "ArgumentList",
         "GlobalItemList", "OptionalElse", "StatementList", "FuncCallExpr",
@@ -225,7 +225,7 @@ int isKeptSingleNode(const char* label) {
     return 0;
 }
 
-int isKeptEmptyNode(const char* label) {
+int is_kept_empty_node(const char* label) {
     const char* empties[] = { "Block", "ParamList", "ArgumentList", "ReturnStatement" };
     for (int i = 0; i < sizeof(empties) / sizeof(empties[0]); i++) {
         if (strcmp(label, empties[i]) == 0) return 1;
@@ -238,17 +238,17 @@ int isKeptEmptyNode(const char* label) {
 /// </summary>
 /// <param name="node"></param>
 /// <returns>Returns an abstract syntax tree</returns>
-ASTNode* compressAST(ASTNode* node)
+ASTNode* compress_AST(ASTNode* node)
 {
     // check if node is null
     if (!node) return NULL;
 
-    recursivelyCompressChildren(node);
+    recursively_compress_children(node);
 
     // remove nodes with no children
     if (node->token == NULL && node->childCount == 0) {
         // keep these
-        if (isKeptEmptyNode(node->lable)) return node;
+        if (is_kept_empty_node(node->lable)) return node;
 
         free(node->children);
         free(node->lable);
@@ -258,7 +258,7 @@ ASTNode* compressAST(ASTNode* node)
     // flatten the nodes with no token but with 1 child
     if (node->token == NULL && node->childCount == 1) {
         // keep these
-        if (isKeptSingleNode(node->lable)) return node;
+        if (is_kept_single_node(node->lable)) return node;
 
         ASTNode* child = node->children[0];
         // update parent pointer
@@ -269,14 +269,14 @@ ASTNode* compressAST(ASTNode* node)
         return child;
         
     }
-    node = removeRedundantLabeledNode(node);
+    node = remove_redundant_labeled_node(node);
     if (!node) return NULL;
 
     // merge all the nested lists
-    mergeNestedLists(node, "GlobalItemList");
-    mergeNestedLists(node, "StatementList");
-    mergeNestedLists(node, "ParamList");
-    mergeNestedLists(node, "ArgumentList");
+    merge_nested_lists(node, "GlobalItemList");
+    merge_nested_lists(node, "StatementList");
+    merge_nested_lists(node, "ParamList");
+    merge_nested_lists(node, "ArgumentList");
 
     return node;
 }
@@ -285,12 +285,12 @@ ASTNode* compressAST(ASTNode* node)
 /// This func is used to normalize the AST (add the missing control nodes back)
 /// </summary>
 /// <param name="node"></param>
-void normalizeAST(ASTNode* node) {
+void normalize_AST(ASTNode* node) {
     if (!node) return;
     // make sure func dec has a paramList node at index 1 
     if (strcmp(node->lable, "FuncDeclaration") == 0 && strcmp(node->children[1]->lable, "ParamList") != 0) {
         // create an empty paramlist node
-        ASTNode* emptyParamList = createASTNode(NULL, "ParamList");
+        ASTNode* emptyParamList = create_AST_node(NULL, "ParamList");
         // move the children forward
         ASTNode** tempChildren = (ASTNode**)realloc(node->children, sizeof(ASTNode*) * (node->childCount + 1));
         if (!tempChildren) {
@@ -309,7 +309,7 @@ void normalizeAST(ASTNode* node) {
     // make sure func calls have an argument list at node 1
     else if (strcmp(node->lable, "FuncCallExpr") == 0 && (node->childCount < 2 || strcmp(node->children[1]->lable, "ArgumentList") != 0)) {
         // create an empty argument list node
-        ASTNode* emptyArgList = createASTNode(NULL, "ArgumentList");
+        ASTNode* emptyArgList = create_AST_node(NULL, "ArgumentList");
         // move the children forward
         ASTNode** tempChildren = (ASTNode**)realloc(node->children, sizeof(ASTNode*) * (node->childCount + 1));
         if (!tempChildren) {
@@ -328,7 +328,7 @@ void normalizeAST(ASTNode* node) {
     // make sure the block has a statement list node
     else if (strcmp(node->lable, "Block") == 0 && (node->childCount == 0 || strcmp(node->children[0]->lable, "StatementList") != 0)) {
         // create an empty statement list node
-        ASTNode* emptyStmtList = createASTNode(NULL, "StatementList");
+        ASTNode* emptyStmtList = create_AST_node(NULL, "StatementList");
         // move the children forward
         ASTNode** tempChildren = (ASTNode**)realloc(node->children, sizeof(ASTNode*) * (node->childCount + 1));
         if (!tempChildren) {
@@ -347,7 +347,7 @@ void normalizeAST(ASTNode* node) {
 
     // go over all the AST
     for (int i = 0; i < node->childCount; i++) {
-        normalizeAST(node->children[i]);
+        normalize_AST(node->children[i]);
     }
 }
 
@@ -357,7 +357,7 @@ void normalizeAST(ASTNode* node) {
 /// </summary>
 /// <param name="node"></param>
 /// <returns></returns>
-int evaluateExpr(ASTNode* node) {
+int evaluate_expr(ASTNode* node) {
     if (!node) return 0;
 
     // literal
@@ -369,21 +369,21 @@ int evaluateExpr(ASTNode* node) {
     // check if it is an AddExpr
     if (strcmp(label, "AddExpr") == 0) {
         return node->children[1]->token->lexeme[0] == '+'
-            ? evaluateExpr(node->children[0]) + evaluateExpr(node->children[2])
-            : evaluateExpr(node->children[0]) - evaluateExpr(node->children[2]);
+            ? evaluate_expr(node->children[0]) + evaluate_expr(node->children[2])
+            : evaluate_expr(node->children[0]) - evaluate_expr(node->children[2]);
     }
     // check if it is a MulExpr
     if (strcmp(label, "MulExpr") == 0) {
         return node->children[1]->token->lexeme[0] == '*'
-            ? evaluateExpr(node->children[0]) * evaluateExpr(node->children[2])
-            : evaluateExpr(node->children[0]) / evaluateExpr(node->children[2]);
+            ? evaluate_expr(node->children[0]) * evaluate_expr(node->children[2])
+            : evaluate_expr(node->children[0]) / evaluate_expr(node->children[2]);
     }
     // check if it is a unary Expr
     if (strcmp(label, "UnaryExpr") == 0 && node->childCount == 2) {
-        return -evaluateExpr(node->children[1]);
+        return -evaluate_expr(node->children[1]);
     }
     // the child node is an Expr node
-    return evaluateExpr(node->children[0]);
+    return evaluate_expr(node->children[0]);
 }
 
 
@@ -391,7 +391,7 @@ int evaluateExpr(ASTNode* node) {
 /// This func reduces the global vars to just values, ie no expressions
 /// </summary>
 /// <param name="globalItemList"></param>
-void reduceGlobalVars(ASTNode* globalItemList) {
+void reduce_global_vars(ASTNode* globalItemList) {
     // go over all the children
     SymbolTable* scope = globalItemList->scope;
 
@@ -402,13 +402,13 @@ void reduceGlobalVars(ASTNode* globalItemList) {
         {
             // get the expr
             ASTNode* exprNode = varDecl->children[3];
-            SymbolEntry* entry = lookUpSymbol(varDecl->children[1]->token->lexeme, scope);
+            SymbolEntry* entry = lookup_symbol(varDecl->children[1]->token->lexeme, scope);
             if (entry->type == TYPE_INT) {
                 // eval
-                int value = evaluateExpr(exprNode);
+                int value = evaluate_expr(exprNode);
                 // replace old nodes
                 varDecl->children[3] = NULL;
-                freeASTNode(exprNode);
+                free_AST_node(exprNode);
                 // create new node
                 char buffer[32];
                 sprintf(buffer, "%d", value);
@@ -423,7 +423,7 @@ void reduceGlobalVars(ASTNode* globalItemList) {
                 strcpy(valueToken->lexeme, buffer);
                 valueToken->tokenRow = 0;
                 valueToken->tokenCol = 0;
-                ASTNode* constantNode = createASTNode(valueToken, "Const");
+                ASTNode* constantNode = create_AST_node(valueToken, "Const");
                 // insert new node
                 varDecl->children[3] = constantNode;
                 constantNode->parent = varDecl;

@@ -12,7 +12,7 @@ typedef enum {
 } Type;
 
 // this func is used to convert strings into Types
-Type convertStringType(char* stringType);
+Type convert_string_type(char* stringType);
 // this func is used to convert types into strings
-const char* convertTypeToString(Type type);
+const char* convert_type_to_string(Type type);
 #endif

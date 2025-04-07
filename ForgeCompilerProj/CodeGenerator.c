@@ -12,7 +12,7 @@
 #include "HelperFunctionsCodeGen.h"
 
 void gen_function(ASTNode* node, HashMap* stringTable);
-void gen_readOnly_data(HashMap* stringTable);
+void gen_readonly_data(HashMap* stringTable);
 
 
 /// <summary>
@@ -24,7 +24,7 @@ void gen_data_seg(ASTNode* root, HashMap* stringTable)
 	// gen the lable
     insert_line(".data\n");
     // gen read only vars
-    gen_readOnly_data(stringTable);
+    gen_readonly_data(stringTable);
     if (!root) return;
     // get the global symb table
     SymbolTable* scope = root->scope;
@@ -36,7 +36,7 @@ void gen_data_seg(ASTNode* root, HashMap* stringTable)
             ASTNode* nameNode = node->children[1];
             char* name = nameNode->token->lexeme;
             // get the symbol table entry
-            SymbolEntry* entry = lookUpSymbol(name, scope);
+            SymbolEntry* entry = lookup_symbol(name, scope);
             switch (entry->type)
             {
                 case TYPE_INT:
@@ -45,13 +45,13 @@ void gen_data_seg(ASTNode* root, HashMap* stringTable)
                 case TYPE_STRING:
                     // strings will refrence the string in the read only seg originaly but creat buffer if need to change them
                     insert_line("%s_buffer db 64 dup(0)\n", entry->name);
-                    insert_line("%s dq offset %s\n", entry->name, lookUpString(node->children[3]->token->lexeme, stringTable));
+                    insert_line("%s dq offset %s\n", entry->name, look_up_string(node->children[3]->token->lexeme, stringTable));
                     break;
                 case TYPE_BOOL:
                     insert_line("%s dq %s\n", entry->name, strcmp(node->children[3]->token->lexeme, "true")  == 0 ? "1" : "0");
                     break;
                 default:
-                    insert_line("Invalid global var type: %s\n", convertTypeToString(entry->type));
+                    insert_line("Invalid global var type: %s\n", convert_type_to_string(entry->type));
                     break;
             }
         }
@@ -63,7 +63,7 @@ void gen_data_seg(ASTNode* root, HashMap* stringTable)
 /// This func will gen the read only string literals that appear in the src code along with needed strings for the compiling process
 /// </summary>
 /// <param name="stringTable"></param>
-void gen_readOnly_data(HashMap* stringTable) {
+void gen_readonly_data(HashMap* stringTable) {
     int index;
     for (index = 0; index < stringTable->map_size; index++) {
         if (stringTable->arr[index] != NULL) {
@@ -81,7 +81,7 @@ void gen_readOnly_data(HashMap* stringTable) {
     insert_line("number_buffer db 21 dup(0)\n");
     insert_line("global_copy_buffer db 64 dup(0)\n");
     insert_line("bytes_written dd 0\n");
-    insert_line("bytes_read dq 0\n"); 
+    insert_line("bytes_read dd 0\n"); 
     insert_line("invalid_input_str db \"The input type did not match, goodbye!\",0\n");
     insert_line("buffer_overflow_str db \"Buffer overflow, max input 63 chars, goodbye!\",0\n");
 
@@ -116,7 +116,7 @@ static int count_local_var_bytes(ASTNode* node)
     if (!node) return 0;
     int counter = 0;
     if (strcmp(node->lable, "VarDeclaration") == 0) {
-        Type varType = checkExprType(node->children[1]);  
+        Type varType = check_expr_type(node->children[1]);  
         if (varType == TYPE_STRING)
             counter += 72;   
         else
@@ -136,7 +136,7 @@ static int count_local_var_bytes(ASTNode* node)
 /// </summary>
 /// <param name="paramList"></param>
 /// <returns>Returns the count of bytes needed</returns>
-int countFunctionParamStackSize(ASTNode* paramList) {
+int count_function_param_stacksize(ASTNode* paramList) {
     int totalSize = 0;
 
     for (int i = 0; i < paramList->childCount; i++) {
@@ -179,7 +179,7 @@ void gen_function_params_copy(ASTNode* funcNode) {
     SymbolTable* funcScope = funcNode->scope;
     int paramCount = paramList->childCount;
     for (int i = 0; i < paramCount; i++) {
-        SymbolEntry* entry = lookUpSymbol(paramList->children[i]->children[1]->token->lexeme, funcScope);
+        SymbolEntry* entry = lookup_symbol(paramList->children[i]->children[1]->token->lexeme, funcScope);
         if (i < 4)
         {
             // params from registers
@@ -230,7 +230,7 @@ void gen_function(ASTNode* node, HashMap* stringTable)
     insert_line("mov rbp, rsp\n");
     ASTNode* blockNode = node->children[3];
     // count the amount of local vars in the func and save space for them
-    int localSize = count_local_var_bytes(node) + countFunctionParamStackSize(node->children[1]);
+    int localSize = count_local_var_bytes(node) + count_function_param_stacksize(node->children[1]);
     // allocate space for local vars
     insert_line("sub rsp, %d\n", gen_stack_allocation(localSize));
     // push callee saved registers
@@ -279,7 +279,7 @@ void gen_winApi()
 /// <param name="stringTable"></param>
 void gen_asm(char* path, ASTNode* root, HashMap* stringTable, int flag) 
 {
-    createAsmFile(path, flag);
+    create_asm_file(path, flag);
     // gen the winApi funcs
     gen_winApi();
     // gen data seg

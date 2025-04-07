@@ -10,7 +10,7 @@
 /// </summary>
 /// <param name="filename"></param>
 /// <returns>Returns the contentes of the file</returns>
-char* readFile(const char* filename) {
+char* read_file(const char* filename) {
     FILE* file = fopen(filename, "rt");  
     if (!file) {
         fprintf(stderr, "Error: Could not open file %s\n", filename);
@@ -28,16 +28,6 @@ char* readFile(const char* filename) {
     int firstLine = 1;  
 
     while (fgets(line, MAX_LINE_LENGTH, file) != NULL) {
-        if (firstLine) {
-            firstLine = 0;
-            // check for BOM (0xEF 0xBB 0xBF) and remove
-            if ((unsigned char)line[0] == 0xEF &&
-                (unsigned char)line[1] == 0xBB &&
-                (unsigned char)line[2] == 0xBF) {
-                memmove(line, line + 3, strlen(line) - 2);  
-            }
-        }
-
         // resize buffer if needed
         if (strlen(buffer) + strlen(line) + 1 > bufferSize) {
             bufferSize *= 2;  

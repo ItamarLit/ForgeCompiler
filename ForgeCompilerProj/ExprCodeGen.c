@@ -81,15 +81,15 @@ static void gen_string_literal(ASTNode* node, HashMap* stringTable)
 {
     // get the offset label from the read only segment
     int r = scratch_alloc();
-    insert_line("mov %s, offset %s\n", scratch_name(r), lookUpString(node->token->lexeme, stringTable));
+    insert_line("mov %s, offset %s\n", scratch_name(r), look_up_string(node->token->lexeme, stringTable));
     node->reg = r;
 }
 
 static void gen_identifier(ASTNode* node, HashMap* stringTable) 
 {
     int r = scratch_alloc();
-    SymbolTable* scope = getClosestScope(node);
-    SymbolEntry* sym = lookUpSymbol(node->token->lexeme, scope);
+    SymbolTable* scope = get_closest_scope(node);
+    SymbolEntry* sym = lookup_symbol(node->token->lexeme, scope);
     insert_line("mov %s, %s\n", scratch_name(r), symbol_codegen(sym));
     node->reg = r;
 }

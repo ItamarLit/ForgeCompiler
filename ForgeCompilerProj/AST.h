@@ -15,18 +15,18 @@ typedef struct ASTNode {
 } ASTNode;
 
 // func that creates the ast node 
-ASTNode* createASTNode(Token* token, const char* lable);
+ASTNode* create_AST_node(Token* token, const char* lable);
 // func that frees an ast node and all of its children
-void freeASTNode(ASTNode* node);
+void free_AST_node(ASTNode* node);
 // func that fills an ast nodes children 
-void addChild(ASTNode* child, ASTNode* parent);
+void add_child(ASTNode* child, ASTNode* parent);
 // func that prints the ast 
-void printAST(ASTNode* root, int tabCount);
+void print_AST(ASTNode* root, int tabCount);
 // func that compresses the AST
-ASTNode* compressAST(ASTNode* node);
+ASTNode* compress_AST(ASTNode* node);
 // func that normalizes AST
-void normalizeAST(ASTNode* node);
+void normalize_AST(ASTNode* node);
 // func that reduces global vars
-void reduceGlobalVars(ASTNode* globalItemList);
+void reduce_global_vars(ASTNode* globalItemList);
 
 #endif

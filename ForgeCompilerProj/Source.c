@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
     printf("Input: %s\n", inputFile);
     printf("Output: %s\n", outputFile);
     // read the input code
-    char* inputStr = readFile(inputFile);
+    char* inputStr = read_file(inputFile);
     if (!inputStr) {
         fprintf(stderr, "**************************\n");
         fprintf(stderr, "Failed to read input file.\n");
@@ -95,15 +95,13 @@ int compile(const char* outputPath, const char* inputStr, int tokensFlag, int as
     // set up data structures for the lexer
     HashMap* state_machine = NULL;
     init_state_machine(&state_machine);
-    //printHashMap(state_machine);
     pTokenArray ptoken_array;
-    init_state_machine(&state_machine);
-    initTokenArray(&ptoken_array);
+    init_token_array(&ptoken_array);
     int lexErrors = 0;
     // Lexical analysis
     lex(state_machine, inputStr, ptoken_array, &lexErrors);
     free(inputStr);
-    freeHashMap(&state_machine);
+    free_hashmap(&state_machine);
     if (lexErrors)
     {
         fprintf(stderr, "**************************\n");
@@ -112,59 +110,60 @@ int compile(const char* outputPath, const char* inputStr, int tokensFlag, int as
         return 1;
     }
     printf("\n\nInput passed lexing.\n\n");
-    if(tokensFlag) printTokens(ptoken_array);
+    if(tokensFlag) print_tokens(ptoken_array);
     // Syntax analysis
     int parseErrors = 0;
-    ASTNode* root = ParseInput(ptoken_array, &parseErrors);
+    ASTNode* root = parse(ptoken_array, &parseErrors);
     if (parseErrors || !root) {
         fprintf(stderr, "**************************\n");
         fprintf(stderr, "Parsing failed with %d errors.\n", parseErrors);
         fprintf(stderr, "**************************\n");
-        freeTokenArray(&ptoken_array);
+        free_token_array(&ptoken_array);
         return 1;
     }
     // AST compression
-    root = compressAST(root);
+    root = compress_AST(root);
     // AST normalization
-    normalizeAST(root);
+    normalize_AST(root);
     printf("\n\nInput passed parsing.\n\n");
     if (astFlag) {
         printf("Here is the AST:\n");
-        printAST(root, 0);
+        print_AST(root, 0);
     }
     // Semantic analysis phase
     int semErrors = 0;
-    SymbolTable* globalTable = createNewScope(NULL);
+    SymbolTable* globalTable = create_new_scope(NULL);
     if (!globalTable) {
         fprintf(stderr, "**************************\n");
         fprintf(stderr, "Failed to create global symbol table.\n");
         fprintf(stderr, "**************************\n");
-        freeASTNode(root);
-        freeTokenArray(&ptoken_array);
+        free_AST_node(root);
+        free_token_array(&ptoken_array);
         return 1;
     }
     // create the symbol table
-    createASTSymbolTable(root, globalTable, &semErrors);
+    create_AST_symbol_table(root, globalTable, &semErrors);
     root->scope = globalTable;
-    if(symbolFlag) printSymbolTables(root);
+    if(symbolFlag) print_symbol_tables(root);
     int analyzeErrors = 0;
     analyze(root, &analyzeErrors);
     if (semErrors || analyzeErrors) {
         fprintf(stderr, "**************************\n");
         fprintf(stderr, "Semantic analysis failed with %d symbol errors and %d analysis errors.\n", semErrors, analyzeErrors);
         fprintf(stderr, "**************************\n");
-        freeTokenArray(&ptoken_array);
-        freeASTNode(root);
+        free_token_array(&ptoken_array);
+        free_AST_node(root);
         return 1;
     }
     printf("\n\nInput passed semantic analysis.\n\n");
-    // Reduce Global vars
-    reduceGlobalVars(root);
-    HashMap* stringTable = createStringTable(root);
+    // reduce Global vars
+    reduce_global_vars(root);
+    HashMap* stringTable = create_string_table(root);
     gen_asm(outputPath, root, stringTable, asmFlag);
     // Cleanup
-    freeTokenArray(&ptoken_array);
-    freeASTNode(root);
-    freeHashMap(&stringTable);
+    free_token_array(&ptoken_array);
+    free_AST_node(root);
+    free_hashmap(&stringTable);
+    printf("\n\nFinished compiling!!\n\n");
     return 0;
 }

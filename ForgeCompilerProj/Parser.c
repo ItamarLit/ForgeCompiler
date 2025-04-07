@@ -13,13 +13,13 @@
 #include <stdio.h>  
 #include <stdlib.h>
 
-void freeKey(void* key);
-void GetData(char** dataArr, char* line, int isAction);
+void free_key(void* key);
+void get_data(char** dataArr, char* line, int isAction);
 unsigned long djb2Hash(const char* str);
-unsigned long hashFunc(void* key, int map_size);
-void FillTable(HashMap** map, char* filename, char** symbolArray, int symbolCount, int isAction, void (*PutRow)(int state, const char* symbol, const char* value, HashMap* map));
-static int equalFunc(void* a, void* b);
-static void printKey(void* key);
+unsigned long hash_func(void* key, int map_size);
+void fill_table(HashMap** map, char* filename, char** symbolArray, int symbolCount, int isAction, void (*PutRow)(int state, const char* symbol, const char* value, HashMap* map));
+static int equal_func(void* a, void* b);
+static void print_key(void* key);
 
 
 /// <summary>
@@ -28,7 +28,7 @@ static void printKey(void* key);
 /// <param name="state"></param>
 /// <param name="symbol"></param>
 /// <returns>Returns a pointer to the key</returns>
-MapKey* getKey(int state, char* symbol) {
+MapKey* get_key(int state, char* symbol) {
     // allocate key
     MapKey* key = malloc(sizeof(MapKey));
     if (!key) {
@@ -47,16 +47,16 @@ MapKey* getKey(int state, char* symbol) {
 /// <param name="terminal"></param>
 /// <param name="action"></param>
 /// <param name="map"></param>
-static void putState(int state,const char* terminal, const char* action, HashMap* map) {
+static void put_state(int state,const char* terminal, const char* action, HashMap* map) {
     // allocate key
-    MapKey* key = getKey(state, terminal);
+    MapKey* key = get_key(state, terminal);
     // allocate the value
     char* val = strdup(action);
     // insert the key - val pair
-    insertNewValue(key, val, map);
+    insert_new_value(key, val, map);
 }
 
-static void actionPrintValue(void* value) {
+static void action_print_value(void* value) {
     char* fvalue = (char*)value;
     printf("Value: action: %s] ", fvalue);
 }
@@ -66,17 +66,17 @@ static void actionPrintValue(void* value) {
 /// </summary>
 /// <param name="map"></param>
 /// <param name="filename"></param>
-void InitActionTable(HashMap** map, char* filename)
+void init_action_table(HashMap** map, char* filename)
 {
-    *map = initHashMap(INITAL_HASHMAP_SIZE, hashFunc, equalFunc, printKey, actionPrintValue, freeKey, free);
-    FillTable(map, filename, Terminals, TerminalCount, 1, putState);
+    *map = init_hashmap(INITAL_HASHMAP_SIZE, hash_func, equal_func, print_key, action_print_value, free_key, free);
+    fill_table(map, filename, Terminals, TerminalCount, 1, put_state);
 }
 
 
 
-static void gotoPrintValue(void* value) {
-    int* fvalue = (int*)value;
-    printf("Value: nextState: %d] ", *fvalue);
+static void goto_print_value(void* value) {
+    char* fvalue = (char*)value;
+    printf("Value: nextState: %s] ", fvalue);
 }
 
 
@@ -85,12 +85,12 @@ static void gotoPrintValue(void* value) {
 /// </summary>
 /// <param name="map"></param>
 /// <param name="filename"></param>
-void InitGotoTable(HashMap** map, char* filename) {
-    *map = initHashMap(INITAL_HASHMAP_SIZE, hashFunc, equalFunc, printKey, gotoPrintValue, freeKey, free);
-    FillTable(map, filename, NonTerminals, NonTerminalCount, 0, putState);
+void init_goto_table(HashMap** map, char* filename) {
+    *map = init_hashmap(INITAL_HASHMAP_SIZE, hash_func, equal_func, print_key, goto_print_value, free_key, free);
+    fill_table(map, filename, NonTerminals, NonTerminalCount, 0, put_state);
 }
 
-void freeKey(void* key)
+void free_key(void* key)
 {
     MapKey* fkey = (MapKey*)key;
     free(fkey->symbol);
@@ -103,7 +103,7 @@ void freeKey(void* key)
 /// <param name="dataArr"></param>
 /// <param name="line"></param>
 /// <param name="isAction"></param>
-void GetData(char** dataArr, char* line, int isAction)
+void get_data(char** dataArr, char* line, int isAction)
 {
     int maxData = isAction ? TerminalCount : NonTerminalCount;
     int count = 0;
@@ -150,7 +150,7 @@ void GetData(char** dataArr, char* line, int isAction)
 /// <param name="key"></param>
 /// <param name="map_size"></param>
 /// <returns></returns>
-unsigned long hashFunc(void* key, int map_size) {
+unsigned long hash_func(void* key, int map_size) {
     MapKey* fkey = (MapKey*)key;
     unsigned long terminalHash = djb2Hash(fkey->symbol);
     return (terminalHash + (fkey->currentState * 31)) % map_size;
@@ -166,10 +166,10 @@ unsigned long hashFunc(void* key, int map_size) {
 /// <param name="symbolCount"></param>
 /// <param name="isAction"></param>
 /// <param name="PutRow"></param>
-void FillTable(HashMap** map, char* filename, char** symbolArray, int symbolCount, int isAction,
+void fill_table(HashMap** map, char* filename, char** symbolArray, int symbolCount, int isAction,
     void (*PutRow)(int state, const char* symbol, const char* value, HashMap* map))
 {
-    char* fileData = readFile(filename);
+    char* fileData = read_file(filename);
     char* saveptr1;
     char* line = strtok_s(fileData, "\n", &saveptr1);
     int stateCount = 0;
@@ -183,7 +183,7 @@ void FillTable(HashMap** map, char* filename, char** symbolArray, int symbolCoun
         // get the line data
         char** tempData = (char**)malloc(symbolCount * sizeof(char*));
         char* lineCopy = strdup(line);
-        GetData(tempData, lineCopy, isAction);
+        get_data(tempData, lineCopy, isAction);
         free(lineCopy);
         for (int i = 0; i < symbolCount; i++) {
             if (strcmp(tempData[i], "") != 0) {
@@ -202,25 +202,25 @@ void FillTable(HashMap** map, char* filename, char** symbolArray, int symbolCoun
     free(fileData);
 }
 
-static int equalFunc(void* a, void* b) {
+static int equal_func(void* a, void* b) {
     MapKey* k1 = (MapKey*)a;
     MapKey* k2 = (MapKey*)b;
     return (k1->currentState == k2->currentState) &&
         (strcmp(k1->symbol, k2->symbol) == 0);
 }
 
-static void printKey(void* key)
+static void print_key(void* key)
 {
     MapKey* fkey = (MapKey*)key;
     printf("[Key: current_state: %d, symbol: '%s' ", fkey->currentState, fkey->symbol);
 }
 
-static char* getMapValue(HashMap* map, int currentState, char* symbol, int isAction)
+static char* get_map_value(HashMap* map, int currentState, char* symbol, int isAction)
 {
     MapKey temp;
     temp.currentState = currentState;
     temp.symbol = symbol;
-    char* valPtr = (char*)getHashMapValue(&temp, map);
+    char* valPtr = (char*)get_hashmap_value(&temp, map);
     return (valPtr) ? strdup(valPtr) : NULL;
    
 }
@@ -246,14 +246,14 @@ const char* token_type_to_terminal(Token* token) {
 /// <param name="nextState"></param>
 /// <param name="token"></param>
 /// <param name="nodeLable"></param>
-void Shift(Stack* s, int nextState, Token* token, const char* nodeLable)
+void shift(Stack* s, int nextState, Token* token, const char* nodeLable)
 {
     StackData tempData;
-    tempData.node = createASTNode(token, nodeLable);
-    PushStack(s, tempData, NODE);
+    tempData.node = create_AST_node(token, nodeLable);
+    push(s, tempData, NODE);
     tempData.node = NULL;
     tempData.state = nextState;
-    PushStack(s, tempData, STATE);
+    push(s, tempData, STATE);
 }
 
 /// <summary>
@@ -262,7 +262,7 @@ void Shift(Stack* s, int nextState, Token* token, const char* nodeLable)
 /// <param name="tokenArray"></param>
 /// <param name="currentIndex"></param>
 /// <returns>Returns the next index to start parsing from</returns>
-int RecoverFromError(pTokenArray tokenArray, int currentIndex) {
+int recover_from_error(pTokenArray tokenArray, int currentIndex) {
     // array of the possible ending tokens
     const char* endingTokens[] = { ";", "}", "$" };
     int endingTokensCount = 3;
@@ -288,7 +288,7 @@ int RecoverFromError(pTokenArray tokenArray, int currentIndex) {
 /// <param name="currentIndex"></param>
 /// <param name="tokenArray"></param>
 /// <param name="finishedParsing"></param>
-void HandleSyntaxError(int* errorCount,Stack** s,int* currentIndex,pTokenArray tokenArray,int* finishedParsing)
+void handle_syntax_error(int* errorCount,Stack** s,int* currentIndex,pTokenArray tokenArray,int* finishedParsing)
 {
     // add error count
     (*errorCount)++;
@@ -301,21 +301,21 @@ void HandleSyntaxError(int* errorCount,Stack** s,int* currentIndex,pTokenArray t
     // show the error
     output_error(SYNTAX, "Syntax Error at token '%s' on line %d, col %d.\n", errorToken->lexeme, errorToken->tokenRow, errorToken->tokenCol);
     // recover
-    *currentIndex = RecoverFromError(tokenArray, *currentIndex);
+    *currentIndex = recover_from_error(tokenArray, *currentIndex);
     Token* t = tokenArray->tokens[*currentIndex];
     if (*currentIndex == tokenArray->count - 1) {
         *finishedParsing = 1;
     }
     // reset the stack
-    FreeStack(*s);
-    *s = InitStack();
+    free_stack(*s);
+    *s = init_stack();
     StackData tempData;
     tempData.state = 0;
-    PushStack(*s, tempData, STATE);
+    push(*s, tempData, STATE);
 }
 
 /// <summary>
-/// This func handles the Reduce in the parsing
+/// This func handles the reduce in the parsing
 /// </summary>
 /// <param name="ruleIndex"></param>
 /// <param name="s"></param>
@@ -325,18 +325,18 @@ void HandleSyntaxError(int* errorCount,Stack** s,int* currentIndex,pTokenArray t
 /// <param name="i"></param>
 /// <param name="errorCount"></param>
 /// <param name="finishedParsing"></param>
-void Reduce(int ruleIndex, Stack** s, GrammarArray* array, HashMap* gotoTable, pTokenArray tokenArray, int* i, int* errorCount, int* finishedParsing)
+void reduce(int ruleIndex, Stack** s, GrammarArray* array, HashMap* gotoTable, pTokenArray tokenArray, int* i, int* errorCount, int* finishedParsing)
 {
     GrammarRule* rule = array->rules[ruleIndex];
     // get the amount of children in the new node
     int childrenCount = rule->rightWordCount;
     // create the newNode
-    ASTNode* newNode = createASTNode(NULL, rule->leftRule);
+    ASTNode* newNode = create_AST_node(NULL, rule->leftRule);
     // create the temp children array
     ASTNode** nodeArr = (ASTNode**)malloc(sizeof(ASTNode*) * childrenCount);
     // pop from the stack
     for (int j = 0; j < rule->rightWordCount * 2; j++) {
-        StackEntry* curData = PopStack(*s);
+        StackEntry* curData = pop(*s);
         // if the data is a state we can free it
         if (curData->type == NODE) {
             // data is a node save it
@@ -346,30 +346,31 @@ void Reduce(int ruleIndex, Stack** s, GrammarArray* array, HashMap* gotoTable, p
     }
     // now the nodeArr is in reverse order
     for (int i = childrenCount - 1; i >= 0; i--) {
-        addChild(nodeArr[i], newNode);
+        add_child(nodeArr[i], newNode);
     }
     free(nodeArr);
     // get the goto state
-    char* gotoState = getMapValue(gotoTable, (TopStack(*s))->data.state, rule->leftRule, 0);
+    char* gotoState = get_map_value(gotoTable, (top(*s))->data.state, rule->leftRule, 0);
     if (gotoState == NULL) {
-        HandleSyntaxError(errorCount, s, i, tokenArray, finishedParsing);
+        handle_syntax_error(errorCount, s, i, tokenArray, finishedParsing);
         return;
     }
     // preform the reduce
     StackData tempData;
     tempData.node = newNode;
-    PushStack(*s, tempData, NODE);
+    push(*s, tempData, NODE);
     tempData.state = atoi(gotoState);
-    PushStack(*s, tempData, STATE);
+    push(*s, tempData, STATE);
+    if (gotoState) free(gotoState);
 }
 
-void FreeParserResources(GrammarArray* array, HashMap** actionTable, HashMap** gotoTable, Stack* s)
+void free_parser_resources(GrammarArray* array, HashMap** actionTable, HashMap** gotoTable, Stack* s)
 {
     // free all the resources used to parse the input
-    FreeGrammarArray(array);
-    freeHashMap(actionTable);
-    freeHashMap(gotoTable);
-    FreeStack(s);
+    free_grammar_array(array);
+    free_hashmap(actionTable);
+    free_hashmap(gotoTable);
+    free_stack(s);
 }
 
 
@@ -377,57 +378,55 @@ void FreeParserResources(GrammarArray* array, HashMap** actionTable, HashMap** g
 /// This is the main parse function that checks if the given input is valid 
 /// </summary>
 /// <param name="tokenArray"></param>
-ASTNode* ParseInput(pTokenArray tokenArray, int* errorCount) 
+ASTNode* parse(pTokenArray tokenArray, int* errorCount) 
 {
     // add $ to the end of the tokenArray
-    addToken(&tokenArray, FINISH_INPUT, "$", -1, -1);
+    add_token(&tokenArray, FINISH_INPUT, "$", -1, -1);
     StackData tempData;
     // setup stack
-    Stack* s = InitStack();
+    Stack* s = init_stack();
     // setup action and goto tables
     HashMap* actionTable = NULL;
     HashMap* gotoTable = NULL;
-    InitActionTable(&actionTable, ACTION_TABLE_FILE);
-    InitGotoTable(&gotoTable, GOTO_TABLE_FILE);
+    init_action_table(&actionTable, ACTION_TABLE_FILE);
+    init_goto_table(&gotoTable, GOTO_TABLE_FILE);
     // setup grammar array
-    GrammarArray* array = InitGrammarArray(GRAMMAR_FILE);
+    GrammarArray* array = init_grammar_array(GRAMMAR_FILE);
     // push initial state onto the stack
     tempData.state = 0;
-    PushStack(s, tempData, STATE);
+    push(s, tempData, STATE);
     // main parse loop
     int i = 0;
     int finishedParsing = 0;
     ASTNode* root = NULL;
     while (i < tokenArray->count && !finishedParsing) {
         // get the current state
-        StackData* top = TopStack(s);
-        int currentState = top->state;
+        StackEntry* topstack = top(s);
+        int currentState = topstack->data.state;
         // get the token
         char* token = token_type_to_terminal(tokenArray->tokens[i]);
         Token* currentToken = tokenArray->tokens[i];
-        char* action = getMapValue(actionTable, currentState, token, 1);
-        if (action == NULL) {
-            //if (shiftEmpty(token, tokenArray, &i, &s)) {
-            //    continue; // Successfully shifted empty, continue parsing
-            //}
-            HandleSyntaxError(errorCount,&s,&i,tokenArray,&finishedParsing);
+        char* action = get_map_value(actionTable, currentState, token, 1);
+        if (action == NULL)
+        {
+            handle_syntax_error(errorCount,&s,&i,tokenArray,&finishedParsing);
         }
         else 
         {
             // check for shift action
             if (!finishedParsing && strncmp(action, "s", 1) == 0) {
-                Shift(s, atoi(action + 1), currentToken, token);
+                shift(s, atoi(action + 1), currentToken, token);
                 // move to next token
                 i++;
             }
             else if (!finishedParsing && strncmp(action, "r", 1) == 0) {
-                Reduce(atoi(action + 1), &s, array, gotoTable, tokenArray, &i, errorCount, &finishedParsing);
+                reduce(atoi(action + 1), &s, array, gotoTable, tokenArray, &i, errorCount, &finishedParsing);
             }
             else {
                 // free the top state
-                free(PopStack(s));
+                free(pop(s));
                 // get the final root node
-                StackEntry* topEntry = PopStack(s);
+                StackEntry* topEntry = pop(s);
                 root = (ASTNode*)topEntry->data.node;
                 free(topEntry);
                 finishedParsing = 1;
@@ -437,7 +436,7 @@ ASTNode* ParseInput(pTokenArray tokenArray, int* errorCount)
        
     }
     // free all the used data structures
-    FreeParserResources(array, &actionTable, &gotoTable, s);
+    free_parser_resources(array, &actionTable, &gotoTable, s);
     return root;
 }
 

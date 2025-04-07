@@ -11,6 +11,7 @@ shift
 set FLAGS=%*
 
 Debug\ForgeCompilerProj.exe %INPUT% %FLAGS%
+echo Compiler finished with errorlevel=%errorlevel%
 
 if %errorlevel% neq 0 (
     exit /b %errorlevel%
@@ -30,4 +31,4 @@ IF EXIST ProjectData\output.asm (
     ) ELSE (
         echo Linking failed.
     )
-)
+) 

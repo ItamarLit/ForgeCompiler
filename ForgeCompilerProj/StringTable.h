@@ -11,8 +11,8 @@ typedef struct  {
 } StringEntry;
 
 // This func will be used to create the string table itself
-HashMap* createStringTable(ASTNode* root);
+HashMap* create_string_table(ASTNode* root);
 // This func will be used to get a label that represents a string or NULL if the string isnt in the table
-char* lookUpString(char* string, HashMap* map);
+char* look_up_string(char* string, HashMap* map);
 
 #endif

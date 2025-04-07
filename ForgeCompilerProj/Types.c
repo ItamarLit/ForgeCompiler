@@ -19,7 +19,7 @@ static const TypeMap typeMap[] = {
 /// </summary>
 /// <param name="stringType"></param>
 /// <returns></returns>
-Type convertStringType(char* stringType)
+Type convert_string_type(char* stringType)
 {
     for (int i = 0; typeMap[i].stringType != NULL; i++) {
         if (strcmp(typeMap[i].stringType, stringType) == 0) {
@@ -34,7 +34,7 @@ Type convertStringType(char* stringType)
 /// </summary>
 /// <param name="type"></param>
 /// <returns></returns>
-const char* convertTypeToString(Type type)
+const char* convert_type_to_string(Type type)
 {
     for (int i = 0; typeMap[i].stringType != NULL; i++) {
         if (typeMap[i].type == type) {
