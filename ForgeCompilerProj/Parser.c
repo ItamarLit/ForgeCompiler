@@ -8,6 +8,7 @@
 #include "GrammarArray.h"
 #include "AST.h"
 #include "ErrorHandler.h"
+#include "Paths.h"
 #include <string.h>
 #include <stdio.h>  
 #include <stdlib.h>
@@ -142,19 +143,6 @@ void GetData(char** dataArr, char* line, int isAction)
     }
 }
 
-/// <summary>
-/// This is the hash func for the action string, it is a djb2 hash func
-/// </summary>
-/// <param name="str"></param>
-/// <returns></returns>
-unsigned long djb2Hash(const char* str) {
-    unsigned long hash = 5381;
-    int c;
-    while ((c = *str++)) {
-        hash = ((hash << 5) + hash) + c;
-    }
-    return hash;
-}
 
 /// <summary>
 /// This is the hash func for the action table
@@ -399,10 +387,10 @@ ASTNode* ParseInput(pTokenArray tokenArray, int* errorCount)
     // setup action and goto tables
     HashMap* actionTable = NULL;
     HashMap* gotoTable = NULL;
-    InitActionTable(&actionTable, "ProjectData/ActionTable.txt");
-    InitGotoTable(&gotoTable, "ProjectData/GotoTable.txt");
+    InitActionTable(&actionTable, ACTION_TABLE_FILE);
+    InitGotoTable(&gotoTable, GOTO_TABLE_FILE);
     // setup grammar array
-    GrammarArray* array = InitGrammarArray("ProjectData/Grammar.txt");
+    GrammarArray* array = InitGrammarArray(GRAMMAR_FILE);
     // push initial state onto the stack
     tempData.state = 0;
     PushStack(s, tempData, STATE);

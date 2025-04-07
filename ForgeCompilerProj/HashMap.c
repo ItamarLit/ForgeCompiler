@@ -64,7 +64,7 @@ HashNode* getHashNode(void* key, void* value)
 {
 	HashNode* node = (HashNode*)malloc(sizeof(HashNode));
 	if (!node) {
-		printf("Memory allocation failed for HashNode");
+		fprintf(stderr, "Memory allocation failed for HashNode");
 		return NULL;
 	}
 	node->key = key;
@@ -87,13 +87,13 @@ HashMap* initHashMap(int size, unsigned long (*HashFunc)(void*, int), int (*Equa
 	// create the map
 	HashMap* map = (HashMap*)malloc(sizeof(HashMap));
 	if (!map) {
-		printf("Memory allocation failed for the map\n");
+		fprintf(stderr, "Memory allocation failed for the map\n");
 		return NULL;
 	}
 	// create the arr in the map
 	map->arr = (HashNode**)calloc(size, sizeof(HashNode*));
 	if (!map->arr) {
-		printf("Memory allocation failed for the map array\n");
+		fprintf(stderr, "Memory allocation failed for the map array\n");
 		free(map);
 		return NULL;
 	}
@@ -156,7 +156,7 @@ void resizeMap(HashMap* map) {
 	map->map_size *= 2;
 	map->arr = (HashNode**)calloc(map->map_size, sizeof(HashNode*));
 	if (map->arr == NULL) {
-		printf("Memory allocation failed during resize\n");
+		fprintf(stderr, "Memory allocation failed during resize\n");
 		return;
 	}
 	// refill the old data
@@ -176,6 +176,10 @@ void resizeMap(HashMap* map) {
 	free(oldArr);
 }
 
+/// <summary>
+/// This is a print function for the hashmap
+/// </summary>
+/// <param name="map"></param>
 void printHashMap(HashMap* map) {
 	if (map == NULL) {
 		printf("HashMap is NULL.\n");
@@ -200,3 +204,16 @@ void printHashMap(HashMap* map) {
 	}
 }
 
+/// <summary>
+/// This is the hash func for the action string, it is a djb2 hash func
+/// </summary>
+/// <param name="str"></param>
+/// <returns>Returns a hash for a given string</returns>
+unsigned long djb2Hash(const char* str) {
+	unsigned long hash = 5381;
+	int c;
+	while ((c = *str++)) {
+		hash = ((hash << 5) + hash) + c;
+	}
+	return hash;
+}

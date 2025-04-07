@@ -61,10 +61,19 @@ static int equalFunc(void* a, void* b) {
 static void putState(int state, char ch, int nextState, HashMap* map) {
     // allocate key
     FsmKey* key = malloc(sizeof(FsmKey));
+    if (!key) {
+        fprintf(stderr, "Unable to malloc key for lexer FSM\n");
+        return;
+    }
     key->currentState = state;
     key->currentChar = ch;
     // allocate the value
     int* valPtr = malloc(sizeof(int));
+    if (!valPtr)
+    {
+        fprintf(stderr, "Unable to malloc value for lexer FSM\n");
+        return;
+    }
     *valPtr = nextState;
     // insert the key - val pair
     insertNewValue(key, valPtr, map);

@@ -12,11 +12,7 @@
 /// <returns>Returns an index in the hashmap</returns>
 static unsigned long hashFunc(void* key, int map_size) {
     char* fkey = (char*)key;
-    unsigned long hash = 5381;
-    int c;
-    while ((c = *fkey++)) {
-        hash = ((hash << 5) + hash) + c;
-    }
+    unsigned long hash = djb2Hash(fkey);
     return hash % map_size;
 }
 
@@ -37,7 +33,7 @@ char* genStrLabel()
 void insertString(HashMap* map, char* string) {
     StringEntry* entry = (StringEntry*)malloc(sizeof(StringEntry));
     if (!entry) {
-        printf("Unable to malloc string entry for string table");
+        fprintf(stderr, "Unable to malloc string entry for string table\n");
         return;
     }
     entry->label = strdup(genStrLabel());
@@ -99,7 +95,7 @@ HashMap* createStringTable(ASTNode* root)
 {
     HashMap* map = initHashMap(INITAL_HASHMAP_SIZE, hashFunc, equalFunc, printStringKey, printSymbolEntry, free, freeStringEntry);
     if (!map) {
-        printf("Failed to create string table hashmap.\n");
+        fprintf(stderr, "Failed to create string table hashmap.\n");
         return NULL;
     }
     createStringTableRecursive(root, map);

@@ -15,7 +15,7 @@ void addToken(pTokenArray* ptoken_array, TokenType token_type, const char* lexem
     }
     (*ptoken_array)->tokens[(*ptoken_array)->count] = (Token*)malloc(sizeof(Token));
     if ((*ptoken_array)->tokens[(*ptoken_array)->count] == NULL) {
-        printf("Memory allocation for token failed\n");
+        fprintf(stderr, "Memory allocation for token failed\n");
         return;
     }
     // set the type and value
@@ -27,9 +27,7 @@ void addToken(pTokenArray* ptoken_array, TokenType token_type, const char* lexem
     );
     (*ptoken_array)->tokens[(*ptoken_array)->count]->tokenRow = row;
     (*ptoken_array)->tokens[(*ptoken_array)->count]->tokenCol = col - strlen(lexeme);
-    (*ptoken_array)->tokens[(*ptoken_array)->count]->lexeme[
-        sizeof((*ptoken_array)->tokens[(*ptoken_array)->count]->lexeme) - 1
-    ] = '\0';
+    (*ptoken_array)->tokens[(*ptoken_array)->count]->lexeme[sizeof((*ptoken_array)->tokens[(*ptoken_array)->count]->lexeme) - 1] = '\0';
     // add one to the token count
     (*ptoken_array)->count++;
 }
@@ -54,7 +52,7 @@ void printTokens(pTokenArray ptoken_array) {
 Token** createTokens(int size) {
     Token** tokens = (Token**)malloc(size * sizeof(Token*));
     if (tokens == NULL) {
-        printf("Memory allocation for tokens failed\n");
+        fprintf(stderr, "Memory allocation for tokens failed\n");
         return NULL;
     }
     return tokens;
@@ -68,7 +66,7 @@ void resizeTokenArr(pTokenArray* ptoken_array) {
     (*ptoken_array)->size = (*ptoken_array)->size * 2;
     Token** temp = (Token**)realloc((*ptoken_array)->tokens, (*ptoken_array)->size * sizeof(Token*));
     if (temp == NULL) {
-        printf("Memory allocation for tokens failed\n");
+        fprintf(stderr, "Memory allocation for tokens failed\n");
         return;
     }
     (*ptoken_array)->tokens = temp;
@@ -81,10 +79,9 @@ void resizeTokenArr(pTokenArray* ptoken_array) {
 void initTokenArray(pTokenArray* ptoken_array) {
     *ptoken_array = (pTokenArray)malloc(sizeof(TokenArray));
     if (*ptoken_array == NULL) {
-        printf("Memory allocation for TokenArray failed\n");
+        fprintf(stderr, "Memory allocation for TokenArray failed\n");
         return;
     }
-
     (*ptoken_array)->count = 0;
     (*ptoken_array)->size = INIT_TOKEN_COUNT;
     (*ptoken_array)->tokens = createTokens((*ptoken_array)->size);

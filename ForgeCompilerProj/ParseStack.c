@@ -28,7 +28,7 @@ Stack* InitStack()
 {
 	Stack* sptr = (Stack*)malloc(sizeof(Stack));
 	if (!sptr) {
-		printf("Failed to allocate memory for the stack");
+		fprintf(stderr, "Failed to allocate memory for the stack");
 		return NULL;
 	}
 	sptr->top = -1;
@@ -44,13 +44,14 @@ Stack* InitStack()
 /// <param name="type"></param>
 void PushStack(Stack* s, StackData data, StackDataType type)
 {
-	StackEntry** temp = realloc(s->items, sizeof(StackEntry*) * (s->top + 2));
-	if (temp == NULL)
+	StackEntry** temp = (StackEntry**)realloc(s->items, sizeof(StackEntry*) * (s->top + 2));
+	if (!temp)
+		fprintf(stderr, "Failed to reallocate memory for stack");
 		return;
 	s->items = temp;
 	StackEntry* entry = (StackEntry*)malloc(sizeof(StackEntry));
 	if (!entry) {
-		printf("Failed to allocate memory for stack entry pointer");
+		fprintf(stderr, "Failed to allocate memory for stack entry pointer");
 		return;
 	}
 	// assign the data
@@ -79,7 +80,13 @@ StackEntry* PopStack(Stack* s)
 {
 	if (!IsStackEmpty(s)) {
 		StackEntry* x = s->items[s->top--];
-		s->items = realloc(s->items, sizeof(StackEntry*) * (s->top + 1));
+		StackEntry** temp = (StackEntry**)realloc(s->items, sizeof(StackEntry*) * (s->top + 1));
+		if (!temp) 
+		{
+			fprintf(stderr, "Failed to reallocate memory for stack");
+			return;
+		}
+		s->items = temp;
 		return x;
 	}
 	return NULL;

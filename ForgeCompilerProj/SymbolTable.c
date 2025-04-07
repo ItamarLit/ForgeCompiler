@@ -14,11 +14,7 @@
 /// <returns>Returns an index in the hashmap</returns>
 static unsigned long hashFunc(void* key, int map_size) {
     char* fkey = (char*)key;
-    unsigned long hash = 5381;
-    int c;
-    while ((c = *fkey++)) {
-        hash = ((hash << 5) + hash) + c;
-    }
+    unsigned long hash = djb2Hash(fkey);
     return hash % map_size;
 }
 
@@ -37,7 +33,7 @@ void insertSymbol(HashMap* map, char* name, Type type, int isFunction, Type retu
     // Allocate and fill SymbolEntry struct
     SymbolEntry* entry = malloc(sizeof(SymbolEntry));
     if (!entry) {
-        printf("Failed to malloc entry for symbol table");
+        fprintf(stderr, "Failed to malloc entry for symbol table\n");
         return;
     }
     entry->name = strdup(name);
@@ -47,6 +43,13 @@ void insertSymbol(HashMap* map, char* name, Type type, int isFunction, Type retu
     entry->returnType = returnType;
     if (paramCount > 0 && paramTypes != NULL) {
         entry->paramTypes = (Type*)malloc(sizeof(Type) * paramCount);
+        if (!entry->paramTypes)
+        {
+            fprintf(stderr, "Failed to malloc entry param types arr\n");
+            free(name);
+            free(entry);
+            return;
+        }
         for (int i = 0; i < paramCount; i++) {
             entry->paramTypes[i] = paramTypes[i];
         }
@@ -121,9 +124,21 @@ int extractFunctionParameters(ASTNode* paramNode, char*** paramNames, Type** par
         ASTNode* paramDecl = paramNode->children[i];
         // get the type and identifier from the ParamDecl nodes
         if (strcmp(paramDecl->lable, "ParamDecl") == 0) {
-            // realoc the arrays
-            *paramNames = (char**)realloc(*paramNames, sizeof(char*) * (decCount + 1));
-            *paramTypes = (Type*)realloc(*paramTypes, sizeof(Type) * (decCount + 1));
+            // realloc the arrays
+            char** temp = (char**)realloc(*paramNames, sizeof(char*) * (decCount + 1));
+            if (!temp) 
+            {
+                fprintf(stderr, "Error reallocing param names array in extraction func\n");
+                return NULL;
+            }
+            *paramNames = temp;
+            Type* tempType = (Type*)realloc(*paramTypes, sizeof(Type) * (decCount + 1));
+            if (!tempType) 
+            {
+                fprintf(stderr, "Error reallocing param types array in extraction func\n");
+                return NULL;
+            }
+            *paramTypes = tempType;
             ASTNode* typeNode = paramDecl->children[0];
             (*paramTypes)[decCount] = convertStringType(typeNode->token->lexeme);
             ASTNode* nameNode = paramDecl->children[1];
@@ -143,7 +158,7 @@ int extractFunctionParameters(ASTNode* paramNode, char*** paramNames, Type** par
 SymbolTable* createNewScope(SymbolTable* parent) {
     SymbolTable* newTable = (SymbolTable*)malloc(sizeof(SymbolTable));
     if (!newTable) {
-        printf("Unable to malloc memory for symbol table\n");
+        fprintf(stderr, "Unable to malloc memory for symbol table\n");
         return NULL;
     }
     newTable->table = initHashMap(INITAL_HASHMAP_SIZE, hashFunc, equalFunc, printStringKey, printSymbolEntry, free, freeSymbolEntry);
@@ -157,7 +172,7 @@ char* change_name(const char* name) {
     char* new_name = (char*)malloc(strlen(name) + 2);
     if (!new_name) 
     {
-        printf("Unable to malloc memory for name change\n");
+        fprintf(stderr, "Unable to malloc memory for name change\n");
         return NULL;
     }
     sprintf(new_name, "_%s", name);

@@ -43,9 +43,6 @@
     <Filter Include="Source Files\Semantic">
       <UniqueIdentifier>{d7c2cdad-dae7-4d18-b7af-7d9eabd257b7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files\Tables">
-      <UniqueIdentifier>{20a84aad-208d-4178-8386-d9b955a83b80}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AST.h">
@@ -111,20 +108,15 @@
     <ClInclude Include="HelperFunctionsCodeGen.h">
       <Filter>Header Files\CodeGen</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="Code.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="Grammar.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="ActionTable.txt">
-      <Filter>Resource Files\Tables</Filter>
-    </Text>
-    <Text Include="GotoTable.txt">
-      <Filter>Resource Files\Tables</Filter>
-    </Text>
+    <ClInclude Include="CompilerUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ErrorHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Paths.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.c">
@@ -192,6 +184,9 @@
     </ClCompile>
     <ClCompile Include="HelperFunctionsCodeGen.c">
       <Filter>Source Files\CodeGen</Filter>
+    </ClCompile>
+    <ClCompile Include="ErrorHandler.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

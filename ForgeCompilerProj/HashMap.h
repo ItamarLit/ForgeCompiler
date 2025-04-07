@@ -39,4 +39,7 @@ HashNode* getHashNode(void* key, void* value);
 void resizeMap(HashMap* map);
 // this func will print the contents of the hashmap using function pointers 
 void printHashMap(HashMap* map);
+// this func will return a hash for string values
+unsigned long djb2Hash(const char* str);
+
 #endif

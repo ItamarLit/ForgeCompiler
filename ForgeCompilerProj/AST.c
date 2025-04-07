@@ -32,7 +32,7 @@ int isRedundantNode(const char* label) {
 ASTNode* createASTNode(Token* token, const char* lable) {
     ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
     if (!node) {
-        printf("Failded to malloc memory for AST node");
+        fprintf(stderr, "Failded to malloc memory for AST node");
         return NULL;
     }
     node->lable = strdup(lable);
@@ -45,10 +45,13 @@ ASTNode* createASTNode(Token* token, const char* lable) {
 
 void addChild(ASTNode* child, ASTNode* parent) {
     // alocate the array of pointers of children
-    parent->children = (ASTNode**)realloc(parent->children, sizeof(ASTNode*) * (parent->childCount + 1));
-    if (!parent->children) {
-        printf("Failded to calloc memory for AST node children array");
+    ASTNode** temp = (ASTNode**)realloc(parent->children, sizeof(ASTNode*) * (parent->childCount + 1));
+    if (!temp) 
+    {
+        fprintf(stderr, "Failded to calloc memory for AST node children array");
+        return;
     }
+    parent->children = temp;
     parent->children[parent->childCount] = child;
     parent->childCount++;
     child->parent = parent; // add the parent pointer
@@ -154,6 +157,11 @@ void mergeNestedLists(ASTNode* node, const char* targetLabel) {
         // create a merged node arr
         int capacity = node->childCount;
         ASTNode** merged = (ASTNode**)malloc(sizeof(ASTNode*) * capacity);
+        if (!merged)
+        {
+            fprintf(stderr, "Unable to malloc memory for merged AST list\n");
+            return;
+        }
         int mergedCount = 0;
         // go over all children of current node
         for (int i = 0; i < node->childCount; i++) {
@@ -163,7 +171,13 @@ void mergeNestedLists(ASTNode* node, const char* targetLabel) {
                 // make space
                 if (mergedCount + child->childCount > capacity) {
                     capacity = (mergedCount + child->childCount) * 2;
-                    merged = (ASTNode**)realloc(merged, sizeof(ASTNode*) * capacity);
+                    ASTNode** tempMerge = (ASTNode**)realloc(merged, sizeof(ASTNode*) * capacity);
+                    if (!tempMerge) 
+                    {
+                        fprintf(stderr, "Unable to realloc memory for merged AST list\n");
+                        return;
+                    }
+                    merged = tempMerge;
                 }
                 // move the children into the merged array
                 for (int c = 0; c < child->childCount; c++) {
@@ -182,7 +196,13 @@ void mergeNestedLists(ASTNode* node, const char* targetLabel) {
                 // if child doesnt have the correct label just merge it into the array
                 if (mergedCount >= capacity) {
                     capacity *= 2;
-                    merged = (ASTNode**)realloc(merged, sizeof(ASTNode*) * capacity);
+                    ASTNode** tempMerge = (ASTNode**)realloc(merged, sizeof(ASTNode*) * capacity);
+                    if (!tempMerge)
+                    {
+                        fprintf(stderr, "Unable to realloc memory for merged AST list\n");
+                        return;
+                    }
+                    merged = tempMerge;
                 }
                 merged[mergedCount++] = child;
             }
@@ -272,7 +292,11 @@ void normalizeAST(ASTNode* node) {
         // create an empty paramlist node
         ASTNode* emptyParamList = createASTNode(NULL, "ParamList");
         // move the children forward
-        node->children = (ASTNode**)realloc(node->children, sizeof(ASTNode*) * (node->childCount + 1));
+        ASTNode** tempChildren = (ASTNode**)realloc(node->children, sizeof(ASTNode*) * (node->childCount + 1));
+        if (!tempChildren) {
+            fprintf(stderr, "Unable to realloc memory for children in AST\n");
+        }
+        node->children = tempChildren;
         for (int i = node->childCount; i > 1; i--) {
             node->children[i] = node->children[i - 1];
         }
@@ -287,7 +311,11 @@ void normalizeAST(ASTNode* node) {
         // create an empty argument list node
         ASTNode* emptyArgList = createASTNode(NULL, "ArgumentList");
         // move the children forward
-        node->children = (ASTNode**)realloc(node->children, sizeof(ASTNode*) * (node->childCount + 1));
+        ASTNode** tempChildren = (ASTNode**)realloc(node->children, sizeof(ASTNode*) * (node->childCount + 1));
+        if (!tempChildren) {
+            fprintf(stderr, "Unable to realloc memory for children in AST\n");
+        }
+        node->children = tempChildren;
         for (int i = node->childCount; i > 1; i--) {
             node->children[i] = node->children[i - 1];
         }
@@ -302,7 +330,11 @@ void normalizeAST(ASTNode* node) {
         // create an empty statement list node
         ASTNode* emptyStmtList = createASTNode(NULL, "StatementList");
         // move the children forward
-        node->children = (ASTNode**)realloc(node->children, sizeof(ASTNode*) * (node->childCount + 1));
+        ASTNode** tempChildren = (ASTNode**)realloc(node->children, sizeof(ASTNode*) * (node->childCount + 1));
+        if (!tempChildren) {
+            fprintf(stderr, "Unable to realloc memory for children in AST\n");
+        }
+        node->children = tempChildren;
         for (int i = node->childCount; i > 0; i--) {
             node->children[i] = node->children[i - 1];
         }
@@ -383,7 +415,7 @@ void reduceGlobalVars(ASTNode* globalItemList) {
                 // create new token
                 Token* valueToken = (Token*)malloc(sizeof(Token));
                 if (!valueToken) {
-                    printf("Unable to malloc new token");
+                    fprintf(stderr, "Unable to malloc new token\n");
                     return;
                 }
                 // set node values

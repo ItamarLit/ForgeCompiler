@@ -27,7 +27,7 @@ int countTokens(const char* rhs) {
 void InsertRule(GrammarArray* grammar, int index, const char* leftRule, const char* rightRule) {
 	grammar->rules[index] = (GrammarRule*)malloc(sizeof(GrammarRule));
 	if (!grammar->rules[index]) {
-		printf("Failed to allocate GrammarRule\n");
+		fprintf(stderr, "Failed to allocate GrammarRule\n");
 		return;
 	}
 	grammar->rules[index]->leftRule = strdup(leftRule);
@@ -44,7 +44,7 @@ GrammarArray* InitGrammarArray(const char* filename) {
 	// malloc the main struct
 	GrammarArray* grammar = (GrammarArray*)malloc(sizeof(GrammarArray));
 	if (!grammar) {
-		printf("Failed to allocate GrammarArray\n");
+		fprintf(stderr, "Failed to allocate GrammarArray\n");
 		return NULL;
 	}
 	// malloc the rule pointers 
@@ -58,7 +58,7 @@ GrammarArray* InitGrammarArray(const char* filename) {
 	// setup the rules into the array
     char* buffer = readFile(filename);
     if (!buffer) {
-        printf("Failed to read file: %s\n", filename);
+        fprintf(stderr, "Failed to read file: %s\n", filename);
         free(grammar->rules);
         free(grammar);
         return NULL;
@@ -75,7 +75,7 @@ GrammarArray* InitGrammarArray(const char* filename) {
         // look for -> in the line
         char* arrowPos = strstr(line, "->");
         if (!arrowPos) {
-            printf("Invalid grammar line (missing '->'): %s\n", line);
+            fprintf(stderr, "Invalid grammar line (missing '->'): %s\n", line);
             line = strtok(NULL, "\n");
             continue;
         }

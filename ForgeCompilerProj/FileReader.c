@@ -13,13 +13,13 @@
 char* readFile(const char* filename) {
     FILE* file = fopen(filename, "rt");  
     if (!file) {
-        printf("Error: Could not open file %s\n", filename);
+        fprintf(stderr, "Error: Could not open file %s\n", filename);
         return NULL;
     }
     int bufferSize = 4096;  
     char* buffer = (char*)malloc(bufferSize);
     if (!buffer) {
-        printf("Error: Memory allocation failed\n");
+        fprintf(stderr, "Error: Memory allocation failed\n");
         fclose(file);
         return NULL;
     }
@@ -41,12 +41,14 @@ char* readFile(const char* filename) {
         // resize buffer if needed
         if (strlen(buffer) + strlen(line) + 1 > bufferSize) {
             bufferSize *= 2;  
-            buffer = (char*)realloc(buffer, bufferSize);
-            if (!buffer) {
-                printf("Error: Memory reallocation failed\n");
+            char* temp = (char*)realloc(buffer, bufferSize);
+            if (!temp) 
+            {
+                fprintf(stderr, "Error: Unable to realloc buffer in file read\n");
                 fclose(file);
                 return NULL;
             }
+            buffer = temp;
         }
         // concat the line to the buffer
         strcat(buffer, line);  
