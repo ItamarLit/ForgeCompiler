@@ -15,7 +15,6 @@
 
 void free_key(void* key);
 void get_data(char** dataArr, char* line, int isAction);
-unsigned long djb2Hash(const char* str);
 unsigned long hash_func(void* key, int map_size);
 void fill_table(HashMap** map, char* filename, char** symbolArray, int symbolCount, int isAction, void (*PutRow)(int state, const char* symbol, const char* value, HashMap* map));
 static int equal_func(void* a, void* b);

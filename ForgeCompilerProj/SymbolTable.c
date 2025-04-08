@@ -180,6 +180,104 @@ char* change_name(const char* name) {
 }
 
 /// <summary>
+/// Helper function that handles var declerations when building the symbol table
+/// </summary>
+/// <param name="node"></param>
+/// <param name="currentTable"></param>
+/// <param name="errorCount"></param>
+static void handle_var_declaration(ASTNode* node, SymbolTable* currentTable, int* errorCount) {
+    char* varName = node->children[1]->token->lexeme;
+    char* newVarName = change_name(varName);
+    char* varType = node->children[0]->token->lexeme;
+
+    if (get_map_value(currentTable->table, newVarName)) {
+        output_error(SEMANTIC, "Variable %s already declared in this scope\n", varName);
+        (*errorCount)++;
+    }
+    else {
+        Placement place;
+        int offset = 0;
+
+        // check if the var Dec is global or local using parent
+        if (currentTable->parent == NULL) {
+            place = IS_GLOBAL;
+        }
+        else {
+            place = IS_LOCAL;
+            if (strcmp(varType, "string") == 0) {
+                // reserve 72 bytes
+                currentTable->localOffset -= 72; 
+            }
+            else {
+                // reserve 8 bytes
+                currentTable->localOffset -= 8; 
+            }
+            offset = currentTable->localOffset;
+        }
+
+        insert_symbol(currentTable->table, newVarName, convert_string_type(varType), 0,
+            TYPE_UNDEFINED, NULL, 0, node->children[1]->token->tokenRow, place, offset);
+    }
+    free(newVarName);
+}
+
+/// <summary>
+/// Helper function to handle func declerations when building the symbol table
+/// </summary>
+/// <param name="node"></param>
+/// <param name="currentTable"></param>
+/// <param name="errorCount"></param>
+static void handle_func_declaration(ASTNode* node, SymbolTable* currentTable, int* errorCount) {
+    // get the function name
+    char* funcName = node->children[0]->token->lexeme;
+    char* newFuncName = change_name(funcName);
+    // get the paramlist node
+    ASTNode* paramList = node->children[1];
+    // get the return type
+    char* returnType = node->children[2]->token->lexeme;
+    // check if the func is declared
+    if (get_map_value(currentTable->table, newFuncName)) {
+        output_error(SEMANTIC, "Function %s already declared\n", newFuncName);
+        (*errorCount)++;
+    }
+    // go over all param dec in func 
+    char** paramNames = NULL;
+    Type* paramTypes = NULL;
+    // get the types and names
+    int decCount = extract_function_parameters(paramList, &paramNames, &paramTypes);
+    // insert the func into the table
+    insert_symbol(currentTable->table, newFuncName, convert_string_type(returnType), 1, convert_string_type(returnType), paramTypes, decCount, IGNORE_LINE, IS_GLOBAL, -1);
+    free(newFuncName);
+    // create new symbol table for func scope
+    SymbolTable* functionScope = create_new_scope(currentTable);
+    node->scope = functionScope;
+    // fill the function scope with the params
+    for (int i = 0; i < decCount; i++) {
+        // check what size is needed for param
+        int sizeNeeded = (paramTypes[i] == TYPE_STRING) ? 72 : 8;
+        functionScope->localOffset -= sizeNeeded;
+        // treat all params as local
+        int offset = functionScope->localOffset;
+        Placement place = IS_LOCAL;
+        // insert params
+        char* newVarName = change_name(paramNames[i]);
+        insert_symbol(functionScope->table, newVarName, paramTypes[i], 0, TYPE_UNDEFINED, NULL, 0, IGNORE_LINE, place, offset);
+        free(paramNames[i]);
+        free(newVarName);
+    }
+    if (paramNames) {
+        free(paramNames);
+    }
+    if (paramTypes) {
+        free(paramTypes);
+    }
+    // go over function body
+    create_AST_symbol_table(node->children[3], functionScope, errorCount);
+}
+
+
+
+/// <summary>
 /// This is the main func that creates the symbol table "Tree"
 /// </summary>
 /// <param name="node"></param>
@@ -189,91 +287,11 @@ void create_AST_symbol_table(ASTNode* node, SymbolTable* currentTable, int* erro
     if (!node) return;
 
     if (node->lable && strcmp(node->lable, "VarDeclaration") == 0) {
-        // get the var name
-        char* varName = node->children[1]->token->lexeme;  
-        char* newVarName = change_name(varName);
-        // get the var type
-        char* varType = node->children[0]->token->lexeme;  
-        // check if the var exists already in the table
-        if (get_map_value(currentTable->table, newVarName)) {
-            output_error(SEMANTIC, "Variable % s already declared in this scope\n", varName);
-            (*errorCount)++;
-        }
-        else {
-            Placement place;
-            int offset = 0;
-            // check if the var Dec is global or local using parent
-            if (currentTable->parent == NULL) {
-                // global
-                place = IS_GLOBAL;
-            }
-            else {
-                // local
-                place = IS_LOCAL;
-                if (strcmp(varType, "string") == 0) {
-                    // reserve 72 bytes on stack
-                    currentTable->localOffset -= 72;
-                }
-                else 
-                {
-                    // reserve 8 bytes on stack
-                    currentTable->localOffset -= 8;
-                }
-                offset = currentTable->localOffset;
-            }
-            // insert the symbol
-            insert_symbol(currentTable->table, newVarName, convert_string_type(varType), 0, TYPE_UNDEFINED, NULL, 0, node->children[1]->token->tokenRow, place, offset);
-        }
-        free(newVarName);
-
+        handle_var_declaration(node, currentTable, errorCount);
     }
     // handle new scope for functions
     else if ( node->lable && strcmp(node->lable, "FuncDeclaration") == 0) {
-        // get the function name
-        char* funcName = node->children[0]->token->lexeme; 
-        char* newFuncName = change_name(funcName);
-        // get the paramlist node
-        ASTNode* paramList = node->children[1]; 
-        // get the return type
-        char* returnType = node->children[2]->token->lexeme; 
-        // check if the func is declared
-        if (get_map_value(currentTable->table, newFuncName)) {
-            output_error(SEMANTIC, "Function %s already declared\n", newFuncName);
-            (*errorCount)++;
-        }
-        // go over all param dec in func 
-        char** paramNames = NULL;
-        Type* paramTypes = NULL;
-        // get the types and names
-        int decCount = extract_function_parameters(paramList, &paramNames, &paramTypes);
-        // insert the func into the table
-        insert_symbol(currentTable->table, newFuncName, convert_string_type(returnType), 1, convert_string_type(returnType), paramTypes, decCount, IGNORE_LINE, IS_GLOBAL, -1);
-        free(newFuncName);
-        // create new symbol table for func scope
-        SymbolTable* functionScope = create_new_scope(currentTable);
-        node->scope = functionScope;      
-        // fill the function scope with the params
-        for (int i = 0; i < decCount; i++) {
-            // check what size is needed for param
-            int sizeNeeded = (paramTypes[i] == TYPE_STRING) ? 72 : 8;
-            functionScope->localOffset -= sizeNeeded;
-            // treat all params as local
-            int offset = functionScope->localOffset;
-            Placement place = IS_LOCAL; 
-            // insert params
-            char* newVarName = change_name(paramNames[i]);
-            insert_symbol(functionScope->table, newVarName, paramTypes[i], 0,TYPE_UNDEFINED, NULL, 0,IGNORE_LINE, place, offset);
-            free(paramNames[i]);
-            free(newVarName);
-        }
-        if (paramNames) {
-            free(paramNames);
-        }
-        if (paramTypes) {
-            free(paramTypes);
-        }
-        // go over function body
-        create_AST_symbol_table(node->children[3], functionScope, errorCount);
+        handle_func_declaration(node, currentTable, errorCount);
     }
     // handle new scope for blocks
     else if (node->lable && strcmp(node->lable, "Block") == 0) {
