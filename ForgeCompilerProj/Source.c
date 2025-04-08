@@ -83,6 +83,86 @@ int main(int argc, char* argv[])
 }
 
 /// <summary>
+/// Helper function that runs lexer 
+/// </summary>
+/// <param name="inputStr"></param>
+/// <param name="ptoken_array"></param>
+/// <returns>Returns true if need to stop compilation</returns>
+static int run_lexer(char* inputStr, pTokenArray* ptoken_array) {
+    HashMap* state_machine = NULL;
+    init_state_machine(&state_machine);
+    init_token_array(ptoken_array);
+    int lexErrors = 0;
+    lex(state_machine, inputStr, *ptoken_array, &lexErrors);
+    free_hashmap(&state_machine);
+    if (lexErrors) {
+        fprintf(stderr, "**************************\n");
+        fprintf(stderr, "Lexing failed with %d errors.\n", lexErrors);
+        fprintf(stderr, "**************************\n");
+        return 1;
+    }
+    printf("\n\nInput passed lexing.\n\n");
+    return 0;
+}
+
+/// <summary>
+/// Helper function that runs parser
+/// </summary>
+/// <param name="ptoken_array"></param>
+/// <param name="parseErrors"></param>
+/// <param name="astFlag"></param>
+/// <returns>Returns Null if need to stop compilation else returns AST</returns>
+static ASTNode* run_parser(pTokenArray ptoken_array, int* parseErrors, int astFlag) {
+    ASTNode* root = parse(ptoken_array, parseErrors);
+    if (*parseErrors || !root) {
+        fprintf(stderr, "**************************\n");
+        fprintf(stderr, "Parsing failed with %d errors.\n", *parseErrors);
+        fprintf(stderr, "**************************\n");
+        return NULL;
+    }
+    root = compress_AST(root);
+    normalize_AST(root);
+    printf("\n\nInput passed parsing.\n\n");
+    if (astFlag) {
+        printf("Here is the AST:\n");
+        print_AST(root, 0);
+    }
+    return root;
+}
+
+/// <summary>
+/// Helper function that runs the semantic analysis
+/// </summary>
+/// <param name="root"></param>
+/// <param name="symbolFlag"></param>
+/// <returns>Returns true if need to stop compilation</returns>
+static int run_semantic_analysis(ASTNode* root, int symbolFlag) {
+    int semErrors = 0;
+    SymbolTable* globalTable = create_new_scope(NULL);
+    if (!globalTable) {
+        fprintf(stderr, "**************************\n");
+        fprintf(stderr, "Failed to create global symbol table.\n");
+        fprintf(stderr, "**************************\n");
+        return 1;
+    }
+    create_AST_symbol_table(root, globalTable, &semErrors);
+    root->scope = globalTable;
+    if (symbolFlag) print_symbol_tables(root);
+    int analyzeErrors = 0;
+    analyze(root, &analyzeErrors);
+    if (semErrors || analyzeErrors) {
+        fprintf(stderr, "**************************\n");
+        fprintf(stderr, "Semantic analysis failed with %d symbol errors and %d analysis errors.\n", semErrors, analyzeErrors);
+        fprintf(stderr, "**************************\n");
+        return 1;
+    }
+    printf("\n\nInput passed semantic analysis.\n\n");
+    return 0;
+}
+
+
+
+/// <summary>
 /// This is the main compiler function it runs the compiler and returns an exit code
 /// </summary>
 /// <param name="outputPath"></param>
@@ -92,74 +172,31 @@ int main(int argc, char* argv[])
 /// <param name="symbolFlag"></param>
 /// <param name="asmFlag"></param>
 /// <returns>Exit code</returns>
-static int compile(const char* outputPath, char* inputStr, int tokensFlag, int astFlag, int symbolFlag, int asmFlag)
-{
-    // set up data structures for the lexer
-    HashMap* state_machine = NULL;
-    init_state_machine(&state_machine);
-    pTokenArray ptoken_array;
-    init_token_array(&ptoken_array);
-    int lexErrors = 0;
+static int compile(const char* outputPath, char* inputStr, int tokensFlag, int astFlag, int symbolFlag, int asmFlag) {
     // Lexical analysis
-    lex(state_machine, inputStr, ptoken_array, &lexErrors);
-    free(inputStr);
-    free_hashmap(&state_machine);
-    if (lexErrors)
-    {
-        fprintf(stderr, "**************************\n");
-        fprintf(stderr, "Lexing failed with %d errors.\n", lexErrors);
-        fprintf(stderr, "**************************\n");
+    pTokenArray ptoken_array;
+    if (run_lexer(inputStr, &ptoken_array)) {
+        free(inputStr);
         return 1;
     }
-    printf("\n\nInput passed lexing.\n\n");
-    if(tokensFlag) print_tokens(ptoken_array);
+    free(inputStr);
+    // print data if flag
+    if (tokensFlag) print_tokens(ptoken_array);
     // Syntax analysis
     int parseErrors = 0;
-    ASTNode* root = parse(ptoken_array, &parseErrors);
-    if (parseErrors || !root) {
-        fprintf(stderr, "**************************\n");
-        fprintf(stderr, "Parsing failed with %d errors.\n", parseErrors);
-        fprintf(stderr, "**************************\n");
+    ASTNode* root = run_parser(ptoken_array, &parseErrors, astFlag);
+    if (!root) {
         free_token_array(&ptoken_array);
         return 1;
     }
-    // AST compression
-    root = compress_AST(root);
-    // AST normalization
-    normalize_AST(root);
-    printf("\n\nInput passed parsing.\n\n");
-    if (astFlag) {
-        printf("Here is the AST:\n");
-        print_AST(root, 0);
-    }
-    // Semantic analysis phase
-    int semErrors = 0;
-    SymbolTable* globalTable = create_new_scope(NULL);
-    if (!globalTable) {
-        fprintf(stderr, "**************************\n");
-        fprintf(stderr, "Failed to create global symbol table.\n");
-        fprintf(stderr, "**************************\n");
-        free_AST_node(root);
-        free_token_array(&ptoken_array);
-        return 1;
-    }
-    // create the symbol table
-    create_AST_symbol_table(root, globalTable, &semErrors);
-    root->scope = globalTable;
-    if(symbolFlag) print_symbol_tables(root);
-    int analyzeErrors = 0;
-    analyze(root, &analyzeErrors);
-    if (semErrors || analyzeErrors) {
-        fprintf(stderr, "**************************\n");
-        fprintf(stderr, "Semantic analysis failed with %d symbol errors and %d analysis errors.\n", semErrors, analyzeErrors);
-        fprintf(stderr, "**************************\n");
+    // Semantic analysis 
+    if (run_semantic_analysis(root, symbolFlag)) {
         free_token_array(&ptoken_array);
         free_AST_node(root);
         return 1;
     }
-    printf("\n\nInput passed semantic analysis.\n\n");
-    // reduce Global vars
     reduce_global_vars(root);
+    // Code creation
     HashMap* stringTable = create_string_table(root);
     gen_asm(outputPath, root, stringTable, asmFlag);
     // Cleanup
