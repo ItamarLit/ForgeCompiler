@@ -12,8 +12,8 @@ static void gen_string_literal(ASTNode* node, HashMap* stringTable);
 static void gen_identifier(ASTNode* node, HashMap* stringTable);
 static void gen_unary_expr(ASTNode* node, HashMap* stringTable);
 static void gen_binary_expr(ASTNode* node, HashMap* stringTable);
-static void gen_logical_and(ASTNode* node, HashMap* stringTable);
-static void gen_logical_or(ASTNode* node, HashMap* stringTable);
+static void gen_and(ASTNode* node, HashMap* stringTable);
+static void gen_or(ASTNode* node, HashMap* stringTable);
 static void gen_func_call_expr(ASTNode* node, HashMap* stringTable);
 static void gen_equality_expr(ASTNode* node, HashMap* stringTable);
 static void gen_relational_expr(ASTNode* node, HashMap* stringTable);
@@ -28,8 +28,8 @@ static HandlerEntry exprTable[] =
     {"UnaryExpr", gen_unary_expr},
     {"AddExpr", gen_binary_expr},
     {"MulExpr", gen_binary_expr},
-    {"AndExpr", gen_logical_and},
-    {"OrExpr", gen_logical_or},
+    {"AndExpr", gen_and},
+    {"OrExpr", gen_or},
     {"FuncCallExpr", gen_func_call_expr},
     {"EqualityExpr", gen_equality_expr},
     {"RelationalExpr", gen_relational_expr},
@@ -37,6 +37,11 @@ static HandlerEntry exprTable[] =
 };
 
 
+/// <summary>
+/// This func will go over the expr and gen code based on the type
+/// </summary>
+/// <param name="node"></param>
+/// <param name="stringTable"></param>
 void gen_expr(ASTNode* node, HashMap* stringTable)
 {
     if (!node) return;
@@ -54,7 +59,7 @@ void gen_expr(ASTNode* node, HashMap* stringTable)
     
 }
 
-
+// Functions to gen literals code
 static void gen_int_literal(ASTNode* node, HashMap* stringTable)
 {
     int r = scratch_alloc();
@@ -85,6 +90,11 @@ static void gen_string_literal(ASTNode* node, HashMap* stringTable)
     node->reg = r;
 }
 
+/// <summary>
+/// This is a helper func that generates identifier code
+/// </summary>
+/// <param name="node"></param>
+/// <param name="stringTable"></param>
 static void gen_identifier(ASTNode* node, HashMap* stringTable) 
 {
     int r = scratch_alloc();
@@ -94,6 +104,11 @@ static void gen_identifier(ASTNode* node, HashMap* stringTable)
     node->reg = r;
 }
 
+/// <summary>
+/// This function generates unary expr code
+/// </summary>
+/// <param name="node"></param>
+/// <param name="stringTable"></param>
 static void gen_unary_expr(ASTNode* node, HashMap* stringTable) 
 {
     // gen code only for - expr
@@ -109,6 +124,11 @@ static void gen_unary_expr(ASTNode* node, HashMap* stringTable)
     }
 }
 
+/// <summary>
+/// This func handles binary expr code gen
+/// </summary>
+/// <param name="node"></param>
+/// <param name="stringTable"></param>
 static void gen_binary_expr(ASTNode* node, HashMap* stringTable)
 {
     StringLabelPair opTable[] =
@@ -155,7 +175,12 @@ static void gen_binary_expr(ASTNode* node, HashMap* stringTable)
     node->reg = r1;
 }
 
-void gen_logical_and(ASTNode* node, HashMap* stringTable)
+/// <summary>
+/// This func generates code for and 
+/// </summary>
+/// <param name="node"></param>
+/// <param name="stringTable"></param>
+void gen_and(ASTNode* node, HashMap* stringTable)
 {
     // gen the left expr
     gen_expr(node->children[0], stringTable);
@@ -190,8 +215,12 @@ void gen_logical_and(ASTNode* node, HashMap* stringTable)
     node->reg = result;
 }
 
-
-void gen_logical_or(ASTNode* node, HashMap* stringTable)
+/// <summary>
+/// This func generates code for or
+/// </summary>
+/// <param name="node"></param>
+/// <param name="stringTable"></param>
+void gen_or(ASTNode* node, HashMap* stringTable)
 {
     // gen left expr
     gen_expr(node->children[0], stringTable);
@@ -224,6 +253,11 @@ void gen_logical_or(ASTNode* node, HashMap* stringTable)
     node->reg = result;
 }
 
+/// <summary>
+/// This func generates code for function calls
+/// </summary>
+/// <param name="node"></param>
+/// <param name="stringTable"></param>
 static void gen_func_call_expr(ASTNode* node, HashMap* stringTable)
 {
     const char* funcName = node->children[0]->token->lexeme;
@@ -273,6 +307,11 @@ static void gen_func_call_expr(ASTNode* node, HashMap* stringTable)
     insert_line("add rsp, %d\n", stackSpace + 32);
 }
 
+/// <summary>
+/// This func generates code for == or != 
+/// </summary>
+/// <param name="node"></param>
+/// <param name="stringTable"></param>
 static void gen_equality_expr(ASTNode* node, HashMap* stringTable) 
 {
     gen_expr(node->children[0], stringTable);
@@ -308,6 +347,11 @@ static void gen_equality_expr(ASTNode* node, HashMap* stringTable)
     node->reg = r1;
 }
 
+/// <summary>
+/// This func generates code for relational expr
+/// </summary>
+/// <param name="node"></param>
+/// <param name="stringTable"></param>
 static void gen_relational_expr(ASTNode* node, HashMap* stringTable)
 {
     StringLabelPair opTable[] =

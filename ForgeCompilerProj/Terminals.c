@@ -1,6 +1,6 @@
 #include "Terminals.h"
 
-// fill the terminals array
+// terminals array
 const char* Terminals[] = {
     ";",
     "mold",

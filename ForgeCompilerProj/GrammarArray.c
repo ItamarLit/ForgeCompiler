@@ -5,9 +5,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-
+/// <summary>
+/// Helper function that counts tokens
+/// </summary>
+/// <param name="rhs"></param>
+/// <returns>TokenCount</returns>
 int count_tokens(const char* rhs) {
-    int token_count = 1; // At least one token exists
+    // at least one token exists
+    int token_count = 1;
     for (int i = 0; rhs[i] != '\0'; i++) {
         if (isspace(rhs[i])) {
             token_count++;

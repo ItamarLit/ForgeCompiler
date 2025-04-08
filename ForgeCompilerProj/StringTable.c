@@ -29,7 +29,11 @@ char* gen_str_label()
 	return label;
 }
 
-
+/// <summary>
+/// This function inserts a string into the string table
+/// </summary>
+/// <param name="map"></param>
+/// <param name="string"></param>
 void insertString(HashMap* map, char* string) {
     StringEntry* entry = (StringEntry*)malloc(sizeof(StringEntry));
     if (!entry) {
@@ -43,22 +47,39 @@ void insertString(HashMap* map, char* string) {
     insert_new_value(strdup(string), entry, map);
 }
 
+/// <summary>
+/// This func returns the value 
+/// </summary>
+/// <param name="map"></param>
+/// <param name="string"></param>
+/// <returns>Returns String entry from hashmap if found</returns>
 static StringEntry* get_map_value(HashMap* map, char* string) {
     return (StringEntry*)get_hashmap_value(string, map);
 }
 
+/// <summary>
+/// Function that frees a string entry
+/// </summary>
+/// <param name="value"></param>
 void freeStringEntry(void* value) {
     StringEntry* entry = (StringEntry*)value;
     free(entry->label);
     free(entry);
 }
 
+/// <summary>
+/// Equal func
+/// </summary>
+/// <param name="a"></param>
+/// <param name="b"></param>
+/// <returns>Returns true / false if equal</returns>
 static int equal_func(void* a, void* b) {
     char* k1 = (char*)a;
     char* k2 = (char*)b;
     return strcmp(k1, k2) == 0;
 }
 
+// Print functions
 static void print_string_key(void* key) {
     printf("[Key: string: %s ", (char*)key);
 }

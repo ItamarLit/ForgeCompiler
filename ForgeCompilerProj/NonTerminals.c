@@ -1,5 +1,6 @@
 #include "NonTerminals.h"
 
+// array of non terminals 
 const char* NonTerminals[] = {
     "Program'",
     "Program",

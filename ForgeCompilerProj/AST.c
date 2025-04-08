@@ -7,16 +7,21 @@
 #include <stdio.h>
 
 
-static const char* REDUNDANT_NODES[] = {
+static const char* RedundantNodes[] = {
     "if", "meet", "then", "else", "while", "for", "in", "forge", "return",
     "{", "}", ";", "(", ")", ",", ":", "=>", "remold", "mold"
 };
 
-const int REDUNDANT_NODE_COUNT = sizeof(REDUNDANT_NODES) / sizeof(REDUNDANT_NODES[0]);
+const int REDUNDANT_NODE_COUNT = sizeof(RedundantNodes) / sizeof(RedundantNodes[0]);
 
+/// <summary>
+/// This is a helper func that checks if a lable is in the redundent nodes arr
+/// </summary>
+/// <param name="label"></param>
+/// <returns>Return 1 if it is 0 if it isnt</returns>
 static int is_redundant_node(const char* label) {
     for (int i = 0; i < REDUNDANT_NODE_COUNT; i++) {
-        if (strcmp(label, REDUNDANT_NODES[i]) == 0) {
+        if (strcmp(label, RedundantNodes[i]) == 0) {
             return 1; 
         }
     }
@@ -43,6 +48,11 @@ ASTNode* create_AST_node(Token* token, const char* lable) {
     return node;
 }
 
+/// <summary>
+/// This func adds a child to the children arr
+/// </summary>
+/// <param name="child"></param>
+/// <param name="parent"></param>
 void add_child(ASTNode* child, ASTNode* parent) {
     // alocate the array of pointers of children
     ASTNode** temp = (ASTNode**)realloc(parent->children, sizeof(ASTNode*) * (parent->childCount + 1));
@@ -54,7 +64,8 @@ void add_child(ASTNode* child, ASTNode* parent) {
     parent->children = temp;
     parent->children[parent->childCount] = child;
     parent->childCount++;
-    child->parent = parent; // add the parent pointer
+    // add the parent pointer
+    child->parent = parent; 
 }
 
 
@@ -82,6 +93,11 @@ void free_AST_node(ASTNode* node) {
     free(node);
 }
 
+/// <summary>
+/// This is a helper func used to print the AST
+/// </summary>
+/// <param name="root"></param>
+/// <param name="tabcount"></param>
 void print_AST(ASTNode* root, int tabcount) 
 {
     if (root == NULL) {
@@ -130,6 +146,11 @@ static void recursively_compress_children(ASTNode* node) {
     remove_null_children(node);
 }
 
+/// <summary>
+/// This is a func that removes a redundent labeld node
+/// </summary>
+/// <param name="node"></param>
+/// <returns></returns>
 static ASTNode* remove_redundant_labeled_node(ASTNode* node) {
     if (!node) return NULL;
 
@@ -142,7 +163,6 @@ static ASTNode* remove_redundant_labeled_node(ASTNode* node) {
             return NULL;
         }
     }
-
     return node;
 }
 
@@ -242,6 +262,11 @@ static void merge_nested_lists(ASTNode* node, const char* targetLabel) {
     node->childCount = mergedCount;
 }
 
+/// <summary>
+/// Helper func that checks if a node is kept if it has a single child
+/// </summary>
+/// <param name="label"></param>
+/// <returns>True / False based on the check</returns>
 static int is_kept_single_node(const char* label) {
     const char* singles[] = {
         "Block", "ReturnStatement",  "ParamList", "ArgumentList",
@@ -253,6 +278,11 @@ static int is_kept_single_node(const char* label) {
     return 0;
 }
 
+/// <summary>
+/// This is a helper func that checks if a node is kept if it has no children
+/// </summary>
+/// <param name="label"></param>
+/// <returns>True / False based on check</returns>
 static int is_kept_empty_node(const char* label) {
     const char* empties[] = { "Block", "ParamList", "ArgumentList", "ReturnStatement" };
     for (int i = 0; i < sizeof(empties) / sizeof(empties[0]); i++) {

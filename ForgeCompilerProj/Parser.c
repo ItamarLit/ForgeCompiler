@@ -443,7 +443,7 @@ ASTNode* parse(pTokenArray tokenArray, int* errorCount)
             }
            
         }
-       
+        if(action) free(action);
     }
     // free all the used data structures
     free_parser_resources(array, &actionTable, &gotoTable, s);
