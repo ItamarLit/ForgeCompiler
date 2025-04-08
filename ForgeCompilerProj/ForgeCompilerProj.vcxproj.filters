@@ -128,9 +128,6 @@
     <ClCompile Include="NonTerminals.c">
       <Filter>Source Files\AST</Filter>
     </ClCompile>
-    <ClCompile Include="CodeGenerator.c">
-      <Filter>Source Files\CodeGen</Filter>
-    </ClCompile>
     <ClCompile Include="Expressions.c">
       <Filter>Source Files\CodeGen</Filter>
     </ClCompile>
@@ -187,6 +184,9 @@
     </ClCompile>
     <ClCompile Include="ErrorHandler.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CodeGenerator.c">
+      <Filter>Source Files\AST</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

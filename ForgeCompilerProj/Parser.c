@@ -28,7 +28,7 @@ static void print_key(void* key);
 /// <param name="state"></param>
 /// <param name="symbol"></param>
 /// <returns>Returns a pointer to the key</returns>
-MapKey* get_key(int state, char* symbol) {
+static MapKey* get_key(int state, char* symbol) {
     // allocate key
     MapKey* key = malloc(sizeof(MapKey));
     if (!key) {
@@ -47,7 +47,7 @@ MapKey* get_key(int state, char* symbol) {
 /// <param name="terminal"></param>
 /// <param name="action"></param>
 /// <param name="map"></param>
-static void put_state(int state,const char* terminal, const char* action, HashMap* map) {
+static void put_state(int state, char* terminal, const char* action, HashMap* map) {
     // allocate key
     MapKey* key = get_key(state, terminal);
     // allocate the value
@@ -127,6 +127,7 @@ void get_data(char** dataArr, char* line, int isAction)
             char* token = (char*)malloc(length + 1);
             if (!token) {
                 printf("Memory allocation failed\n");
+                return;
             }
             memcpy(token, start, length);
             token[length] = '\0';
@@ -166,11 +167,11 @@ unsigned long hash_func(void* key, int map_size) {
 /// <param name="symbolCount"></param>
 /// <param name="isAction"></param>
 /// <param name="PutRow"></param>
-void fill_table(HashMap** map, char* filename, char** symbolArray, int symbolCount, int isAction,
+void fill_table(HashMap** map, char* filename,const char** symbolArray, int symbolCount, int isAction,
     void (*PutRow)(int state, const char* symbol, const char* value, HashMap* map))
 {
     char* fileData = read_file(filename);
-    char* saveptr1;
+    char* saveptr1 = NULL;
     char* line = strtok_s(fileData, "\n", &saveptr1);
     int stateCount = 0;
     while (line != NULL) {
@@ -182,6 +183,11 @@ void fill_table(HashMap** map, char* filename, char** symbolArray, int symbolCou
 
         // get the line data
         char** tempData = (char**)malloc(symbolCount * sizeof(char*));
+        if (!tempData) 
+        {
+            fprintf(stderr, "Unable to malloc memory for tempData array in fill_table\n");
+            return;
+        }
         char* lineCopy = strdup(line);
         get_data(tempData, lineCopy, isAction);
         free(lineCopy);
@@ -230,7 +236,7 @@ static char* get_map_value(HashMap* map, int currentState, char* symbol, int isA
 /// </summary>
 /// <param name="token"></param>
 /// <returns>Returns the terminal of the token</returns>
-const char* token_type_to_terminal(Token* token) {
+static char* token_type_to_terminal(Token* token) {
     switch (token->type) {
     case IDENTIFIER: return "IDENTIFIER";
     case INT_LITERAL: return "INT_LITERAL";
@@ -246,7 +252,7 @@ const char* token_type_to_terminal(Token* token) {
 /// <param name="nextState"></param>
 /// <param name="token"></param>
 /// <param name="nodeLable"></param>
-void shift(Stack* s, int nextState, Token* token, const char* nodeLable)
+static void shift(Stack* s, int nextState, Token* token, const char* nodeLable)
 {
     StackData tempData;
     tempData.node = create_AST_node(token, nodeLable);
@@ -262,7 +268,7 @@ void shift(Stack* s, int nextState, Token* token, const char* nodeLable)
 /// <param name="tokenArray"></param>
 /// <param name="currentIndex"></param>
 /// <returns>Returns the next index to start parsing from</returns>
-int recover_from_error(pTokenArray tokenArray, int currentIndex) {
+static int recover_from_error(pTokenArray tokenArray, int currentIndex) {
     // array of the possible ending tokens
     const char* endingTokens[] = { ";", "}", "$" };
     int endingTokensCount = 3;
@@ -288,7 +294,7 @@ int recover_from_error(pTokenArray tokenArray, int currentIndex) {
 /// <param name="currentIndex"></param>
 /// <param name="tokenArray"></param>
 /// <param name="finishedParsing"></param>
-void handle_syntax_error(int* errorCount,Stack** s,int* currentIndex,pTokenArray tokenArray,int* finishedParsing)
+static void handle_syntax_error(int* errorCount,Stack** s,int* currentIndex,pTokenArray tokenArray,int* finishedParsing)
 {
     // add error count
     (*errorCount)++;
@@ -325,7 +331,7 @@ void handle_syntax_error(int* errorCount,Stack** s,int* currentIndex,pTokenArray
 /// <param name="i"></param>
 /// <param name="errorCount"></param>
 /// <param name="finishedParsing"></param>
-void reduce(int ruleIndex, Stack** s, GrammarArray* array, HashMap* gotoTable, pTokenArray tokenArray, int* i, int* errorCount, int* finishedParsing)
+static void reduce(int ruleIndex, Stack** s, GrammarArray* array, HashMap* gotoTable, pTokenArray tokenArray, int* i, int* errorCount, int* finishedParsing)
 {
     GrammarRule* rule = array->rules[ruleIndex];
     // get the amount of children in the new node
@@ -334,6 +340,11 @@ void reduce(int ruleIndex, Stack** s, GrammarArray* array, HashMap* gotoTable, p
     ASTNode* newNode = create_AST_node(NULL, rule->leftRule);
     // create the temp children array
     ASTNode** nodeArr = (ASTNode**)malloc(sizeof(ASTNode*) * childrenCount);
+    if (!nodeArr)
+    {
+        fprintf(stderr, "Unable to malloc memory for nodeArr in reduce\n");
+        return;
+    }
     // pop from the stack
     for (int j = 0; j < rule->rightWordCount * 2; j++) {
         StackEntry* curData = pop(*s);
@@ -364,7 +375,7 @@ void reduce(int ruleIndex, Stack** s, GrammarArray* array, HashMap* gotoTable, p
     if (gotoState) free(gotoState);
 }
 
-void free_parser_resources(GrammarArray* array, HashMap** actionTable, HashMap** gotoTable, Stack* s)
+static void free_parser_resources(GrammarArray* array, HashMap** actionTable, HashMap** gotoTable, Stack* s)
 {
     // free all the resources used to parse the input
     free_grammar_array(array);

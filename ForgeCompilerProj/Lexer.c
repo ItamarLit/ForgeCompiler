@@ -298,7 +298,7 @@ TokenType identify_keyowrd(char* lexeme) {
 /// <param name="current_lexeme"></param>
 /// <param name="lexeme_index"></param>
 /// <param name="token_state"></param>
-void add_and_reset_lexer(pTokenArray ptoken_array, State* current_state, State* last_accepting_state, char* current_lexeme, int* lexeme_index, State token_state, int row, int* col)
+static void add_and_reset_lexer(pTokenArray ptoken_array, State* current_state, State* last_accepting_state, char* current_lexeme, int* lexeme_index, State token_state, int row, int* col)
 {
     if (*lexeme_index != 0) {
         current_lexeme[*lexeme_index] = '\0';
@@ -319,7 +319,7 @@ void add_and_reset_lexer(pTokenArray ptoken_array, State* current_state, State* 
 /// <param name="currentState"></param>
 /// <param name="inputChar"></param>
 /// <returns>Returns the next state or -1 if no next state avalible</returns>
-int get_next_state(HashMap* map, int currentState, char inputChar)
+static int get_next_state(HashMap* map, int currentState, char inputChar)
 {
     FsmKey temp;
     temp.currentState = currentState;
@@ -329,7 +329,7 @@ int get_next_state(HashMap* map, int currentState, char inputChar)
 }
 
 
-void handle_lexeme_too_longError(char** input, char* current_lexeme, int* lexeme_index, pTokenArray ptoken_array, int* errorCount, int* row, int* col, State* current_state, State* last_accepting_state, HashMap* map)
+static void handle_lexeme_too_longError(char** input, char* current_lexeme, int* lexeme_index, pTokenArray ptoken_array, int* errorCount, int* row, int* col, State* current_state, State* last_accepting_state, HashMap* map)
 {
     // Null terminate
     current_lexeme[*lexeme_index] = '\0';
@@ -365,7 +365,7 @@ void handle_lexeme_too_longError(char** input, char* current_lexeme, int* lexeme
 /// <param name="ptoken_array"></param>
 /// <param name="current_state"></param>
 /// <param name="last_accepting_state"></param>
-void handle_error_token(HashMap* map, char** input, char* current_lexeme, int* lexeme_index, pTokenArray ptoken_array, State* current_state, State* last_accepting_state, int row, int* col, int* errorCount)
+static void handle_error_token(HashMap* map, char** input, char* current_lexeme, int* lexeme_index, pTokenArray ptoken_array, State* current_state, State* last_accepting_state, int row, int* col, int* errorCount)
 {   // flag
     int overflow = 0;
     // go over input while error
@@ -396,7 +396,7 @@ void handle_error_token(HashMap* map, char** input, char* current_lexeme, int* l
     add_and_reset_lexer(ptoken_array, current_state, last_accepting_state, current_lexeme, lexeme_index, ERROR_TOKEN_STATE, row, col);
 }
 
-void check_new_row(char input, int* row, int* col) 
+static void check_new_row(char input, int* row, int* col) 
 {
     if (input == '\n') {
         // reset col counter on new row

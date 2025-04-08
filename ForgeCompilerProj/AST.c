@@ -14,7 +14,7 @@ static const char* REDUNDANT_NODES[] = {
 
 const int REDUNDANT_NODE_COUNT = sizeof(REDUNDANT_NODES) / sizeof(REDUNDANT_NODES[0]);
 
-int is_redundant_node(const char* label) {
+static int is_redundant_node(const char* label) {
     for (int i = 0; i < REDUNDANT_NODE_COUNT; i++) {
         if (strcmp(label, REDUNDANT_NODES[i]) == 0) {
             return 1; 
@@ -106,7 +106,7 @@ void print_AST(ASTNode* root, int tabcount)
 /// This is a helper function that removes now NULL children from the array
 /// </summary>
 /// <param name="node"></param>
-void remove_null_children(ASTNode* node) {
+static void remove_null_children(ASTNode* node) {
     int newCount = 0;
     for (int i = 0; i < node->childCount; i++) {
         if (node->children[i] != NULL) {
@@ -120,7 +120,7 @@ void remove_null_children(ASTNode* node) {
 /// This is a helper function that compresses children of a given node
 /// </summary>
 /// <param name="node"></param>
-void recursively_compress_children(ASTNode* node) {
+static void recursively_compress_children(ASTNode* node) {
     for (int i = 0; i < node->childCount; i++) {
         node->children[i] = compress_AST(node->children[i]);
         if (node->children[i]) {
@@ -130,7 +130,7 @@ void recursively_compress_children(ASTNode* node) {
     remove_null_children(node);
 }
 
-ASTNode* remove_redundant_labeled_node(ASTNode* node) {
+static ASTNode* remove_redundant_labeled_node(ASTNode* node) {
     if (!node) return NULL;
 
     if (node->token && is_redundant_node(node->token->lexeme)) {
@@ -151,7 +151,7 @@ ASTNode* remove_redundant_labeled_node(ASTNode* node) {
 /// </summary>
 /// <param name="node"></param>
 /// <param name="targetLabel"></param>
-void merge_nested_lists(ASTNode* node, const char* targetLabel) {
+static void merge_nested_lists(ASTNode* node, const char* targetLabel) {
     // check if the node has the targetLable
     if (node->lable && strcmp(node->lable, targetLabel) == 0) {
         // create a merged node arr
@@ -167,8 +167,8 @@ void merge_nested_lists(ASTNode* node, const char* targetLabel) {
         for (int i = 0; i < node->childCount; i++) {
             ASTNode* child = node->children[i];
             // if the child has the same lable as target lable merge its children into the node
-            if (child && child->lable && strcmp(child->lable, targetLabel) == 0) {
-                // make space
+            if (child->lable && strcmp(child->lable, targetLabel) == 0) {
+                // make spaced
                 if (mergedCount + child->childCount > capacity) {
                     capacity = (mergedCount + child->childCount) * 2;
                     ASTNode** tempMerge = (ASTNode**)realloc(merged, sizeof(ASTNode*) * capacity);
@@ -181,11 +181,18 @@ void merge_nested_lists(ASTNode* node, const char* targetLabel) {
                 }
                 // move the children into the merged array
                 for (int c = 0; c < child->childCount; c++) {
-                    merged[mergedCount] = child->children[c];
-                    if (child->children[c]) {
-                        child->children[c]->parent = node;  
+                    // protect against buffer overrun
+                    if (mergedCount < capacity) { 
+                        merged[mergedCount] = child->children[c];
+                        if (child->children[c]) {
+                            child->children[c]->parent = node;
+                        }
+                        mergedCount++;
                     }
-                    mergedCount++;
+                    else {
+                        fprintf(stderr, "Buffer overrun in merge_nested_lists\n");
+                        return;
+                    }
                 }
                 // free the node and all its data since the children have been merged
                 free(child->children);
@@ -214,7 +221,7 @@ void merge_nested_lists(ASTNode* node, const char* targetLabel) {
     }
 }
 
-int is_kept_single_node(const char* label) {
+static int is_kept_single_node(const char* label) {
     const char* singles[] = {
         "Block", "ReturnStatement",  "ParamList", "ArgumentList",
         "GlobalItemList", "OptionalElse", "StatementList", "FuncCallExpr",
@@ -225,7 +232,7 @@ int is_kept_single_node(const char* label) {
     return 0;
 }
 
-int is_kept_empty_node(const char* label) {
+static int is_kept_empty_node(const char* label) {
     const char* empties[] = { "Block", "ParamList", "ArgumentList", "ReturnStatement" };
     for (int i = 0; i < sizeof(empties) / sizeof(empties[0]); i++) {
         if (strcmp(label, empties[i]) == 0) return 1;
@@ -295,6 +302,7 @@ void normalize_AST(ASTNode* node) {
         ASTNode** tempChildren = (ASTNode**)realloc(node->children, sizeof(ASTNode*) * (node->childCount + 1));
         if (!tempChildren) {
             fprintf(stderr, "Unable to realloc memory for children in AST\n");
+            return;
         }
         node->children = tempChildren;
         for (int i = node->childCount; i > 1; i--) {
@@ -314,6 +322,7 @@ void normalize_AST(ASTNode* node) {
         ASTNode** tempChildren = (ASTNode**)realloc(node->children, sizeof(ASTNode*) * (node->childCount + 1));
         if (!tempChildren) {
             fprintf(stderr, "Unable to realloc memory for children in AST\n");
+            return;
         }
         node->children = tempChildren;
         for (int i = node->childCount; i > 1; i--) {
@@ -333,6 +342,7 @@ void normalize_AST(ASTNode* node) {
         ASTNode** tempChildren = (ASTNode**)realloc(node->children, sizeof(ASTNode*) * (node->childCount + 1));
         if (!tempChildren) {
             fprintf(stderr, "Unable to realloc memory for children in AST\n");
+            return;
         }
         node->children = tempChildren;
         for (int i = node->childCount; i > 0; i--) {
@@ -357,7 +367,7 @@ void normalize_AST(ASTNode* node) {
 /// </summary>
 /// <param name="node"></param>
 /// <returns></returns>
-int evaluate_expr(ASTNode* node) {
+static int evaluate_expr(ASTNode* node) {
     if (!node) return 0;
 
     // literal

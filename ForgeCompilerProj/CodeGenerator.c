@@ -10,6 +10,7 @@
 #include "StringTable.h"
 #include "CodeGenUtils.h"
 #include "HelperFunctionsCodeGen.h"
+#include "TypeChecker.h"
 
 void gen_function(ASTNode* node, HashMap* stringTable);
 void gen_readonly_data(HashMap* stringTable);
@@ -19,7 +20,7 @@ void gen_readonly_data(HashMap* stringTable);
 /// This function will go over the root and generate the global variables
 /// </summary>
 /// <param name="root"></param>
-void gen_data_seg(ASTNode* root, HashMap* stringTable)
+static void gen_data_seg(ASTNode* root, HashMap* stringTable)
 {
 	// gen the lable
     insert_line(".data\n");
@@ -93,7 +94,7 @@ void gen_readonly_data(HashMap* stringTable) {
 /// This is the main code gen function, it will preform a Postorder traversel
 /// </summary>
 /// <param name="node"></param>
-void gen_code(ASTNode* node, HashMap* stringTable)
+static void gen_code(ASTNode* node, HashMap* stringTable)
 {
     if (!node) return;
     // go over children
@@ -136,7 +137,7 @@ static int count_local_var_bytes(ASTNode* node)
 /// </summary>
 /// <param name="paramList"></param>
 /// <returns>Returns the count of bytes needed</returns>
-int count_function_param_stacksize(ASTNode* paramList) {
+static int count_function_param_stacksize(ASTNode* paramList) {
     int totalSize = 0;
 
     for (int i = 0; i < paramList->childCount; i++) {
@@ -157,7 +158,7 @@ int count_function_param_stacksize(ASTNode* paramList) {
 /// </summary>
 /// <param name="local_bytes"></param>
 /// <returns>Returns a correct local bytes count</returns>
-int gen_stack_allocation(int local_bytes)
+static int gen_stack_allocation(int local_bytes)
 {
     int total_bytes = local_bytes;
     int rsp_after_push = total_bytes;
@@ -174,7 +175,7 @@ int gen_stack_allocation(int local_bytes)
 /// This helper func will copy function params into the local stack storage
 /// </summary>
 /// <param name="funcNode"></param>
-void gen_function_params_copy(ASTNode* funcNode) {
+static void gen_function_params_copy(ASTNode* funcNode) {
     ASTNode* paramList = funcNode->children[1];
     SymbolTable* funcScope = funcNode->scope;
     int paramCount = paramList->childCount;
@@ -264,7 +265,7 @@ void gen_function(ASTNode* node, HashMap* stringTable)
 /// <summary>
 /// This func sets up the win api functions
 /// </summary>
-void gen_winApi()
+static void gen_winApi()
 {
     insert_line("extern ExitProcess: proc\n");
     insert_line("extern GetStdHandle: proc\n");
@@ -277,7 +278,7 @@ void gen_winApi()
 /// </summary>
 /// <param name="root"></param>
 /// <param name="stringTable"></param>
-void gen_asm(char* path, ASTNode* root, HashMap* stringTable, int flag) 
+void gen_asm(const char* path, ASTNode* root, HashMap* stringTable, int flag) 
 {
     create_asm_file(path, flag);
     // gen the winApi funcs

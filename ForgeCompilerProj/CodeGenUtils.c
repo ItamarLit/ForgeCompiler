@@ -13,7 +13,7 @@ const char* registerNames[REG_COUNT] = { "rbx", "r10", "r11", "r12", "r13", "r14
 // win API param registers
 char* paramRegisterNames[4] = { "rcx", "rdx", "r8", "r9" };
 // global asm output path
-char* asm_output_path = NULL;
+const char* asm_output_path = NULL;
 int outputFlag = 0;
 
 /// <summary>
@@ -67,10 +67,15 @@ const char* scratch_name(int reg)
 /// This func will create unique label names
 /// </summary>
 /// <returns>Returns a unique label name</returns>
-const char* label_name()
+char* label_name()
 {
 	static int counter = 0;
 	char* label = (char*)malloc(32);
+	if (!label)
+	{
+		fprintf(stderr, "Was unable to malloc memory for lable\n");
+		return NULL;
+	}
 	sprintf(label, "_L%d", counter++);
 	return label;
 }
@@ -80,7 +85,7 @@ const char* label_name()
 /// </summary>
 /// <param name="s"></param>
 /// <returns>Returns a string that represents the entries code</returns>
-const char* symbol_codegen(SymbolEntry* s)
+char* symbol_codegen(SymbolEntry* s)
 {
 	static char str[64];
 	switch (s->place)
@@ -105,12 +110,12 @@ const char* symbol_codegen(SymbolEntry* s)
 /// <summary>
 /// This func will create the asm file 
 /// </summary>
-void create_asm_file(char* path, int flag) 
+void create_asm_file(const char* path, int flag) 
 {
 	FILE* out = fopen(path, "w");
 	if (!out) {
 		perror("Error opening file");
-		return 1;
+		return;
 	}
 	asm_output_path = path;
 	outputFlag = flag;

@@ -177,7 +177,7 @@ void gen_while_statement(ASTNode* node, HashMap* stringTable) {
 /// </summary>
 /// <param name="node"></param>
 /// <returns></returns>
-ASTNode* get_enclosing_function(ASTNode* node) {
+static ASTNode* get_enclosing_function(ASTNode* node) {
     while (node) {
         if (strcmp(node->lable, "FuncDeclaration") == 0)
             return node;

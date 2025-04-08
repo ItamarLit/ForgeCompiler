@@ -14,13 +14,15 @@
 #include <string.h>
 #include <stdio.h>
 
+static int compile(const char* outputPath, char* inputStr, int tokensFlag, int astFlag, int symbolFlag, int asmFlag);
+
 /// <summary>
 /// This helper function will create a path to an output.asm file in the same path as the input file
 /// </summary>
 /// <param name="filepath"></param>
 /// <param name="new_filename"></param>
 /// <returns>Returns the new path</returns>
-char* change_extension(const char* filepath, const char* new_filename) {
+static char* change_extension(const char* filepath, const char* new_filename) {
     // find last backslash
     const char* last_backslash = strrchr(filepath, '\\');
     // calc dir len 
@@ -90,7 +92,7 @@ int main(int argc, char* argv[])
 /// <param name="symbolFlag"></param>
 /// <param name="asmFlag"></param>
 /// <returns>Exit code</returns>
-int compile(const char* outputPath, const char* inputStr, int tokensFlag, int astFlag, int symbolFlag, int asmFlag)
+static int compile(const char* outputPath, char* inputStr, int tokensFlag, int astFlag, int symbolFlag, int asmFlag)
 {
     // set up data structures for the lexer
     HashMap* state_machine = NULL;
