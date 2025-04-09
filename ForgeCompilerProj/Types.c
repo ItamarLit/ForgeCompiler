@@ -11,6 +11,7 @@ static const TypeMap typeMap[] = {
         {"bool", TYPE_BOOL},
         {"string", TYPE_STRING},
         {"void", TYPE_VOID},
+        {"func", TYPE_FUNC},
         {NULL, TYPE_ERROR}  // ending
 };
 

@@ -72,7 +72,7 @@ void resolve_identifiers(ASTNode* root, int* errorCount) {
 /// <param name="errorCount"></param>
 void check_types(ASTNode* root, int* errorCount) 
 {
-    if (root == NULL) return;
+    if (!root) return;
     // get the closest scope
     SymbolTable* currentScope = get_closest_scope(root);
     // check if the type is var dec
@@ -260,7 +260,7 @@ void check_main(ASTNode* root, int* errorCount) {
         // check if node is func dec
         if (node->lable && strcmp(node->lable, "FuncDeclaration") == 0) {
             // check the func name
-            if (lookup_symbol("Main", node->scope) != NULL) {
+            if (node->children[0]->token && strcmp(node->children[0]->token->lexeme, "Main") == 0) {
                 foundMain = 1;
             }
         }
@@ -321,7 +321,7 @@ void check_function_calls(ASTNode* root, int* errorCount)
         ASTNode* funcCallNode = root->children[0];
         SymbolEntry* funcEntry = lookup_symbol(funcCallNode->token->lexeme, currentScope);
         // if no entry then the func is undifined
-        if (!funcEntry) {
+        if (!funcEntry || funcEntry->type != TYPE_FUNC) {
             output_error(SEMANTIC, "Error: Undeclared function '%s' at line %d\n", funcCallNode->token->lexeme, funcCallNode->token->tokenRow);
             (*errorCount)++;
         }

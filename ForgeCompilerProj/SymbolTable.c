@@ -246,7 +246,7 @@ static void handle_func_declaration(ASTNode* node, SymbolTable* currentTable, in
     // get the types and names
     int decCount = extract_function_parameters(paramList, &paramNames, &paramTypes);
     // insert the func into the table
-    insert_symbol(currentTable->table, newFuncName, convert_string_type(returnType), 1, convert_string_type(returnType), paramTypes, decCount, IGNORE_LINE, IS_GLOBAL, -1);
+    insert_symbol(currentTable->table, newFuncName, TYPE_FUNC, 1, convert_string_type(returnType), paramTypes, decCount, IGNORE_LINE, IS_GLOBAL, -1);
     free(newFuncName);
     // create new symbol table for func scope
     SymbolTable* functionScope = create_new_scope(currentTable);

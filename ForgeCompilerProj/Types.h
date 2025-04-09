@@ -7,6 +7,7 @@ typedef enum {
     TYPE_STRING,
     TYPE_BOOL,
     TYPE_VOID,
+    TYPE_FUNC,
     TYPE_ERROR,  // for error handling
     TYPE_UNDEFINED // for undefined variables
 } Type;
