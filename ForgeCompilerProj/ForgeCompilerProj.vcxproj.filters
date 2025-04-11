@@ -186,7 +186,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CodeGenerator.c">
-      <Filter>Source Files\AST</Filter>
+      <Filter>Source Files\CodeGen</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
