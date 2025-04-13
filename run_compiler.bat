@@ -6,6 +6,12 @@ if "%~1"=="" (
     exit /b 1
 )
 
+echo %~1 | findstr /I "\.forge$" >nul
+if errorlevel 1 (
+    echo Error: Input file must have a .forge extension.
+    exit /b 1
+)
+
 set INPUT=ProjectData\%1
 shift
 set FLAGS=%*
