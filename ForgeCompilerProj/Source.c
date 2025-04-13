@@ -17,24 +17,44 @@
 static int compile(const char* outputPath, char* inputStr, int tokensFlag, int astFlag, int symbolFlag, int asmFlag);
 
 /// <summary>
-/// This helper function will create a path to an output.asm file in the same path as the input file
+/// This helper function will create a path to an .asm file with the same name as the .forge file
 /// </summary>
 /// <param name="filepath"></param>
 /// <param name="new_filename"></param>
 /// <returns>Returns the new path</returns>
-static char* change_extension(const char* filepath, const char* new_filename) {
+static char* change_extension_to_asm(const char* filepath) {
     // find last backslash
     const char* last_backslash = strrchr(filepath, '\\');
-    // calc dir len 
-    int dir_len = last_backslash ? (last_backslash - filepath + 1) : 0;
-    // create string
-    char* output = malloc(dir_len + strlen(new_filename) + 1);
-    if (!output) return NULL;
-    if (dir_len > 0) {
-        strncpy(output, filepath, dir_len);
+    int dir_len = 0;
+    if (last_backslash) {
+        // set dir len
+        dir_len = (int)(last_backslash - filepath + 1);
     }
+    // find last dot
+    const char* last_dot = strrchr(filepath, '.');
+    int base_len = 0;
+    // check that the dot is after the backslash
+    if (last_dot && last_dot > last_backslash) {
+        // get the base file name len
+        base_len = (int)(last_dot - (filepath + dir_len));
+    }
+    else {
+        // no dot after base name all is base name
+        base_len = (int)strlen(filepath) - dir_len;
+        last_dot = NULL;
+    }
+    // total len is directory part + base name + .asm + \0
+    int total_len = dir_len + base_len + 5;
+    // create output string
+    char* output = (char*)malloc(total_len);
+    if (!output) return NULL;
+    // copy directory name
+    memcpy(output, filepath, dir_len);
     output[dir_len] = '\0';
-    strcat(output, new_filename);
+    // copy filename
+    strncat(output, filepath + dir_len, base_len);
+    // add .asm
+    strcat(output, ".asm");
     return output;
 }
 
@@ -58,7 +78,7 @@ int main(int argc, char* argv[])
         return 1;
     }
     const char* inputFile = argv[1];
-    char* outputFile = change_extension(inputFile, "output.asm");
+    char* outputFile = change_extension_to_asm(inputFile);
     printf("Input: %s\n", inputFile);
     printf("Output: %s\n", outputFile);
     // read the input code

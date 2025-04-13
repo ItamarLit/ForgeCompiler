@@ -96,6 +96,7 @@ void init_state_machine(HashMap** map) {
     put_state(START_STATE, '\r', START_STATE, *map);
     put_state(COMMENT_STATE,' ', COMMENT_STATE, *map);
     put_state(COMMENT_STATE,'"', COMMENT_STATE, *map);
+    put_state(COMMENT_STATE, '\t', COMMENT_STATE, *map);
 
 
     for (char c = 'a'; c <= 'z'; c++) {
