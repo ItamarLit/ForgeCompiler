@@ -17,17 +17,19 @@ if %errorlevel% neq 0 (
     exit /b %errorlevel%
 )
 
-IF EXIST ProjectData\output.asm (
+set ASMFILE=%INPUT:.forge=.asm%
+
+IF EXIST %ASMFILE% (
     echo Assembling...
-    ml64 /c /Fo ProjectData\output.obj ProjectData\output.asm
+    ml64 /c /Fo "%ASMFILE:.asm=.obj%" "%ASMFILE%"
 
     echo Linking...
-    link ProjectData\output.obj /entry:Main /subsystem:console kernel32.lib /OUT:ProjectData\output.exe
+    link "%ASMFILE:.asm=.obj%" /entry:Main /subsystem:console kernel32.lib /OUT:"%ASMFILE:.asm=.exe%"
 
-    IF EXIST ProjectData\output.exe (
+    IF EXIST "%ASMFILE:.asm=.exe%" (
         echo Running program...
-        ProjectData\output.exe
-        del ProjectData\output.obj
+        "%ASMFILE:.asm=.exe%"
+        del "%ASMFILE:.asm=.obj%"
     ) ELSE (
         echo Linking failed.
     )
