@@ -6,8 +6,7 @@ if "%~1"=="" (
     exit /b 1
 )
 
-echo %~1 | findstr /I "\.forge$" >nul
-if errorlevel 1 (
+if /i not "%~x1"==".forge" (
     echo Error: Input file must have a .forge extension.
     exit /b 1
 )
