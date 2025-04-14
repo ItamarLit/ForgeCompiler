@@ -11,7 +11,7 @@ if /i not "%~x1"==".forge" (
     exit /b 1
 )
 
-set INPUT=ProjectData\%1
+set INPUT=ForgeCode\%1
 shift
 set FLAGS=%*
 

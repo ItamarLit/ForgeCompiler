@@ -1,0 +1,19 @@
+mold string inputName = "";
+
+forge ChangeName(string name) => string 
+{
+	remold name = "Itamar";
+    output("Changed name to Itamar");
+    return name;
+}
+
+forge Main() => void 
+{
+	output("Please enter a name");
+	input(inputName);
+	output("The name you entered is");
+	output(inputName);
+    remold inputName = ChangeName(inputName);
+    output("The new name is");
+    output(inputName);
+}

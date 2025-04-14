@@ -70,7 +70,15 @@ void gen_readonly_data(HashMap* stringTable) {
         if (stringTable->arr[index] != NULL) {
             HashNode* cur = stringTable->arr[index];
             while (cur != NULL) {
-                insert_line("%s db %s,0\n",((StringEntry*)cur->value)->label, (char*)cur->key);
+                const char* key = (char*)cur->key;
+                const char* label = ((StringEntry*)cur->value)->label;
+                if (strlen(key) == 2) {
+                    // handle empty strings
+                    insert_line("%s db 0", label);
+                }
+                else {
+                    insert_line("%s db %s,0", label, key);
+                }
                 cur = cur->next;
             }
         }

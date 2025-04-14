@@ -1,0 +1,16 @@
+forge ChangeVal(int num) => void 
+{
+	remold num += 100;
+    output("Changed num to");
+    output(num);
+}
+
+forge Main() => void 
+{
+	mold int number = 0;
+    output("Please enter a number");
+    input(number);
+    ChangeVal(number);
+    output("Value after func call is");
+    output(number);
+}

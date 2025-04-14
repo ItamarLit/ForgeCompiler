@@ -1,8 +1,5 @@
 ## Test comment
 
-mold int test = 4;
-mold string test2 = "Hello world";
-
 forge Fac(int number) => int 
 {
 	## Test comment
