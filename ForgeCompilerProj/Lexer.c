@@ -62,7 +62,7 @@ static void put_state(int state, char ch, int nextState, HashMap* map) {
     // allocate key
     FsmKey* key = malloc(sizeof(FsmKey));
     if (!key) {
-        fprintf(stderr, "Unable to malloc key for lexer FSM\n");
+        output_error(GENERAL, "Unable to malloc key for lexer FSM\n");
         return;
     }
     key->currentState = state;
@@ -71,7 +71,7 @@ static void put_state(int state, char ch, int nextState, HashMap* map) {
     int* valPtr = malloc(sizeof(int));
     if (!valPtr)
     {
-        fprintf(stderr, "Unable to malloc value for lexer FSM\n");
+        output_error(GENERAL, "Unable to malloc value for lexer FSM\n");
         return;
     }
     *valPtr = nextState;

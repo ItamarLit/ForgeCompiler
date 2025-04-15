@@ -2,6 +2,7 @@
 #include "StringTable.h"
 #include "HashMap.h"
 #include "SymbolTable.h"
+#include "ErrorHandler.h"
 #include <string.h>
 
 /// <summary>
@@ -37,7 +38,7 @@ char* gen_str_label()
 void insertString(HashMap* map, char* string) {
     StringEntry* entry = (StringEntry*)malloc(sizeof(StringEntry));
     if (!entry) {
-        fprintf(stderr, "Unable to malloc string entry for string table\n");
+        output_error(GENERAL, "Unable to malloc string entry for string table\n");
         return;
     }
     entry->label = strdup(gen_str_label());
@@ -116,7 +117,7 @@ HashMap* create_string_table(ASTNode* root)
 {
     HashMap* map = init_hashmap(INITAL_HASHMAP_SIZE, hash_func, equal_func, print_string_key, print_symbol_entry, free, freeStringEntry);
     if (!map) {
-        fprintf(stderr, "Failed to create string table hashmap.\n");
+        output_error(GENERAL, "Failed to create string table hashmap\n");
         return NULL;
     }
     create_string_tableRecursive(root, map);

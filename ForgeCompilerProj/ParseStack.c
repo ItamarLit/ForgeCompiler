@@ -1,5 +1,6 @@
 #pragma warning (disable:4996)
 #include "ParseStack.h"
+#include "ErrorHandler.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,7 +29,7 @@ Stack* init_stack()
 {
 	Stack* sptr = (Stack*)malloc(sizeof(Stack));
 	if (!sptr) {
-		fprintf(stderr, "Failed to allocate memory for the stack");
+		output_error(GENERAL, "Failed to allocate memory for the stack\n");
 		return NULL;
 	}
 	sptr->top = -1;
@@ -47,13 +48,13 @@ void push(Stack* s, StackData data, StackDataType type)
 	StackEntry** temp = (StackEntry**)realloc(s->items, sizeof(StackEntry*) * (s->top + 2));
 	if (!temp)
 	{
-		fprintf(stderr, "Failed to reallocate memory for stack");
+		output_error(GENERAL, "Failed to reallocate memory for stack\n");
 		return;
 	}
 	s->items = temp;
 	StackEntry* entry = (StackEntry*)malloc(sizeof(StackEntry));
 	if (!entry) {
-		fprintf(stderr, "Failed to allocate memory for stack entry pointer");
+		output_error(GENERAL, "Failed to allocate memory for stack entry pointer\n");
 		return;
 	}
 	// assign the data
@@ -85,7 +86,7 @@ StackEntry* pop(Stack* s)
 		StackEntry** temp = (StackEntry**)realloc(s->items, sizeof(StackEntry*) * (s->top + 1));
 		if (!temp) 
 		{
-			fprintf(stderr, "Failed to reallocate memory for stack");
+			output_error(GENERAL, "Failed to reallocate memory for stack\n");
 			return;
 		}
 		s->items = temp;

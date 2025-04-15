@@ -31,7 +31,7 @@ static MapKey* get_key(int state, char* symbol) {
     // allocate key
     MapKey* key = malloc(sizeof(MapKey));
     if (!key) {
-        printf("Memory allocation failed\n");
+        output_error(GENERAL, "Memory allocation failed for key in parser\n");
         return NULL;
     }
     key->currentState = state;
@@ -125,7 +125,7 @@ void get_data(char** dataArr, char* line, int isAction)
             int length = (int)(end - start);
             char* token = (char*)malloc(length + 1);
             if (!token) {
-                printf("Memory allocation failed\n");
+                output_error(GENERAL, "Memory allocation failed for token in parser\n");
                 return;
             }
             memcpy(token, start, length);
@@ -184,7 +184,7 @@ void fill_table(HashMap** map, char* filename,const char** symbolArray, int symb
         char** tempData = (char**)malloc(symbolCount * sizeof(char*));
         if (!tempData) 
         {
-            fprintf(stderr, "Unable to malloc memory for tempData array in fill_table\n");
+            output_error(GENERAL, "Unable to malloc memory for tempData array in fill_table\n");
             return;
         }
         char* lineCopy = strdup(line);
@@ -341,7 +341,7 @@ static void reduce(int ruleIndex, Stack** s, GrammarArray* array, HashMap* gotoT
     ASTNode** nodeArr = (ASTNode**)malloc(sizeof(ASTNode*) * childrenCount);
     if (!nodeArr)
     {
-        fprintf(stderr, "Unable to malloc memory for nodeArr in reduce\n");
+        output_error(GENERAL, "Unable to malloc memory for nodeArr in reduce\n");
         return;
     }
     // pop from the stack

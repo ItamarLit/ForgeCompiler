@@ -2,6 +2,7 @@
 #include "AST.h"
 #include "Token.h"
 #include "SymbolTable.h"
+#include "ErrorHandler.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -37,7 +38,7 @@ static int is_redundant_node(const char* label) {
 ASTNode* create_AST_node(Token* token, const char* lable) {
     ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
     if (!node) {
-        fprintf(stderr, "Failded to malloc memory for AST node");
+        output_error(GENERAL, "Failed to malloc memory for AST node\n");
         return NULL;
     }
     node->lable = strdup(lable);
@@ -58,7 +59,7 @@ void add_child(ASTNode* child, ASTNode* parent) {
     ASTNode** temp = (ASTNode**)realloc(parent->children, sizeof(ASTNode*) * (parent->childCount + 1));
     if (!temp) 
     {
-        fprintf(stderr, "Failded to calloc memory for AST node children array");
+        output_error(GENERAL, "Failed to calloc memory for AST node children array\n");
         return;
     }
     parent->children = temp;
@@ -179,7 +180,7 @@ static int ensure_capacity(ASTNode*** merged, int* capacity, int required) {
         *capacity = required * 2;
         ASTNode** temp = (ASTNode**)realloc(*merged, sizeof(ASTNode*) * (*capacity));
         if (!temp) {
-            fprintf(stderr, "Unable to realloc memory for merged AST list\n");
+            output_error(GENERAL, "Unable to realloc memory for merged AST list\n");
             return 0;
         }
         *merged = temp;
@@ -208,7 +209,7 @@ static int merge_child_nodes(ASTNode* parent, ASTNode* child, ASTNode*** merged,
             }
         }
         else {
-            fprintf(stderr, "Buffer overrun in merge_nested_lists\n");
+            output_error(GENERAL, "Buffer overrun in merge_nested_lists\n");
             return 0;
         }
     }
@@ -234,7 +235,7 @@ static void merge_nested_lists(ASTNode* node, const char* targetLabel) {
     int capacity = node->childCount;
     ASTNode** merged = (ASTNode**)malloc(sizeof(ASTNode*) * capacity);
     if (!merged) {
-        fprintf(stderr, "Unable to malloc memory for merged AST list\n");
+        output_error(GENERAL, "Unable to malloc memory for merged AST list\n");
         return;
     }
 
@@ -348,7 +349,7 @@ static void normalize_func_declaration(ASTNode* node) {
     // move the children forward
     ASTNode** tempChildren = (ASTNode**)realloc(node->children, sizeof(ASTNode*) * (node->childCount + 1));
     if (!tempChildren) {
-        fprintf(stderr, "Unable to realloc memory for children in AST\n");
+        output_error(GENERAL, "Unable to realloc memory for children in AST\n");
         return;
     }
     node->children = tempChildren;
@@ -370,7 +371,7 @@ static void normalize_func_call(ASTNode* node) {
     // move the children forward
     ASTNode** tempChildren = (ASTNode**)realloc(node->children, sizeof(ASTNode*) * (node->childCount + 1));
     if (!tempChildren) {
-        fprintf(stderr, "Unable to realloc memory for children in AST\n");
+        output_error(GENERAL, "Unable to realloc memory for children in AST\n");
         return;
     }
     node->children = tempChildren;
@@ -392,7 +393,7 @@ static void normalize_block(ASTNode* node) {
     // move the children forward
     ASTNode** tempChildren = (ASTNode**)realloc(node->children, sizeof(ASTNode*) * (node->childCount + 1));
     if (!tempChildren) {
-        fprintf(stderr, "Unable to realloc memory for children in AST\n");
+        output_error(GENERAL, "Unable to realloc memory for children in AST\n");
         return;
     }
     node->children = tempChildren;
@@ -494,7 +495,7 @@ void reduce_global_vars(ASTNode* globalItemList) {
                 // create new token
                 Token* valueToken = (Token*)malloc(sizeof(Token));
                 if (!valueToken) {
-                    fprintf(stderr, "Unable to malloc new token\n");
+                    output_error(GENERAL, "Unable to malloc new token\n");
                     return;
                 }
                 // set node values

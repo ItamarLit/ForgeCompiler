@@ -1,4 +1,5 @@
 #include "Token.h"
+#include "ErrorHandler.h"
 #include <string.h>
 #pragma warning (disable:4996)
 
@@ -15,7 +16,7 @@ void add_token(pTokenArray* ptoken_array, TokenType token_type, const char* lexe
     }
     (*ptoken_array)->tokens[(*ptoken_array)->count] = (Token*)malloc(sizeof(Token));
     if ((*ptoken_array)->tokens[(*ptoken_array)->count] == NULL) {
-        fprintf(stderr, "Memory allocation for token failed\n");
+        output_error(GENERAL, "Memory allocation for token failed for token\n");
         return;
     }
     // set the type and value
@@ -52,7 +53,7 @@ void print_tokens(pTokenArray ptoken_array) {
 Token** create_tokens(int size) {
     Token** tokens = (Token**)malloc(size * sizeof(Token*));
     if (tokens == NULL) {
-        fprintf(stderr, "Memory allocation for tokens failed\n");
+        output_error(GENERAL, "Memory allocation for tokens failed for token array\n");
         return NULL;
     }
     return tokens;
@@ -66,7 +67,7 @@ void resize_token_arr(pTokenArray* ptoken_array) {
     (*ptoken_array)->size = (*ptoken_array)->size * 2;
     Token** temp = (Token**)realloc((*ptoken_array)->tokens, (*ptoken_array)->size * sizeof(Token*));
     if (temp == NULL) {
-        fprintf(stderr, "Memory allocation for tokens failed\n");
+        output_error(GENERAL, "Memory allocation for tokens failed for token array\n");
         return;
     }
     (*ptoken_array)->tokens = temp;
@@ -79,7 +80,7 @@ void resize_token_arr(pTokenArray* ptoken_array) {
 void init_token_array(pTokenArray* ptoken_array) {
     *ptoken_array = (pTokenArray)malloc(sizeof(TokenArray));
     if (*ptoken_array == NULL) {
-        fprintf(stderr, "Memory allocation for TokenArray failed\n");
+        output_error(GENERAL, "Memory allocation for TokenArray failed\n");
         return;
     }
     (*ptoken_array)->count = 0;

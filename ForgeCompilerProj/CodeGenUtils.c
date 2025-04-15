@@ -1,5 +1,6 @@
 #pragma warning (disable:4996)
 #include "CodeGenUtils.h"
+#include "ErrorHandler.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -73,7 +74,7 @@ char* label_name()
 	char* label = (char*)malloc(32);
 	if (!label)
 	{
-		fprintf(stderr, "Was unable to malloc memory for lable\n");
+		output_error(GENERAL, "Unable to malloc memory for lable\n");
 		return NULL;
 	}
 	sprintf(label, "_L%d", counter++);
@@ -100,7 +101,7 @@ char* symbol_codegen(SymbolEntry* s)
 		sprintf(str, "%s", get_param_reg(s->offset));
 		break;
 	default:
-		printf("Invalid place of entry in symbol table");
+		output_error(GENERAL, "Invalid place of entry in symbol table\n");
 		str[0] = '\0';
 		break;
 	}
@@ -114,7 +115,7 @@ void create_asm_file(const char* path, int flag)
 {
 	FILE* out = fopen(path, "w");
 	if (!out) {
-		perror("Error opening file");
+		output_error(GENERAL, "coudn't open final asm file\n");
 		return;
 	}
 	asm_output_path = path;

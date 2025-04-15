@@ -1,6 +1,7 @@
 #pragma warning (disable:4996)
 #include "GrammarArray.h"
 #include "FileReader.h"
+#include "ErrorHandler.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -32,7 +33,7 @@ int count_tokens(const char* rhs) {
 void insert_rule(GrammarArray* grammar, int index, const char* leftRule, const char* rightRule) {
 	grammar->rules[index] = (GrammarRule*)malloc(sizeof(GrammarRule));
 	if (!grammar->rules[index]) {
-		fprintf(stderr, "Failed to allocate GrammarRule\n");
+        output_error(GENERAL, "Failed to allocate GrammarRule\n");
 		return;
 	}
 	grammar->rules[index]->leftRule = strdup(leftRule);
@@ -49,13 +50,13 @@ GrammarArray* init_grammar_array(const char* filename) {
 	// malloc the main struct
 	GrammarArray* grammar = (GrammarArray*)malloc(sizeof(GrammarArray));
 	if (!grammar) {
-		fprintf(stderr, "Failed to allocate GrammarArray\n");
+        output_error(GENERAL, "Failed to allocate GrammarArray\n");
 		return NULL;
 	}
 	// malloc the rule pointers 
 	grammar->rules = (GrammarRule**)malloc(sizeof(GrammarRule*) * GRAMMAR_SIZE);
 	if (!grammar->rules) {
-		printf(stderr, "Failed to allocate rules array\n");
+        output_error(GENERAL, "Failed to allocate rules array\n");
 		free(grammar);
 		return NULL;
 	}
@@ -63,7 +64,7 @@ GrammarArray* init_grammar_array(const char* filename) {
 	// setup the rules into the array
     char* buffer = read_file(filename);
     if (!buffer) {
-        fprintf(stderr, "Failed to read file: %s\n", filename);
+        output_error(GENERAL, "Failed to read file: %s\n", filename);
         free(grammar->rules);
         free(grammar);
         return NULL;
@@ -80,7 +81,7 @@ GrammarArray* init_grammar_array(const char* filename) {
         // look for -> in the line
         char* arrowPos = strstr(line, "->");
         if (!arrowPos) {
-            fprintf(stderr, "Invalid grammar line (missing '->'): %s\n", line);
+            output_error(GENERAL, "Invalid grammar line (missing '->'): %s\n", line);
             line = strtok(NULL, "\n");
             continue;
         }

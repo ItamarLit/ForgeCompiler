@@ -33,7 +33,7 @@ void insert_symbol(HashMap* map, char* name, Type type, int isFunction, Type ret
     // Allocate and fill SymbolEntry struct
     SymbolEntry* entry = malloc(sizeof(SymbolEntry));
     if (!entry) {
-        fprintf(stderr, "Failed to malloc entry for symbol table\n");
+        output_error(GENERAL, "Failed to malloc entry for symbol table\n");
         return;
     }
     entry->name = strdup(name);
@@ -45,7 +45,7 @@ void insert_symbol(HashMap* map, char* name, Type type, int isFunction, Type ret
         entry->paramTypes = (Type*)malloc(sizeof(Type) * paramCount);
         if (!entry->paramTypes)
         {
-            fprintf(stderr, "Failed to malloc entry param types arr\n");
+            output_error(GENERAL, "Failed to malloc entry param types arr\n");
             free(name);
             free(entry);
             return;
@@ -128,14 +128,14 @@ int extract_function_parameters(ASTNode* paramNode, char*** paramNames, Type** p
             char** temp = (char**)realloc(*paramNames, sizeof(char*) * (decCount + 1));
             if (!temp) 
             {
-                fprintf(stderr, "Error reallocing param names array in extraction func\n");
+                output_error(GENERAL, "Error reallocing param names array in extraction func\n");
                 return NULL;
             }
             *paramNames = temp;
             Type* tempType = (Type*)realloc(*paramTypes, sizeof(Type) * (decCount + 1));
             if (!tempType) 
             {
-                fprintf(stderr, "Error reallocing param types array in extraction func\n");
+                output_error(GENERAL, "Error reallocing param types array in extraction func\n");
                 return NULL;
             }
             *paramTypes = tempType;
@@ -158,7 +158,7 @@ int extract_function_parameters(ASTNode* paramNode, char*** paramNames, Type** p
 SymbolTable* create_new_scope(SymbolTable* parent) {
     SymbolTable* newTable = (SymbolTable*)malloc(sizeof(SymbolTable));
     if (!newTable) {
-        fprintf(stderr, "Unable to malloc memory for symbol table\n");
+        output_error(GENERAL, "Unable to malloc memory for symbol table\n");
         return NULL;
     }
     newTable->table = init_hashmap(INITAL_HASHMAP_SIZE, hash_func, equal_func, print_string_key, print_symbol_entry, free, free_symbol_entry);
@@ -172,7 +172,7 @@ char* change_name(const char* name) {
     char* new_name = (char*)malloc(strlen(name) + 2);
     if (!new_name) 
     {
-        fprintf(stderr, "Unable to malloc memory for name change\n");
+        output_error(GENERAL, "Unable to malloc memory for name change\n");
         return NULL;
     }
     sprintf(new_name, "_%s", name);
