@@ -23,7 +23,8 @@ You can also see debug data by using different flags:
 
 Full running code example:
 
-![image](https://github.com/user-attachments/assets/988b9ebb-cecb-4999-af71-21e8514e74fb)
+![image](https://github.com/user-attachments/assets/bb2f7676-437f-468c-a959-d5bd58ca9d62)
+
 
 To see more details on the Forge compiler please read the project book, it will be on my github aswell.
 
