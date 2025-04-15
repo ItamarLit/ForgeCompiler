@@ -16,6 +16,7 @@ void output_error(ErrorType type, char* fmt, ...)
         case LEXICAL:   prefix = "[ Lexical Error ] "; break;
         case SYNTAX:    prefix = "[ Syntax Error ] ";  break;
         case SEMANTIC:  prefix = "[ Semantic Error ] "; break;
+        case GENERAL:   prefix = "[ General Error ] "; break;
         default:        prefix = "[ Unknown Error ] "; break; 
     }
     // print the prefix

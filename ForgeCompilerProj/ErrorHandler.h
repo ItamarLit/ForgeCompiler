@@ -6,6 +6,7 @@ typedef enum  {
     LEXICAL,
     SYNTAX,
     SEMANTIC,
+    GENERAL,
 } ErrorType;
 
 void output_error(ErrorType type, char* fmt, ...);
