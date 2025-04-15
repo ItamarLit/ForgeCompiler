@@ -233,6 +233,8 @@ void check_return(ASTNode* root, int* errorCount) {
             Type retType = convert_string_type(node->children[2]->token->lexeme);
             char* funcName = node->children[0]->token->lexeme;
             ASTNode* body = node->children[3];
+            // check the functions return expr types
+            validate_return_expr_type(body, retType, errorCount, funcName);
             // if type void no return needed
             if (retType != TYPE_ERROR && retType == TYPE_VOID) continue;
             // check that func has return in all paths
@@ -240,8 +242,7 @@ void check_return(ASTNode* root, int* errorCount) {
                 output_error(SEMANTIC, "Error: Function '%s' is missing a return statement in all paths\n", (node->children[0]->token->lexeme));
                 (*errorCount)++;
             }
-            // check the functions return expr types
-            validate_return_expr_type(body, retType, errorCount, funcName);
+            
 
         }
     }
