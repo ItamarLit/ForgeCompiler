@@ -1,8 +1,10 @@
 mold string inputName = "";
 
+## This function will change the name
 forge ChangeName(string name) => string 
 {
 	remold name = "Itamar";
+    ## Show the user that the name is changed locally
     output("Changed name to Itamar");
     return name;
 }
@@ -10,10 +12,14 @@ forge ChangeName(string name) => string
 forge Main() => void 
 {
 	output("Please enter a name");
+    ## Get the user input
 	input(inputName);
+    ## Show the input
 	output("The name you entered is");
 	output(inputName);
+    ## Change the value of the name
     remold inputName = ChangeName(inputName);
     output("The new name is");
+    ## Show the new name
     output(inputName);
 }

@@ -1,8 +1,7 @@
-## Test comment
+## This function preforms factorial on a given number using recursion
 
 forge Fac(int number) => int 
 {
-	## Test comment
 	if meet (number == 1) then
 	{
 		return 1;
@@ -16,8 +15,10 @@ forge Fac(int number) => int
 forge Main() => void 
 {
 	mold int test = 0;
+	## Get a number to preform factorial on
 	output("Please enter a number");
 	input(test);
+	## Output the value of the factorial
 	output("The factorial of the number you entered is");
 	output(Fac(test));
 }
