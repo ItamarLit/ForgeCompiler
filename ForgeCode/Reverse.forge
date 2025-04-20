@@ -1,0 +1,32 @@
+forge ReverseNumber(int num) => int
+{
+	mold int reversed = 0;
+    output(num);
+	while meet (num > 0) then
+	{
+		mold int div = num / 10;
+		mold int mult = div * 10;
+		mold int digit = num - mult;
+
+		output(digit);  ## Add this line to trace
+
+		remold reversed = reversed * 10 + digit;
+		remold num = div;
+	}
+
+	return reversed;
+}
+
+
+forge Main() => void 
+{
+	mold int original = 0;
+	output("Enter a number to reverse:");
+	input(original);
+    output(original);
+
+	mold int reversed = ReverseNumber(original);
+
+	output("Reversed number:");
+	output(reversed);
+}

@@ -30,6 +30,7 @@ static unsigned long hash_func(void* key, int map_size) {
 /// <param name="paramCount"></param>
 /// <param name="line"></param>
 void insert_symbol(HashMap* map, char* name, Type type, int isFunction, Type returnType, Type* paramTypes, int paramCount, int line, Placement place, int offset) {
+    printf("Inserted symbol: %s, offset: %d\n", name, offset);
     // Allocate and fill SymbolEntry struct
     SymbolEntry* entry = malloc(sizeof(SymbolEntry));
     if (!entry) {
@@ -163,7 +164,7 @@ SymbolTable* create_new_scope(SymbolTable* parent) {
     }
     newTable->table = init_hashmap(INITAL_HASHMAP_SIZE, hash_func, equal_func, print_string_key, print_symbol_entry, free, free_symbol_entry);
     newTable->parent = parent;  // link the current table to its parent
-    newTable->localOffset = 0;
+    newTable->localOffset = parent ? parent->localOffset : 0;
     return newTable;
 }
 
@@ -256,6 +257,7 @@ static void handle_func_declaration(ASTNode* node, SymbolTable* currentTable, in
         // check what size is needed for param
         int sizeNeeded = (paramTypes[i] == TYPE_STRING) ? 72 : 8;
         functionScope->localOffset -= sizeNeeded;
+        printf("%d\n", functionScope->localOffset);
         // treat all params as local
         int offset = functionScope->localOffset;
         Placement place = IS_LOCAL;

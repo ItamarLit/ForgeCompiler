@@ -151,6 +151,7 @@ void init_state_machine(HashMap** map) {
     put_state(DIV_STATE, '=', DIV_EQUAL_STATE, *map);
 
     put_state(STRING_LITERAL_STATE, ' ', STRING_LITERAL_STATE, *map);
+    put_state(STRING_LITERAL_STATE, ':', STRING_LITERAL_STATE, *map);
 
     // Transition for ending string literal
     put_state(STRING_LITERAL_STATE, '"', TERMINATED_STRING_LITERAL_STATE, *map);

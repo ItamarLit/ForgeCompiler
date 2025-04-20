@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+
 // array that holds inuse registers
 int registers[REG_COUNT] = { 0 };
 // array that holds the amount of times a register was spilled
