@@ -118,6 +118,11 @@ static void gen_print_int()
     insert_line("print_int proc\n");
     // func setup
     insert_line("sub rsp,20h\n");
+    // clear number buffer
+    insert_line("mov rcx, 21");
+    insert_line("lea rdi, number_buffer");
+    insert_line("xor rax, rax");
+    insert_line("rep stosb");
     // rax will hold the number
     insert_line("mov rax, rdx\n");
     insert_line("mov rbx, 10\n");
@@ -265,7 +270,7 @@ static void gen_input_int()
     // check for empty input
     insert_line("movzx rdx, byte ptr [rdi]\n");
     insert_line("cmp rdx, 0\n");
-    insert_line("je invalid_input\n");
+    insert_line("je invalid_input_call_label\n");
     // check for negative input
     insert_line("cmp rdx, '-'\n");
     insert_line("jne parse_loop\n");
@@ -275,7 +280,7 @@ static void gen_input_int()
     // prevent only '-'
     insert_line("movzx rdx, byte ptr [rdi + rcx]\n");
     insert_line("cmp rdx, 0\n");
-    insert_line("je invalid_input\n");
+    insert_line("je invalid_input_call_label\n");
     // main parse loop
     insert_line("parse_loop:\n");
     insert_line("movzx rdx, byte ptr [rdi + rcx]\n");
@@ -284,9 +289,9 @@ static void gen_input_int()
     insert_line("je parse_done\n");
     // validate digit
     insert_line("cmp rdx, '0'\n");
-    insert_line("jl invalid_input\n");
+    insert_line("jl invalid_input_call_label\n");
     insert_line("cmp rdx, '9'\n");
-    insert_line("jg invalid_input\n");
+    insert_line("jg invalid_input_call_label\n");
     // convert to int
     insert_line("sub rdx, '0'\n");
     insert_line("imul rax, 10\n");
@@ -298,6 +303,9 @@ static void gen_input_int()
     insert_line("cmp r8b, 0\n");
     insert_line("je parse_end\n");
     insert_line("neg rax\n");
+    insert_line("jmp parse_end\n");
+    insert_line("invalid_input_call_label:\n"); 
+    insert_line("call invalid_input\n");
     // func end
     insert_line("parse_end:\n");
     insert_line("add rsp, 64\n");
@@ -335,8 +343,13 @@ static void gen_input_bool()
     insert_line("xor eax, eax\n");
     // check with false str
     insert_line("mov r8, QWORD PTR [rdi]\n");
-    insert_line("cmp r8, QWORD PTR false_str\n");
-    insert_line("je bool_done\n");
+    insert_line("lea rsi, false_str\n");
+    // compare only 6 bytes for false_str
+    insert_line("mov rcx, 6\n");
+    insert_line("repe cmpsb\n");
+    insert_line("jne invalid_input_label\n");
+    insert_line("jmp bool_done\n");
+    insert_line("invalid_input_label:\n");
     // if not false input is invalid
     insert_line("call invalid_input\n");
     insert_line("bool_done:\n");
