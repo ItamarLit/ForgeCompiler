@@ -28,6 +28,7 @@ const char* Terminals[] = {
     "while",
     "input",
     "output",
+    "outputInline",
     "{",
     "}",
     "||",
@@ -44,8 +45,8 @@ const char* Terminals[] = {
     "/",
     "INT_LITERAL",
     "STRING_LITERAL",
-    "true",
-    "false",
+    "True",
+    "False",
     "$"
 };
 // get the terminal count

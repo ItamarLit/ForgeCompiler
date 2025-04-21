@@ -325,9 +325,13 @@ static void gen_output_call(ASTNode* node, HashMap* stringTable)
     else {
         insert_line("call print_string\n");
     }
-    // print a new line
-    insert_line("lea rdx, new_line\n");
-    insert_line("call print_string\n");
+    // print new line only for output and not output inline
+    if (strcmp(node->children[0]->token->lexeme, "output") == 0)
+    {
+        // print a new line
+        insert_line("lea rdx, new_line\n");
+        insert_line("call print_string\n");
+    }
     gen_caller_pops();
 }
 

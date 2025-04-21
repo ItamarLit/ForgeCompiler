@@ -57,6 +57,7 @@ typedef enum {
     OUTPUT,
     INPUT,
     NOT_EQUAL,
+    OUTPUT_INLINE,
 }TokenType;
 
 typedef struct {

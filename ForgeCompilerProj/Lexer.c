@@ -280,6 +280,7 @@ TokenType identify_keyowrd(char* lexeme) {
         {"true", BOOL_LITERAL},
         {"false", BOOL_LITERAL},
         {"output", OUTPUT},
+        {"outputInline", OUTPUT_INLINE},
         {"input", INPUT},
         {NULL, ERROR}  // ending
     };
