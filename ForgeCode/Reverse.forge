@@ -20,7 +20,6 @@ forge Main() => void
 	output("Enter a number to reverse:");
 	input(original);
 	mold int reversed = ReverseNumber(original);
-
-	output("Reversed number:");
+	outputInline("Reversed number:");
 	output(reversed);
 }

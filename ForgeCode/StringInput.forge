@@ -11,15 +11,15 @@ forge ChangeName(string name) => string
 
 forge Main() => void 
 {
-	output("Please enter a name");
+    output("Please enter a name");
     ## Get the user input
-	input(inputName);
+    input(inputName);
     ## Show the input
-	output("The name you entered is");
-	output(inputName);
+    outputInline("The name you entered is: ");
+    output(inputName);
     ## Change the value of the name
     remold inputName = ChangeName(inputName);
-    output("The new name is");
+    outputInline("The new name is: ");
     ## Show the new name
     output(inputName);
 }

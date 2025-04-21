@@ -1,20 +1,20 @@
 forge ChangeVal(int num) => void 
 {
-	remold num += 100;
+    remold num += 100;
     ## Show the new val 
-    output("Changed num to");
+    outputInline("Changed in function num to:");
     output(num);
 }
 
 forge Main() => void 
 {
-	mold int number = 0;
+    mold int number = 0;
     ## Get user input
-    output("Please enter a number");
+    output("Please enter a number:");
     input(number);
     ## Call the func to change the val
     ChangeVal(number);
     ## Show that the original var value is the same, ie passed by value to function
-    output("Value after func call is");
+    outputInline("Value after func call is: ");
     output(number);
 }
