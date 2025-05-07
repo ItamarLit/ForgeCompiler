@@ -3,6 +3,7 @@ Hi and welcome to the Forge compiler, this compiler was made as a final project 
 ## Features
 This compiler has a fully working front end, (lexer, parser, semantic analyzer), and it creates ASM 64 bit code in MASM syntax.
 - The compiler uses an FSM to lex, and an SLR parser using action and goto tables.
+- The compiler features a rich language that has variables, functions and IO.
 ## How to run the compiler?
 To run the compiler use x64 native tools command prompt for vs to run the batch file "run_compiler" and run the compiled code.
 All files need to be .forge files and must be in the ProjectData folder, in this folder you will see the output of the compilation
